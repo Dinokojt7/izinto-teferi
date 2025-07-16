@@ -1,0 +1,256 @@
+{
+    "Specialties": [
+        {
+            "id": 56,
+            "name": "Teddy",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 16,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/teddy.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "Any size",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Scaf",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 4,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/scaf.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "Gloves",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "baby Shoes",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 4,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/babyshoes.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "All material",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Bagpack",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 40,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/bag.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Pants",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 7,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/pants.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Tshirt",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 4,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/shirt.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "Blouse, Shirt",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 58,
+            "name": "Pullover",
+            "introduction": "Any small or big alteration can be handled by our qualified tailors, from shortening of trousers and skirts to major alterations on evening gowns and men’s suites. Altering garments require time, we recommend coming through and spending time with our tailors, trying on garments before any work is done. Additional fitting might be required in order to finish an alteration. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 7,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/jersey.jpg",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "type": "Sweater, Jersey",
+            "material": "sude",
+            "provider": "Exclusive Dry Cleaners",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Gym wear",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 6,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/gym.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "Any item",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 3,
+            "name": "Cap",
+            "introduction": "The Levingers cobblers are trained and skilled to replace heels, soles, rebuild soles, stitch, polish and clean your shoes, repair bags, luggage, leathers and sports equipment.",
+            "price": 5,
+            "createAt": "2022-02-28T13:31:28.497Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/cap.jpg",
+            "location": [
+                -26.021655,
+                28.086805
+            ],
+            "type": "Hat",
+            "material": "sude",
+            "provider": "Levingers",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Shorts",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 5,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/shorts.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 58,
+            "name": "Jarket",
+            "introduction": "Any small or big alteration can be handled by our qualified tailors, from shortening of trousers and skirts to major alterations on evening gowns and men’s suites. Altering garments require time, we recommend coming through and spending time with our tailors, trying on garments before any work is done. Additional fitting might be required in order to finish an alteration. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 15,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/jarket.jpg",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "type": "Hoodie",
+            "material": "sude",
+            "provider": "Exclusive Dry Cleaners",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Baby Clothes",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 4,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/babyclothes.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "Any item",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Socks",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 2,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/socks.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "Leggings",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 56,
+            "name": "Jeans",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 8,
+            "createAt": "2022-02-28T13:29:14.196Z",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/jeans.jpg",
+            "location": [
+                25.2285,
+                55.3273
+            ],
+            "type": "",
+            "material": "sude",
+            "provider": "Sneaker Bar",
+            "quantity": [],
+            "time": ""
+        }
+    ]
+}

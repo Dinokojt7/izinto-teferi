@@ -1,0 +1,106 @@
+{
+    "Specialties": [
+        {
+            "id": 31,
+            "name": "Detailed Sneaker Wash",
+            "introduction": "Sneaker Bar offers Detailed Wash for strong inset stains on the sneaker. This clean includes a lace wash, mid-sole clean, upper-mid sole clean, in-sole clean, and bacteria removal. Our drivers from Izinto will collect your sneakers from your prefered location anywhere in Sandton and deliver them straigth to the nearest Sneaker Wash outlet. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 100,
+            "type": "Detailed",
+            "material": "Premium sneaker cleaning service for suited for footwear hygine.",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/sneaker2.jpg",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "provider": "Offbeat",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 32,
+            "name": "Rug & Carpet Care",
+            "introduction": " Allow us to take care of your rugs and carpets so that they can stand the test of time.",
+            "price": 135,
+            "type": "Regular/Persian/Oriental per m2",
+            "material": "All size rugs and carpets cleaning, drying and treating.",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/rug2.png",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "provider": "Levingers ",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 33,
+            "name": "Dry Cleaning",
+            "introduction": " With the deluxe service each garment is individually cared for and is returned in a suit cover for your convenience.",
+            "price": 185,
+            "type": "Detailed",
+            "material": "Detailed quality care for varied garments.",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/dryclean0.png",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "provider": "Levingers",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 34,
+            "name": "Onsite Curtain Cleaning",
+            "introduction": " Dedicated and custom modelled seasonal cleaning of regular and heavy curtains, linen, bedding, etc.",
+            "price": 72,
+            "type": "Wash, Dry, Iron per 1kg",
+            "material": "Collection and wash, or on-site clean and rehang",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/curtain0.png",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "provider": "Exclusive",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 35,
+            "name": "Blankets",
+            "introduction": "Any small or big alteration can be handled by our qualified tailors, from shortening of trousers and skirts to major alterations on evening gowns and men’s suites. Altering garments require time, we recommend coming through and spending time with our tailors, trying on garments before any work is done. Additional fitting might be required in order to finish an alteration. Please check above the Estimated Time for this service. Thank you, we look foward to bringing a superior Izinto service to your doorstep, cheers!",
+            "price": 210,
+            "type": "Double/Queen",
+            "material": "Canvas, Leather, Numbuck, Suede, Meash, PrimeKnit/Meashknit",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/blankets1.jpg",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "provider": "Dirty Laundry ",
+            "quantity": [],
+            "time": ""
+        },
+        {
+            "id": 46,
+            "name": "Leather Care",
+            "introduction": "We can refurbish, care for and restore damaged and old leathers, car seats, saddles, bags, steering wheels and are there to assist with any of your leather restoration needs.",
+            "price": 90,
+            "type": "Leather Care & Refurbishment per m2",
+            "material": "Canvas, Leather, Numbuck, Suede, Meash, PrimeKnit/Meashknit",
+            "turnaroundTime": "5hrs",
+            "img": "assets/image/leather.jpg",
+            "location": [
+                -26.14742,
+                28.0435
+            ],
+            "provider": "Levingers ",
+            "quantity": [],
+            "time": ""
+        }
+    ]
+}

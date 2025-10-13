@@ -4,7 +4,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:http/http.dart' as http;
-import "package:google_maps_webservice/places.dart";
 import 'package:http/http.dart';
 
 import 'package:izinto/logger.dart';

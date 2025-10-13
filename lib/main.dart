@@ -5,7 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:izinto/bindings/initial_binding.dart';
@@ -13,7 +12,6 @@ import 'package:izinto/controllers/car_specialty_controller.dart';
 import 'package:izinto/controllers/cart_controller.dart';
 import 'package:izinto/controllers/checkout_controller.dart';
 import 'package:izinto/controllers/laundry_specialty_controller.dart';
-import 'package:izinto/controllers/location_controller.dart';
 import 'package:izinto/controllers/popular_specialty_controller.dart';
 import 'package:izinto/controllers/recommended_specialty_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
@@ -62,77 +60,54 @@ import 'live/view/cart_view/controller/cart_actions_controller.dart';
 import 'live/view/home_view/category_view/controller/category_view_controller.dart';
 import 'models/subscription_model.dart';
 
-/// Create a [AndroidNotificationChannel] for heads up notifications
-late AndroidNotificationChannel channel;
-
-bool isFlutterLocalNotificationsInitialized = false;
-
-Future<void> setupFlutterNotifications() async {
-  if (isFlutterLocalNotificationsInitialized) {
-    return;
-  }
-  channel = const AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-    description:
-        'This channel is used for important notifications.', // description
-    importance: Importance.high,
+/// Initialize Firebase Messaging and setup notification handlers
+Future<void> setupFirebaseMessaging() async {
+  // Request permission for notifications
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
   );
 
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  /// Create an Android Notification Channel.
-  ///
-  /// We use this channel in the `AndroidManifest.xml` file to override the
-  /// default FCM channel to enable heads up notifications.
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-
-  /// Update the iOS foreground notification presentation options to allow
-  /// heads up notifications.
+  // Set foreground notification presentation options
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
     badge: true,
     sound: true,
   );
-  isFlutterLocalNotificationsInitialized = true;
 }
 
-void showFlutterNotification(RemoteMessage message) {
-  RemoteNotification? notification = message.notification;
-  AndroidNotification? android = message.notification?.android;
-  if (notification != null && android != null) {
-    flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      notification.title,
-      notification.body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          channel.name,
-          channelDescription: channel.description,
-          // TODO add a proper drawable resource to android, for now using
-          // TODO     one that already exists in example app.
-          icon: 'launch_background',
-        ),
-      ),
+/// Handle foreground messages
+void handleForegroundMessage(RemoteMessage message) {
+  print('Handling a foreground message: ${message.messageId}');
+
+  // You can show a custom dialog or snackbar here for foreground notifications
+  // For example, using GetX:
+  if (message.notification != null) {
+    Get.snackbar(
+      message.notification?.title ?? 'Notification',
+      message.notification?.body ?? '',
+      backgroundColor: Colors.white,
+      colorText: Colors.black,
     );
   }
 }
 
-/// Initialize the [FlutterLocalNotificationsPlugin] package.
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-
+/// Handle background messages
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseMessaging.instance.getInitialMessage();
-  await setupFlutterNotifications();
-  showFlutterNotification(message);
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  print('Handling a background message ${message.messageId}');
+
+  // Handle background message
+  print('Handling a background message: ${message.messageId}');
+
+  // You can process the background message here
+  // For example, update local data, show local notification using system APIs, etc.
+
+  // Note: Since we removed flutter_local_notifications, you might want to use
+  // the system's native notification capabilities or handle data messages directly
+  if (message.data.isNotEmpty) {
+    print('Message data: ${message.data}');
+  }
 }
 
 Future<void> main() async {
@@ -140,12 +115,31 @@ Future<void> main() async {
   //FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await FirebaseMessaging.instance
-      .setForegroundNotificationPresentationOptions(alert: true, badge: true);
-  await FirebaseMessaging.instance.getInitialMessage();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await dep.init();
+  // Setup Firebase Messaging
+  await setupFirebaseMessaging();
 
+  // Handle background messages
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Handle foreground messages
+  FirebaseMessaging.onMessage.listen(handleForegroundMessage);
+
+  // Handle when app is opened from terminated state
+  FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+    if (message != null) {
+      print(
+          'App opened from terminated state with message: ${message.messageId}');
+      // Handle the message, e.g., navigate to specific screen
+    }
+  });
+
+  // Handle when app is opened from background state
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print('App opened from background with message: ${message.messageId}');
+    // Handle the message, e.g., navigate to specific screen
+  });
+
+  await dep.init();
   NetworkInjection.init();
 
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -155,10 +149,8 @@ Future<void> main() async {
     statusBarIconBrightness: Brightness.light,
     systemNavigationBarIconBrightness:
         Brightness.light, //status barIcon Brightness
-    //   //   //systemNavigationBarDividerColor:
-    //   //   //  Colors.brown[100], //Navigation bar divider color
-    //   //   // systemNavigationBarIconBrightness: Brightness.light, //navigation bar icon
   ));
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -174,7 +166,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.find<CartController>().getCartData();
-    Get.put(LocationController());
+
     return GetBuilder<PopularSpecialtyController>(builder: (_) {
       return GetBuilder<RecommendedSpecialtyController>(builder: (_) {
         return GetBuilder<LaundrySpecialtyController>(builder: (_) {
@@ -254,16 +246,10 @@ class MyApp extends StatelessWidget {
                                   theme: ThemeData(
                                     colorScheme:
                                         ColorScheme.fromSwatch().copyWith(
-                                      // or from RGB
                                       primary: LiveColors.primary,
                                       secondary: const Color(0Xff353839),
                                     ),
                                   ),
-
-                                  // initialRoute: RouteHelper.getSplashScreen(),
-                                  // home: FirebaseAuthMethods(FirebaseAuth.instance).handleAuthState(),
-                                  // home: DataUploaderScreen(),
-                                  // home: HomeRoute(),
                                   getPages: RouteHelper.routes,
                                 ),
                               );

@@ -1,20 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:izinto/paystack/paystack_autoresponse.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
 import '../pages/cart/cart_processes_and_widgets/cart_view_controller.dart';
 import '../transaction/trasnaction_model.dart';
 import '../utils/app_constants.dart';
-import 'dart:async';
-import 'dart:io';
-import 'package:webview_flutter_plus/webview_flutter_plus.dart';
-
-import '../utils/dimensions.dart';
 
 class PaymentPage extends StatefulWidget {
   const PaymentPage({
@@ -225,7 +223,7 @@ class _PaymentPageState extends State<PaymentPage> {
     }
   }
 
-  late WebViewPlusController controller;
+  // late WebViewPlusController controller;
 
   Future<String> pollForResult() async {
     const server2Endpoint = 'https://your-server2-endpoint/result';
@@ -275,26 +273,26 @@ class _PaymentPageState extends State<PaymentPage> {
                     final url = snapshot.data;
                     return Stack(
                       children: [
-                        WebViewPlus(
-                          initialUrl: url.toString(),
-                          javascriptMode: JavascriptMode.unrestricted,
-                          onWebViewCreated: (controller) {
-                            this.controller = controller;
-                          },
-                          // onPageFinished: (String url) {
-                          // Inject JavaScript code to interact with the page
-                          // controller.evaluateJavascript(
-                          // Find the "Cancel Payment" button and add a click event listener
-                          // var cancelButton = document.querySelector('[name="cancel payment"]');
-                          // if (cancelButton) {
-                          //   cancelButton.addEventListener('click', function() {
-                          //     // Handle the click event
-                          //     // You can communicate with Flutter here or perform other actions
-                          //     // For example, pop the current screen
-                          //     window.flutter_inappwebview.callHandler('cancelPayment', null);
-                          //   });
-                          // }
-                        ),
+                        // WebViewPlus(
+                        //   initialUrl: url.toString(),
+                        //   javascriptMode: JavascriptMode.unrestricted,
+                        //   onWebViewCreated: (controller) {
+                        //     this.controller = controller;
+                        //   },
+                        //   // onPageFinished: (String url) {
+                        //   // Inject JavaScript code to interact with the page
+                        //   // controller.evaluateJavascript(
+                        //   // Find the "Cancel Payment" button and add a click event listener
+                        //   // var cancelButton = document.querySelector('[name="cancel payment"]');
+                        //   // if (cancelButton) {
+                        //   //   cancelButton.addEventListener('click', function() {
+                        //   //     // Handle the click event
+                        //   //     // You can communicate with Flutter here or perform other actions
+                        //   //     // For example, pop the current screen
+                        //   //     window.flutter_inappwebview.callHandler('cancelPayment', null);
+                        //   //   });
+                        //   // }
+                        // ),
                         _isShowLoader
                             ? Dialog(
                                 elevation: 0,

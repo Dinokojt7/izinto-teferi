@@ -15,6 +15,41 @@ import '../../utils/dimensions.dart';
 import '../miscellaneous/app_icon.dart';
 import '../texts/big_text.dart';
 
+// Add CustomPrediction class if not already defined
+class CustomPrediction {
+  final String? placeId;
+  final String? description;
+  final String? mainText;
+  final String? secondaryText;
+  final Map<String, dynamic>? structuredFormatting;
+
+  CustomPrediction({
+    this.placeId,
+    this.description,
+    this.mainText,
+    this.secondaryText,
+    this.structuredFormatting,
+  });
+
+  factory CustomPrediction.fromJson(Map<String, dynamic> json) {
+    return CustomPrediction(
+      placeId: json['place_id'],
+      description: json['description'],
+      mainText: json['structured_formatting']?['main_text'],
+      secondaryText: json['structured_formatting']?['secondary_text'],
+      structuredFormatting: json['structured_formatting'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'place_id': placeId,
+      'description': description,
+      'structured_formatting': structuredFormatting,
+    };
+  }
+}
+
 class CarVenueSettings extends StatefulWidget {
   const CarVenueSettings({Key? key}) : super(key: key);
 
@@ -27,7 +62,10 @@ class _CarVenueSettingsState extends State<CarVenueSettings>
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final _formKey = GlobalKey<FormState>();
   String autocompletePlace = '';
-  Prediction? initialValue;
+
+  // FIX: Changed from Prediction to CustomPrediction
+  CustomPrediction? initialValue;
+
   late String _houseNumber;
   late String _estateName;
   late String _buildingName;
@@ -94,7 +132,7 @@ class _CarVenueSettingsState extends State<CarVenueSettings>
 
   @override
   void dispose() {
-    _tabController;
+    _tabController.dispose(); // FIX: Added .dispose()
     super.dispose();
   }
 
@@ -102,21 +140,21 @@ class _CarVenueSettingsState extends State<CarVenueSettings>
     _houseNumber = _houseNumberController.text.toString();
     _estateName = _estateNameController.text.toString();
     _buildingName = _buildingNameController.text.toString();
-    _label = _labelController.length != 0
+    _label = _labelController.text.isNotEmpty
         ? _labelController.text.toString()
-        : _complexLabelController.length != 0
+        : _complexLabelController.text.isNotEmpty
             ? _complexLabelController.text.toString()
             : _businessLabelController.text.toString();
-    _accessNote = _accessNoteController.length != 0
+    _accessNote = _accessNoteController.text.isNotEmpty
         ? _accessNoteController.text.toString()
-        : _complexAccessNoteController.length != 0
+        : _complexAccessNoteController.text.isNotEmpty
             ? _complexAccessNoteController.text.toString()
             : _businessAccessNoteController.text.toString();
-    venueType = _houseNumberController.length != 0
+    venueType = _houseNumberController.text.isNotEmpty
         ? 'House'
-        : _buildingNameController.length != 0
+        : _buildingNameController.text.isNotEmpty
             ? 'Business/Office'
-            : _estateNameController.length != 0
+            : _estateNameController.text.isNotEmpty
                 ? 'Estate/Complex'
                 : '';
     if (mounted) setState(() {});
@@ -163,7 +201,6 @@ class _CarVenueSettingsState extends State<CarVenueSettings>
         });
     });
   }
-
   //delete this address from db after it's contents are transferred to another document
 
   @override

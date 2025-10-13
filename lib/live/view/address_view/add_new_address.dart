@@ -9,7 +9,7 @@ import '../../../services/map_function.dart';
 import '../../../utils/app_constants.dart';
 import '../../../utils/dimensions.dart';
 import '../../widgets/icons/back_arrow.dart';
-import 'controller/address_dropdown_controller.dart';
+import 'controller/address_dropdown_controller.dart'; // Add this import
 
 class AddNewAddress extends StatefulWidget {
   final bool shouldReturnDarkStatus;
@@ -68,12 +68,14 @@ class _AddNewAddressState extends State<AddNewAddress> {
                           apiKey: AppConstants.PLACES_API,
                           canPopOnNextButtonTaped: true,
                           currentLatLng: const LatLng(-26.056, 28.060),
-                          onNext: (GeocodingResult? result) {
-                            if (result != null) {
-                              // setState(() {
-                              //   address = result.formattedAddress ?? "";
-                              // });
-                            }
+                          onNext: (dynamic result) {
+                            // Use dynamic for now
+                            print('Location selected: $result');
+                            // if (result != null) {
+                            //   setState(() {
+                            //     address = result.formattedAddress ?? "";
+                            //   });
+                            // }
                           },
                         ),
                       ),

@@ -3,7 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  smart_auth
+  rive_native
   url_launcher_linux
 )
 

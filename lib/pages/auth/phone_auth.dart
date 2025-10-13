@@ -148,55 +148,34 @@ class _PhoneAuthState extends State<PhoneAuth> {
                           length: 6,
                           controller: _pinPutController,
                           focusNode: _pinPutFocusNode,
-                          androidSmsAutofillMethod:
-                              AndroidSmsAutofillMethod.smsUserConsentApi,
-                          listenForMultipleSmsOnAndroid: true,
+                          // Remove the deprecated androidSmsAutofillMethod
+                          // androidSmsAutofillMethod:
+                          //     AndroidSmsAutofillMethod.smsUserConsentApi,
                           defaultPinTheme: defaultPinTheme,
                           onCompleted: (pin) {
                             otp = pin;
+                            _verifyOTP(pin); // Auto-verify on completion
                           },
-                          onSubmitted: (pin) async {
-                            try {
-                              await FirebaseAuth.instance
-                                  .signInWithCredential(
-                                      PhoneAuthProvider.credential(
-                                          verificationId: _verificationCode,
-                                          smsCode: pin))
-                                  .then((value) async {
-                                if (value.user != null) {
-                                  print('pass to home');
-                                  Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (BuildContext context) =>
-                                              HomePage()));
-                                }
-                              });
-                            } catch (e) {
-                              SnackBar(
-                                margin: EdgeInsets.only(
-                                    bottom: Dimensions.screenHeight / 20,
-                                    right: Dimensions.screenHeight / 50,
-                                    left: Dimensions.screenHeight / 50),
-                                elevation: 8,
-                                backgroundColor: Color(0xff9A9483),
-                                behavior: SnackBarBehavior.floating,
-                                content: const Text('Invalid otp'),
-                              );
+                          // Remove the deprecated onSubmitted for OTP
+                          // onSubmitted: (pin) async {
+                          //   await _verifyOTP(pin);
+                          // },
+                          // Use the new validator if needed
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter OTP';
+                            }
+                            return null;
+                          },
+                          // Use the new clipboard callback
+                          onClipboardFound: (value) {
+                            debugPrint('onClipboardFound: $value');
+                            // You can auto-fill if desired
+                            if (value.length == 6) {
+                              _pinPutController.text = value;
                             }
                           },
-                          //validator: (value) {
-                          // return value == '222222'
-                          //     ? null
-                          //     : 'Pin is incorrect';
-                          //},
-                          // onClipboardFound: (value) {
-                          //   debugPrint('onClipboardFound: $value');
-                          //   pinController.setText(value);
-                          // },
-
                           hapticFeedbackType: HapticFeedbackType.lightImpact,
-
                           cursor: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -233,10 +212,11 @@ class _PhoneAuthState extends State<PhoneAuth> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          OTPController().verifyOTP(otp);
-                          setState(() {
-                            isLoading = true;
-                          });
+                          if (_pinPutController.text.length == 6) {
+                            _verifyOTP(_pinPutController.text);
+                          } else {
+                            _showSnackBar('Please enter 6-digit OTP');
+                          }
                         },
                         child: isLoading
                             ? Padding(
@@ -256,7 +236,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                       ),
                                       borderRadius: BorderRadius.circular(
                                           Dimensions.radius15),
-                                      // color: const Color(0xff8d7053),
                                     ),
                                     child: Center(
                                       child: Transform.scale(
@@ -287,7 +266,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                                     ),
                                     borderRadius: BorderRadius.circular(
                                         Dimensions.radius15),
-                                    // color: const Color(0xff8d7053),
                                   ),
                                   child: Center(
                                     child: BigText(
@@ -303,10 +281,6 @@ class _PhoneAuthState extends State<PhoneAuth> {
                     ],
                   ),
                 ),
-                //
-                //
-                //
-                //
                 SizedBox(
                   height: Dimensions.screenHeight * 0.03,
                 ),
@@ -324,7 +298,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
                             TextSpan(
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () => Get.to(
-                                      () => const GetStarted(),
+                                      () => GetStarted(), // Remove const
                                       transition:
                                           Transition.leftToRightWithFade,
                                     ),
@@ -346,37 +320,92 @@ class _PhoneAuthState extends State<PhoneAuth> {
     );
   }
 
+  Future<void> _verifyOTP(String pin) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await FirebaseAuth.instance
+          .signInWithCredential(PhoneAuthProvider.credential(
+        verificationId: _verificationCode,
+        smsCode: pin,
+      ))
+          .then((value) async {
+        if (value.user != null) {
+          print('Authentication successful, passing to home');
+          setState(() {
+            isLoading = false;
+          });
+
+          // Use GetX navigation instead of Navigator for better state management
+          Get.offAll(() => HomePage(),
+              transition: Transition.fadeIn,
+              duration: Duration(milliseconds: 500));
+        }
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      _showSnackBar('Invalid OTP. Please try again.');
+      print('OTP verification error: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        margin: EdgeInsets.only(
+          bottom: Dimensions.screenHeight / 20,
+          right: Dimensions.screenHeight / 50,
+          left: Dimensions.screenHeight / 50,
+        ),
+        elevation: 8,
+        backgroundColor: Color(0xff9A9483),
+        behavior: SnackBarBehavior.floating,
+        content: Text(message),
+      ),
+    );
+  }
+
   _verifyPhone() async {
     await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+27${widget.phone!}',
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await FirebaseAuth.instance
-              .signInWithCredential(credential)
-              .then((value) async {
-            if (value.user != null) {
-              print(
-                  'Again user kwetin nantsi ${FirebaseAuth.instance.currentUser?.uid}');
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (BuildContext context) => HomePage()));
-            }
-          });
-        },
-        codeSent: (String verificationID, int? resendToken) {
-          setState(() {
-            _verificationCode = verificationID;
-          });
-        },
-        verificationFailed: (FirebaseAuthException error) {
-          print(error.message);
-        },
-        codeAutoRetrievalTimeout: (String verificationID) {
-          setState(() {
-            _verificationCode = verificationID;
-          });
-        },
-        timeout: Duration(seconds: 60));
+      phoneNumber: '+27${widget.phone!}',
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await FirebaseAuth.instance
+            .signInWithCredential(credential)
+            .then((value) async {
+          if (value.user != null) {
+            print(
+                'Auto-verification successful: ${FirebaseAuth.instance.currentUser?.uid}');
+            Get.offAll(() => HomePage(),
+                transition: Transition.fadeIn,
+                duration: Duration(milliseconds: 500));
+          }
+        });
+      },
+      codeSent: (String verificationID, int? resendToken) {
+        setState(() {
+          _verificationCode = verificationID;
+        });
+        print('Code sent: $verificationID');
+      },
+      verificationFailed: (FirebaseAuthException error) {
+        setState(() {
+          isLoading = false;
+        });
+        _showSnackBar('Verification failed: ${error.message}');
+        print('Verification failed: ${error.message}');
+      },
+      codeAutoRetrievalTimeout: (String verificationID) {
+        setState(() {
+          _verificationCode = verificationID;
+        });
+        print('Code auto-retrieval timeout: $verificationID');
+      },
+      timeout: Duration(seconds: 60),
+    );
   }
 
   @override

@@ -7,7 +7,6 @@ import 'package:izinto/live/view/home_view/sliver_home_page.dart';
 import 'package:izinto/live/view/home_view/view_widgets/main_scaffold.dart';
 import 'package:izinto/live/view/user_settings_view/user_settings_view.dart';
 import 'package:izinto/live/widgets/lock_screen.dart';
-import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/cart_controller.dart';
 import '../../../models/user.dart';

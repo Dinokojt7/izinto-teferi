@@ -32,6 +32,31 @@ class PhoneVerificationView extends StatelessWidget {
     //     .applyCustomSystemChromeSettings(Colors.white, Brightness.dark);
     return Consumer<PhoneAuthViewController>(
         builder: (context, controller, child) {
+      Future<void> _verifyOTP(String pin) async {
+        try {
+          await FirebaseAuth.instance
+              .signInWithCredential(PhoneAuthProvider.credential(
+            verificationId: controller.verificationCode,
+            smsCode: pin,
+          ))
+              .then((value) async {
+            if (value.user != null) {
+              print('pass to home');
+              // Use GetX navigation instead of Navigator
+              Get.offAll(() => HomeView());
+            }
+          });
+        } catch (e) {
+          // Show proper snackbar
+          Get.snackbar(
+            'Error',
+            'Invalid OTP',
+            backgroundColor: Color(0xff9A9483),
+            colorText: Colors.white,
+          );
+        }
+      }
+
       String otp = '';
       String _verificationCode = controller.verificationCode;
       String phoneNumber = controller.phoneNumberController.text;
@@ -113,42 +138,19 @@ class PhoneVerificationView extends StatelessWidget {
                   length: 6,
                   controller: _pinPutController,
                   focusNode: _pinPutFocusNode,
-                  androidSmsAutofillMethod:
-                      AndroidSmsAutofillMethod.smsUserConsentApi,
-                  listenForMultipleSmsOnAndroid: true,
+                  // Remove these deprecated lines:
+                  // androidSmsAutofillMethod: AndroidSmsAutofillMethod.smsUserConsentApi,
+                  // listenForMultipleSmsOnAndroid: true,
                   defaultPinTheme: defaultPinTheme,
                   onCompleted: (pin) {
                     otp = pin;
+                    // Add auto-verification here
+                    _verifyOTP(pin);
                   },
-                  onSubmitted: (pin) async {
-                    try {
-                      await FirebaseAuth.instance
-                          .signInWithCredential(PhoneAuthProvider.credential(
-                              verificationId: _verificationCode, smsCode: pin))
-                          .then((value) async {
-                        if (value.user != null) {
-                          print('pass to home');
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (BuildContext context) => HomeView(),
-                            ),
-                          );
-                        }
-                      });
-                    } catch (e) {
-                      SnackBar(
-                        margin: EdgeInsets.only(
-                            bottom: Dimensions.screenHeight / 20,
-                            right: Dimensions.screenHeight / 50,
-                            left: Dimensions.screenHeight / 50),
-                        elevation: 8,
-                        backgroundColor: Color(0xff9A9483),
-                        behavior: SnackBarBehavior.floating,
-                        content: const Text('Invalid otp'),
-                      );
-                    }
-                  },
+                  // Remove the deprecated onSubmitted for OTP
+                  // onSubmitted: (pin) async {
+                  //   await _verifyOTP(pin);
+                  // },
                   hapticFeedbackType: HapticFeedbackType.lightImpact,
                   cursor: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -157,21 +159,18 @@ class PhoneVerificationView extends StatelessWidget {
                         margin: const EdgeInsets.only(bottom: 9),
                         width: 22,
                         height: 1,
-                        //      color: focusedBorderColor,
                       ),
                     ],
                   ),
                   focusedPinTheme: defaultPinTheme.copyWith(
                     decoration: defaultPinTheme.decoration!.copyWith(
                       borderRadius: BorderRadius.circular(Dimensions.radius15),
-                      //  border: Border.all(color: focusedBorderColor!),
                     ),
                   ),
                   submittedPinTheme: defaultPinTheme.copyWith(
                     decoration: defaultPinTheme.decoration!.copyWith(
                       color: Colors.black12.withOpacity(0.03),
                       borderRadius: BorderRadius.circular(Dimensions.radius15),
-                      // border: Border.all(color: focusedBorderColor),
                     ),
                   ),
                   errorPinTheme: defaultPinTheme.copyBorderWith(
@@ -187,7 +186,16 @@ class PhoneVerificationView extends StatelessWidget {
                 description: 'Continue',
                 isAuthScreen: false,
                 onTap: () {
-                  OTPController().verifyOTP(otp);
+                  if (_pinPutController.text.length == 6) {
+                    _verifyOTP(_pinPutController.text);
+                  } else {
+                    Get.snackbar(
+                      'Error',
+                      'Please enter 6-digit OTP',
+                      backgroundColor: Color(0xff9A9483),
+                      colorText: Colors.white,
+                    );
+                  }
                 },
               ),
               SizedBox(

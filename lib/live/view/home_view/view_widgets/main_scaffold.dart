@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/inbox_view/inbox_view.dart';
-import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../models/user.dart';

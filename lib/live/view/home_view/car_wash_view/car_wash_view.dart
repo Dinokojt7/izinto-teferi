@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -34,6 +33,7 @@ import '../../../widgets/icons/back_arrow.dart';
 import '../../../widgets/text_widgets/heading_style_text.dart';
 import '../../../widgets/text_widgets/introduction_text.dart';
 import '../../address_view/controller/address_dropdown_controller.dart';
+import 'package:carousel_slider/carousel_slider.dart' as cs; // Add this prefix
 
 import '../../checkout_view/view_widgets/generic_white_container.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
@@ -76,8 +76,11 @@ class _CarWashViewState extends State<CarWashView> {
     super.dispose();
   }
 
-  CarouselController carouselController = CarouselController();
-  CarouselController washTypeController = CarouselController();
+  // CORRECT: Use CarouselSliderController (not CarouselController)
+  cs.CarouselSliderController carouselController =
+      cs.CarouselSliderController();
+  cs.CarouselSliderController washTypeController =
+      cs.CarouselSliderController();
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +203,7 @@ class _CarWashViewState extends State<CarWashView> {
                                     'assets/image/car-wash-background.png'),
                               ),
                             ),
-                            child: CarouselSlider(
+                            child: cs.CarouselSlider(
                                 carouselController: carouselController,
                                 items: carTypeList
                                     .map(
@@ -208,9 +211,8 @@ class _CarWashViewState extends State<CarWashView> {
                                           e.img, e.name, e.introduction),
                                     )
                                     .toList(),
-                                options: CarouselOptions(
+                                options: cs.CarouselOptions(
                                   viewportFraction: 0.8,
-                                  enlargeFactor: 3,
                                   enlargeCenterPage: true,
                                   onPageChanged: (index, reason) {
                                     _carWashController.selectVehicleType(index);
@@ -227,7 +229,6 @@ class _CarWashViewState extends State<CarWashView> {
                               child: Center(
                                 child: Container(
                                   height: Dimensions.height30,
-                                  // color: Colors.black.withOpacity(0.3),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -282,7 +283,7 @@ class _CarWashViewState extends State<CarWashView> {
                                 const EdgeInsets.symmetric(horizontal: 10.0),
                             child: Container(
                               height: Dimensions.height30,
-                              child: CarouselSlider(
+                              child: cs.CarouselSlider(
                                 carouselController: washTypeController,
                                 items: washTypes
                                     .map(
@@ -300,23 +301,17 @@ class _CarWashViewState extends State<CarWashView> {
                                       ),
                                     )
                                     .toList(),
-                                options: CarouselOptions(
+                                options: cs.CarouselOptions(
                                   scrollPhysics: FixedExtentScrollPhysics(),
                                   onPageChanged: (index, reason) {
                                     _carWashController.selectWashType(index);
                                   },
-                                  enlargeCenterPage:
-                                      false, // Enlarge the center page to make it more prominent
-                                  viewportFraction:
-                                      1.0, // This ensures only the center slide is fully visible
-                                  aspectRatio: 16 /
-                                      9, // Adjust the aspect ratio as needed
-                                  initialPage:
-                                      selectedWashTypeIndex, // Start with the selected page
-                                  enableInfiniteScroll:
-                                      true, // Disable infinite scrolling to restrict navigation
-                                  disableCenter:
-                                      false, // Ensures no items are displayed partially
+                                  enlargeCenterPage: false,
+                                  viewportFraction: 1.0,
+                                  aspectRatio: 16 / 9,
+                                  initialPage: selectedWashTypeIndex,
+                                  enableInfiniteScroll: true,
+                                  disableCenter: false,
                                 ),
                               ),
                             ),
@@ -325,14 +320,9 @@ class _CarWashViewState extends State<CarWashView> {
                         ToggleWashButton(
                           icon: Icons.arrow_right,
                           onTap: () {
-                            washTypeController.nextPage(
-                                // duration: Duration(seconds: 1),
-                                // curve: Curves.easeInToLinear
-                                );
+                            washTypeController.nextPage();
                           },
                         )
-                        // washTypeHeading(washTypes[selectedWashTypeIndex]['washType'],
-                        //     washTypes[selectedWashTypeIndex]['price']),
                       ],
                     ),
                     SizedBox(

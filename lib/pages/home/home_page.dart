@@ -10,7 +10,6 @@ import 'package:izinto/pages/notifications/inbox_view.dart';
 import 'package:izinto/pages/options/settings_view/main_settings_view.dart';
 import 'package:izinto/utils/colors.dart';
 import 'package:izinto/widgets/dialogs/subscription_dialogs/subscription_dialog.dart';
-import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/cart_controller.dart';
 import '../../live/widgets/text_widgets/heading_style_text.dart';
@@ -24,6 +23,7 @@ import '../cart/post_checkout/cart_history_items.dart';
 import '../options/profile_settings.dart';
 import 'main_components/view_cart_button.dart';
 import 'main_components/view_cart_item_count.dart';
+import "package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);

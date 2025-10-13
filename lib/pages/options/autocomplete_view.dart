@@ -1,9 +1,52 @@
-import "package:google_maps_webservice/places.dart";
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 import 'package:izinto/logger.dart';
-
 import '../../utils/app_constants.dart';
+
+// Custom classes to replace Prediction and Component
+class CustomPrediction {
+  final String? placeId;
+  final String? description;
+  final String? mainText;
+  final String? secondaryText;
+  final Map<String, dynamic>? structuredFormatting;
+
+  CustomPrediction({
+    this.placeId,
+    this.description,
+    this.mainText,
+    this.secondaryText,
+    this.structuredFormatting,
+  });
+
+  factory CustomPrediction.fromJson(Map<String, dynamic> json) {
+    return CustomPrediction(
+      placeId: json['place_id'],
+      description: json['description'],
+      mainText: json['structured_formatting']?['main_text'],
+      secondaryText: json['structured_formatting']?['secondary_text'],
+      structuredFormatting: json['structured_formatting'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'place_id': placeId,
+      'description': description,
+      'structured_formatting': structuredFormatting,
+    };
+  }
+}
+
+class CustomComponent {
+  final String component;
+  final String value;
+
+  CustomComponent(this.component, this.value);
+
+  String toString() => '$component:$value';
+}
 
 class AutoCompleteState {
   AutoCompleteState({
@@ -13,7 +56,7 @@ class AutoCompleteState {
   });
 
   /// httpClient is used to make network requests.
-  final Client? httpClient;
+  final http.Client? httpClient;
 
   /// apiHeader is used to add headers to the request.
   final Map<String, String>? apiHeaders;
@@ -22,97 +65,149 @@ class AutoCompleteState {
   final String? baseUrl;
 
   /// The current state of the autocomplete.
-  List<Prediction> predictions = [];
+  List<CustomPrediction> predictions = [];
 
   /// void future function to get the autocomplete results.
-  Future<List<Prediction>> search(
-    /// final String input,
+  Future<List<CustomPrediction>> search(
     String query,
-
-    /// API key for Google Places API
     String apiKey, {
     /// Session token for Google Places API
     String? sessionToken,
 
     /// Offset for pagination of results
-    /// offset: int,
     num? offset,
 
     /// Origin location for calculating distance from results
-    /// origin: Location(lat: -33.852, lng: 151.211),
-    Location? origin,
+    String? origin,
 
     /// Location bounds for restricting results to a radius around a location
-    /// location: Location(lat: -33.867, lng: 151.195)
-    Location? location,
+    String? location,
 
     /// Radius for restricting results to a radius around a location
     /// radius: Radius in meters
     num? radius,
 
     /// Language code for Places API results
-    /// language: 'en',
     String? language,
 
     /// Types for restricting results to a set of place types
     List<String> types = const [],
 
     /// Components set results to be restricted to a specific area
-    /// components: [Component(Component.country, "us")]
-    List<Component> components = const [],
+    List<CustomComponent> components = const [],
 
     /// Bounds for restricting results to a set of bounds
     bool strictbounds = false,
 
     /// Region for restricting results to a set of regions
-    /// region: "us"
     String? region,
   }) async {
     try {
-      final places = GoogleMapsPlaces(
-        apiKey: AppConstants.PLACES_API,
-        httpClient: httpClient,
-        apiHeaders: apiHeaders,
-        baseUrl: baseUrl,
-      );
-      final PlacesAutocompleteResponse response = await places.autocomplete(
-        query,
-        region: region,
-        language: language,
-        components: components,
-        location: location,
-        offset: offset,
-        origin: origin,
-        radius: radius,
-        sessionToken: sessionToken,
-        strictbounds: strictbounds,
-        types: types,
-      );
+      // Build the API URL
+      final baseUrl = this.baseUrl ?? 'https://maps.googleapis.com';
+      final endpoint = '$baseUrl/maps/api/place/autocomplete/json';
 
-      /// When get any error from the API, show the error in the console.
-      if (response.hasNoResults ||
-          response.isDenied ||
-          response.isInvalid ||
-          response.isNotFound ||
-          response.unknownError ||
-          response.isOverQueryLimit) {
-        if (query.isNotEmpty) {
-          logger.e(response.errorMessage);
+      // Build query parameters
+      final params = <String, String>{
+        'input': query,
+        'key': apiKey,
+      };
+
+      // Add optional parameters
+      if (sessionToken != null) params['sessiontoken'] = sessionToken;
+      if (offset != null) params['offset'] = offset.toString();
+      if (origin != null) params['origin'] = origin;
+      if (location != null) params['location'] = location;
+      if (radius != null) params['radius'] = radius.toString();
+      if (language != null) params['language'] = language;
+      if (types.isNotEmpty) params['types'] = types.join('|');
+      if (components.isNotEmpty) {
+        params['components'] = components.map((c) => c.toString()).join('|');
+      }
+      if (region != null) params['region'] = region;
+      if (strictbounds) params['strictbounds'] = 'true';
+
+      final uri = Uri.parse(endpoint).replace(queryParameters: params);
+
+      // Make the HTTP request
+      final client = httpClient ?? http.Client();
+      final response = await client.get(uri, headers: apiHeaders);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Handle API errors
+        final status = data['status'];
+        if (status != 'OK' && status != 'ZERO_RESULTS') {
+          logger.e('Places API error: ${data['error_message'] ?? status}');
+          return [];
         }
+
+        // Parse predictions
+        if (data['predictions'] != null) {
+          final predictionsList = data['predictions'] as List;
+          predictions =
+              predictionsList.map((p) => CustomPrediction.fromJson(p)).toList();
+        } else {
+          predictions = [];
+        }
+
+        logger.d(predictions.map((e) => e.toJson()).toList());
+        return predictions;
+      } else {
+        logger.e('HTTP error: ${response.statusCode}');
         return [];
       }
-
-      /// Update the results with the new results.
-      predictions = response.predictions;
-
-      logger.d(predictions.map((e) => e.toJson()).toList());
-
-      /// Return the results.
-      return predictions;
     } catch (err) {
       /// Log the error
-      logger.e(err);
+      logger.e('Autocomplete search error: $err');
       return [];
+    }
+  }
+
+  /// Additional method to get place details
+  Future<Map<String, dynamic>?> getPlaceDetails(
+    String placeId,
+    String apiKey, {
+    String? sessionToken,
+    String? language,
+    List<String> fields = const [],
+  }) async {
+    try {
+      final baseUrl = this.baseUrl ?? 'https://maps.googleapis.com';
+      final endpoint = '$baseUrl/maps/api/place/details/json';
+
+      final params = <String, String>{
+        'place_id': placeId,
+        'key': apiKey,
+      };
+
+      if (sessionToken != null) params['sessiontoken'] = sessionToken;
+      if (language != null) params['language'] = language;
+      if (fields.isNotEmpty) params['fields'] = fields.join(',');
+
+      final uri = Uri.parse(endpoint).replace(queryParameters: params);
+
+      final client = httpClient ?? http.Client();
+      final response = await client.get(uri, headers: apiHeaders);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'OK') {
+          return data['result'];
+        } else {
+          logger.e(
+              'Place details error: ${data['error_message'] ?? data['status']}');
+          return null;
+        }
+      } else {
+        logger.e('HTTP error: ${response.statusCode}');
+        return null;
+      }
+    } catch (err) {
+      logger.e('Place details error: $err');
+      return null;
     }
   }
 }

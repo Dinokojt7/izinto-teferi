@@ -145,56 +145,78 @@ class FirebaseAuthMethods {
       showSnackBar(context, e.message!);
     }
   }
+  // GOOGLE SIGN IN - Updated approach
 
-  // GOOGLE SIGN IN
+//
+//  GOOGLE SIGN IN - Updated using official example pattern
   Future<dynamic> signInWithGoogle(BuildContext context) async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      //FirebaseUser user= result.user;
+      // Use the singleton instance as shown in the example
+      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
 
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-      if (googleAuth?.accessToken != null && googleAuth?.idToken != null) {
-        //Create a new credential
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth?.accessToken,
-          idToken: googleAuth?.idToken,
-        );
-        UserCredential userCredential =
-            await _auth.signInWithCredential(credential);
+      // Initialize if needed (optional in most cases)
+      // await googleSignIn.initialize();
 
-        if (userCredential.user != null) {
-          if (userCredential.additionalUserInfo!.isNewUser) {
-            User? user = userCredential.user;
-            String? combinedName = user?.displayName;
+      // Authenticate using the new pattern
+      final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
 
-            // /split the combined name to separate parts
-            List<String> nameParts = combinedName!.split(" "); // Split by space
-            String firstName = nameParts[0];
-            String lastName = nameParts[1];
+      if (googleUser == null) {
+        // User canceled the sign-in
+        return null;
+      }
 
-            final _uniquePromoCode =
-                firstName[0] + lastName[0] + generateRandomNumber();
-            // create a new document for the user with the uid
-            await DatabaseService(uid: user?.uid).updateUserData(
-                firstName,
-                lastName,
-                user?.phoneNumber,
-                user?.email,
-                'Subscribe',
-                0.0,
-                _uniquePromoCode);
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (BuildContext context) => ProfileView()));
-            return _userFromFirebaseUser(user);
-          }
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Create Firebase credential
+      final credential = GoogleAuthProvider.credential(
+        // accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with Google credentials
+      UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        User? user = userCredential.user;
+
+        // Handle user data
+        String? combinedName = user?.displayName;
+        List<String> nameParts = combinedName?.split(" ") ?? ["User"];
+        String firstName = nameParts[0];
+        String lastName = nameParts.length > 1 ? nameParts[1] : "";
+
+        final _uniquePromoCode = firstName[0] +
+            (lastName.isNotEmpty ? lastName[0] : "U") +
+            generateRandomNumber();
+
+        // Check if new user
+        if (userCredential.additionalUserInfo!.isNewUser) {
+          // Create a new document for the user with the uid
+          await DatabaseService(uid: user?.uid).updateUserData(
+              firstName,
+              lastName,
+              user?.phoneNumber ?? "",
+              user?.email ?? "",
+              'Subscribe',
+              0.0,
+              _uniquePromoCode);
+          Get.offAll(() => ProfileView());
+        } else {
+          Get.offAll(() => HomePage());
         }
+        return _userFromFirebaseUser(user);
       }
     } on FirebaseAuthException catch (e) {
-      showSnackBar(context, e.message!);
+      showSnackBar(context, 'Firebase Auth Error: ${e.message}');
+    } on GoogleSignInException catch (e) {
+      showSnackBar(context, e.toString());
+    } catch (e) {
+      showSnackBar(context, 'Google Sign-In failed: $e');
     }
+    return null;
   }
 
   // PHONE SIGN IN

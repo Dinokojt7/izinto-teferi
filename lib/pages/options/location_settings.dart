@@ -16,6 +16,60 @@ import '../../widgets/miscellaneous/place_not_supported.dart';
 import '../../widgets/texts/small_text.dart';
 import '../../live/view/address_view/view_widgets/map_location_picker.dart';
 
+// Custom classes to replace google_maps_webservice types
+class CustomPrediction {
+  final String? placeId;
+  final String? description;
+  final String? mainText;
+  final String? secondaryText;
+
+  CustomPrediction({
+    this.placeId,
+    this.description,
+    this.mainText,
+    this.secondaryText,
+  });
+
+  factory CustomPrediction.fromJson(Map<String, dynamic> json) {
+    return CustomPrediction(
+      placeId: json['place_id'],
+      description: json['description'],
+      mainText: json['structured_formatting']?['main_text'],
+      secondaryText: json['structured_formatting']?['secondary_text'],
+    );
+  }
+}
+
+class CustomPlacesDetails {
+  final String? formattedAddress;
+  final double? lat;
+  final double? lng;
+
+  CustomPlacesDetails({
+    this.formattedAddress,
+    this.lat,
+    this.lng,
+  });
+
+  factory CustomPlacesDetails.fromJson(Map<String, dynamic> json) {
+    final geometry = json['geometry']?['location'];
+    return CustomPlacesDetails(
+      formattedAddress: json['formatted_address'],
+      lat: geometry?['lat'],
+      lng: geometry?['lng'],
+    );
+  }
+}
+
+class CustomComponent {
+  final String component;
+  final String value;
+
+  CustomComponent(this.component, this.value);
+
+  String toString() => '$component:$value';
+}
+
 class AddressSettings extends StatefulWidget {
   const AddressSettings({Key? key}) : super(key: key);
 
@@ -27,7 +81,7 @@ class _AddressSettingsState extends State<AddressSettings> {
   //Autocomplete variables
   String address = '';
   String autocompletePlace = '';
-  Prediction? initialValue;
+  CustomPrediction? initialValue;
 
   final _controller = TextEditingController();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -167,6 +221,73 @@ class _AddressSettingsState extends State<AddressSettings> {
     });
   }
 
+  // Custom search method to replace PlacesAutocomplete
+  Future<void> _performSearch(String query) async {
+    if (query.isEmpty) return;
+
+    try {
+      // Use geocoding package for local search
+      List<Location> locations = await locationFromAddress(query);
+      if (locations.isNotEmpty) {
+        // Get place details from coordinates
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          locations.first.latitude,
+          locations.first.longitude,
+        );
+
+        if (placemarks.isNotEmpty) {
+          Placemark placemark = placemarks.first;
+          setState(() {
+            autocompletePlace = _formatAddressFromPlacemark(placemark);
+            var output = autocompletePlace.split(',');
+            searchResults = output;
+            print(output);
+          });
+
+          // Check if location is supported
+          if (searchResults.length > 1 &&
+              (searchResults[1]?.toLowerCase().contains('midrand') == true)) {
+            print('this approach is not working');
+            Get.to(() => const PlaceNotSupported(),
+                transition: Transition.fade, duration: Duration(seconds: 1));
+          } else {
+            _getAddressFromSearch();
+            Get.to(() => const CarVenueSettings(),
+                transition: Transition.fade, duration: Duration(seconds: 1));
+          }
+        }
+      }
+    } catch (e) {
+      print("Search error: $e");
+    }
+  }
+
+  String _formatAddressFromPlacemark(Placemark placemark) {
+    List<String> addressParts = [];
+
+    if (placemark.street != null && placemark.street!.isNotEmpty) {
+      addressParts.add(placemark.street!);
+    }
+    if (placemark.subLocality != null && placemark.subLocality!.isNotEmpty) {
+      addressParts.add(placemark.subLocality!);
+    }
+    if (placemark.locality != null && placemark.locality!.isNotEmpty) {
+      addressParts.add(placemark.locality!);
+    }
+    if (placemark.administrativeArea != null &&
+        placemark.administrativeArea!.isNotEmpty) {
+      addressParts.add(placemark.administrativeArea!);
+    }
+    if (placemark.postalCode != null && placemark.postalCode!.isNotEmpty) {
+      addressParts.add(placemark.postalCode!);
+    }
+    if (placemark.country != null && placemark.country!.isNotEmpty) {
+      addressParts.add(placemark.country!);
+    }
+
+    return addressParts.join(', ');
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Object>(
@@ -212,45 +333,7 @@ class _AddressSettingsState extends State<AddressSettings> {
                   children: [
                     Container(
                       height: 72,
-                      child: PlacesAutocomplete(
-                        hideOnEmpty: false,
-                        searchController: _controller,
-                        apiKey: AppConstants.PLACES_API,
-                        components: [Component(Component.country, "za")],
-                        mounted: mounted,
-                        showBackButton: false,
-                        onGetDetailsByPlaceId: (PlacesDetailsResponse? result) {
-                          if (result != null) {
-                            setState(() {
-                              autocompletePlace =
-                                  result.result.formattedAddress ?? "";
-                              var output = autocompletePlace.split(',');
-                              searchResults = output;
-                              print(output);
-                            });
-                            if (searchResults[1] == 'Midrand' ||
-                                searchResults[1] == 'midrand') {
-                              print('this approach is not working');
-                              Get.to(() => const PlaceNotSupported(),
-                                  transition: Transition.fade,
-                                  duration: Duration(seconds: 1));
-                            } else {
-                              _getAddressFromSearch();
-                              Get.to(() => const CarVenueSettings(),
-                                  transition: Transition.fade,
-                                  duration: Duration(seconds: 1));
-
-                              setState(() {
-                                autocompletePlace =
-                                    result.result.formattedAddress ?? "";
-                                var output = autocompletePlace.split(',');
-                                searchResults = output;
-                                print(output);
-                              });
-                            }
-                          }
-                        },
-                      ),
+                      child: _buildCustomSearchField(),
                     ),
                     Spacer(),
                     Padding(
@@ -462,30 +545,29 @@ class _AddressSettingsState extends State<AddressSettings> {
                             builder: (context) {
                               return MapLocationPicker(
                                 apiKey: AppConstants.PLACES_API,
-                                components: [
-                                  Component(Component.country, "za")
-                                ],
                                 canPopOnNextButtonTaped: true,
                                 currentLatLng: LatLng(lat, long),
-                                onNext: (GeocodingResult? result) {
+                                onNext: (dynamic result) {
                                   if (result != null) {
                                     setState(() {
                                       _getAddressFromSearch();
-                                      address = result.formattedAddress ?? "";
-                                      var output = autocompletePlace.split(',');
-                                      searchResults = output;
+                                      if (result is CustomGeocodingResult) {
+                                        address = result.formattedAddress ?? "";
+                                      }
                                     });
                                   }
                                 },
-                                onSuggestionSelected:
-                                    (PlacesDetailsResponse? result) {
+                                onSuggestionSelected: (dynamic result) {
                                   if (result != null) {
                                     setState(() {
                                       _getAddressFromSearch();
-                                      autocompletePlace =
-                                          result.result.formattedAddress ?? "";
-                                      var output = autocompletePlace.split(',');
-                                      searchResults = output;
+                                      if (result is CustomPlacesDetails) {
+                                        autocompletePlace =
+                                            result.formattedAddress ?? "";
+                                        var output =
+                                            autocompletePlace.split(',');
+                                        searchResults = output;
+                                      }
                                     });
                                   }
                                 },
@@ -512,8 +594,36 @@ class _AddressSettingsState extends State<AddressSettings> {
       },
     );
   }
+
+  Widget _buildCustomSearchField() {
+    return Container(
+      margin: EdgeInsets.all(16.0),
+      child: TextField(
+        controller: _controller,
+        decoration: InputDecoration(
+          hintText: 'Search for an address...',
+          prefixIcon: Icon(Icons.search),
+          border: OutlineInputBorder(),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.clear),
+            onPressed: () {
+              _controller.clear();
+              setState(() {
+                autocompletePlace = '';
+                searchResults = [];
+              });
+            },
+          ),
+        ),
+        onSubmitted: (value) {
+          _performSearch(value);
+        },
+      ),
+    );
+  }
 }
 
+// CurrentLocation and AddressDisplay classes remain the same as in your original code
 class CurrentLocation extends StatelessWidget {
   const CurrentLocation({
     super.key,
@@ -767,7 +877,7 @@ class AddressDisplay extends StatelessWidget {
                           width: Dimensions.width10 / 2,
                         ),
                         IntegerText(
-                          text: _country!,
+                          text: _country,
                           color: AppColors.titleColor,
                           height: 1.5,
                           size: Dimensions.font16 / 1.1,

@@ -8,14 +8,19 @@ import '../utils/dimensions.dart';
 class NetworkController extends GetxController {
   final Connectivity _connectivity = Connectivity();
   final String imgPath = 'assets/image/nodatapage.png';
+
   @override
   void onInit() {
     super.onInit();
     _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
   }
 
-  void _updateConnectionStatus(ConnectivityResult connectivityResult) {
-    if (connectivityResult == ConnectivityResult.none) {
+  void _updateConnectionStatus(List<ConnectivityResult> connectivityResults) {
+    // Check if any of the connectivity results indicate no connection
+    final hasConnection =
+        connectivityResults.any((result) => result != ConnectivityResult.none);
+
+    if (!hasConnection) {
       Get.rawSnackbar(
           messageText: Container(
             height: Dimensions.height30 * 1.8,

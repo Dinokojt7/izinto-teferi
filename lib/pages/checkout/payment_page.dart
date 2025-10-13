@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -55,8 +54,6 @@ class _PaymentPageState extends State<PaymentPage> {
   dynamic hintArea = 'Leave a note for pickup';
   bool _canRedirect = true;
   bool _isLoading = false;
-  //final Completer<WebViewController> _controller = Completer<WebViewController>;
-  //late WebViewController controllerGlobal;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   CollectionReference _referenceUserInfo =
       FirebaseFirestore.instance.collection('addresses');
@@ -94,9 +91,6 @@ class _PaymentPageState extends State<PaymentPage> {
   String _venueType = '';
   double? rewardsBalance = 0.0;
   bool isMissingPayment = false;
-
-  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
 
   final List<dynamic> paymentMethodList = [
     {"paymentType": "yoco"},
@@ -136,14 +130,58 @@ class _PaymentPageState extends State<PaymentPage> {
     String formattedDeliveryDate =
         DateFormat('dd MMM hh:mm a').format(deliveryDate);
     updateEta(formattedDeliveryDate);
-    FlutterLocalNotificationsPlugin();
+
+    // Setup Firebase Messaging listeners
+    _setupFirebaseMessaging();
   }
 
   @override
   void dispose() {
     instructionsController.dispose();
-    initInfo();
     super.dispose();
+  }
+
+  void _setupFirebaseMessaging() {
+    // Handle foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("................onMessage....................");
+      print(
+          "onMessage: ${message.notification?.title}/${message.notification?.body}}");
+
+      // Show custom notification using GetX snackbar
+      if (message.notification != null) {
+        Get.snackbar(
+          message.notification?.title ?? 'Notification',
+          message.notification?.body ?? '',
+          backgroundColor: Colors.white,
+          colorText: Colors.black,
+          duration: Duration(seconds: 5),
+        );
+      }
+    });
+
+    // Handle when app is opened from terminated state
+    FirebaseMessaging.instance
+        .getInitialMessage()
+        .then((RemoteMessage? message) {
+      if (message != null) {
+        print(
+            'App opened from terminated state with message: ${message.messageId}');
+        _handleNotificationNavigation();
+      }
+    });
+
+    // Handle when app is opened from background state
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('App opened from background with message: ${message.messageId}');
+      _handleNotificationNavigation();
+    });
+  }
+
+  void _handleNotificationNavigation() {
+    // Navigate to cart history when notification is tapped
+    Get.to(() => CartHistoryItems(),
+        transition: Transition.fade, duration: Duration(seconds: 1));
   }
 
   void requestPermission() async {
@@ -156,7 +194,7 @@ class _PaymentPageState extends State<PaymentPage> {
       carPlay: false,
       criticalAlert: false,
       provisional: false,
-      sound: false,
+      sound: true,
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
@@ -167,45 +205,6 @@ class _PaymentPageState extends State<PaymentPage> {
     } else {
       print('user declined or has not accepted permission');
     }
-  }
-
-  void onDidReceiveLocalNotification(
-      int id, String? title, String? body, String? payload) async {
-    // display a dialog with the notification details, tap ok to go to another page
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => CupertinoAlertDialog(
-        title: Text(title!),
-        content: Text(body!),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: Text('Ok'),
-            onPressed: () async {
-              Navigator.of(context, rootNavigator: true).pop();
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CartHistoryItems(),
-                ),
-              );
-            },
-          )
-        ],
-      ),
-    );
-  }
-
-  void onDidReceiveNotificationResponse(
-      NotificationResponse notificationResponse) async {
-    final String? payload = notificationResponse.payload;
-    if (notificationResponse.payload != null) {
-      debugPrint('notification payload: $payload');
-    }
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (context) => CartHistoryItems()),
-    );
   }
 
   void getToken() async {
@@ -226,55 +225,6 @@ class _PaymentPageState extends State<PaymentPage> {
         .doc('current active')
         .set({
       'token': deviceToken,
-    });
-  }
-
-  initInfo() {
-    var androidInitialize =
-        const AndroidInitializationSettings('@mipmap/ic_launcher');
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
-            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: androidInitialize, iOS: initializationSettingsDarwin);
-    flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-
-      //         (String? payload) async {
-      //   try {
-      //     if (payload != null && payload.isNotEmpty) {
-      //     } else {}
-      //   } catch (e) {}
-      //   return;
-      // }
-    );
-
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      print("................onMessage....................");
-      print(
-          "onMessage: ${message.notification?.title}/${message.notification?.body}}");
-
-      BigTextStyleInformation bigTextStyleInformation = BigTextStyleInformation(
-          message.notification!.body.toString(),
-          htmlFormatBigText: true,
-          contentTitle: message.notification!.title.toString(),
-          htmlFormatContentTitle: true);
-      AndroidNotificationDetails androidPlatformSpecifics =
-          AndroidNotificationDetails(
-        'Izinto',
-        'Izinto',
-        importance: Importance.high,
-        styleInformation: bigTextStyleInformation,
-        priority: Priority.high,
-        playSound: false,
-      );
-      NotificationDetails platformChannelSpecifics = NotificationDetails(
-          android: androidPlatformSpecifics, iOS: DarwinNotificationDetails());
-      await flutterLocalNotificationsPlugin.show(0, message.notification?.title,
-          message.notification?.body, platformChannelSpecifics,
-          payload: message.data['body']);
     });
   }
 
@@ -309,8 +259,6 @@ class _PaymentPageState extends State<PaymentPage> {
                 }),
           ),
         );
-        // sendInstructions = Colors.red;
-        // notSent = 'not sent press x to cancel';
       });
       Future.delayed(const Duration(seconds: 5), () {
         setState(() {
@@ -330,8 +278,6 @@ class _PaymentPageState extends State<PaymentPage> {
             content: const Text('Please select a payment method'),
           ),
         );
-
-        //selectPayment = Colors.redAccent;
       });
     } else {
       Future.delayed(const Duration(seconds: 2), () async {
@@ -365,7 +311,7 @@ class _PaymentPageState extends State<PaymentPage> {
               'body':
                   'We are coming \u{1F6B2} \u{1F4AA} \u{1F4AA} Order received, running a few checks and getting prepped up to deploy our A-Team.',
               'title': 'Hooorray!',
-              'android_channel_id': 'izinto'
+              'android_channel_id': 'high_importance_channel'
             },
             'to': deviceToken,
           },
@@ -867,7 +813,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                                         Padding(
                                                           padding:
                                                               const EdgeInsets
-                                                                      .only(
+                                                                  .only(
                                                                   left: 3.0),
                                                           child: SmallText(
                                                             text: _venueType,
@@ -883,7 +829,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                                         Padding(
                                                           padding:
                                                               const EdgeInsets
-                                                                      .only(
+                                                                  .only(
                                                                   left: 3.0),
                                                           child: Wrap(
                                                             children: [
@@ -1287,8 +1233,6 @@ class _PaymentPageState extends State<PaymentPage> {
                                                               'Minimum balance to use rewards should be 100 ZAR'),
                                                         ),
                                                       );
-
-                                                      //selectPayment = Colors.redAccent;
                                                     });
                                                   }
                                                 },

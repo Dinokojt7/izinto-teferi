@@ -38,7 +38,8 @@ class _CarSpecialtyDetailState extends State<CarSpecialtyDetail>
     with TickerProviderStateMixin {
   late String selectedUrl;
   String autocompletePlace = '';
-  Prediction? initialValue;
+  // Prediction? initialValue;
+
   final _controller = TextEditingController();
   double value = 0.0;
   var instructionsController = TextEditingController();

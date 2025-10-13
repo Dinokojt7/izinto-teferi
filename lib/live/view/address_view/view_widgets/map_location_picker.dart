@@ -10,8 +10,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
-import "package:google_maps_webservice/geocoding.dart";
-import 'package:google_maps_webservice/places.dart';
+import 'package:geocoding/geocoding.dart'; // Updated import
 import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/generic_white_container.dart';
 import 'package:izinto/live/widgets/buttons/blue_text_button.dart';
@@ -29,6 +28,21 @@ import '../../../../utils/dimensions.dart';
 import '../../../../widgets/location/address_details_view.dart';
 import '../../../../pages/options/autocomplete_view.dart';
 
+// Custom result class to replace GeocodingResult
+class CustomGeocodingResult {
+  final String? formattedAddress;
+  final double? latitude;
+  final double? longitude;
+  final Placemark? placemark;
+
+  CustomGeocodingResult({
+    this.formattedAddress,
+    this.latitude,
+    this.longitude,
+    this.placemark,
+  });
+}
+
 class MapLocationPicker extends StatefulWidget {
   /// Padding around the map
   final EdgeInsets padding;
@@ -44,21 +58,6 @@ class MapLocationPicker extends StatefulWidget {
 
   /// GPS accuracy for the map
   final LocationAccuracy desiredAccuracy;
-
-  /// GeoCoding base url
-  final String? geoCodingBaseUrl;
-
-  /// GeoCoding http client
-  final Client? geoCodingHttpClient;
-
-  /// GeoCoding api headers
-  final Map<String, String>? geoCodingApiHeaders;
-
-  /// GeoCoding location type
-  final List<String> locationType;
-
-  /// GeoCoding result type
-  final List<String> resultType;
 
   /// Map minimum zoom level & maximum zoom level
   final MinMaxZoomPreference minMaxZoomPreference;
@@ -94,10 +93,10 @@ class MapLocationPicker extends StatefulWidget {
   final Color? bottomCardColor;
 
   /// On Suggestion Selected callback
-  final Function(PlacesDetailsResponse?)? onSuggestionSelected;
+  final Function(dynamic)? onSuggestionSelected; // Updated type
 
   /// On Next Page callback
-  final Function(GeocodingResult?) onNext;
+  final Function(CustomGeocodingResult?) onNext; // Updated type
 
   /// Show back button (default: true)
   final bool showBackButton;
@@ -114,58 +113,11 @@ class MapLocationPicker extends StatefulWidget {
   /// Dialog title
   final String dialogTitle;
 
-  /// httpClient is used to make network requests.
-  final Client? placesHttpClient;
-
-  /// apiHeader is used to add headers to the request.
-  final Map<String, String>? placesApiHeaders;
-
-  /// baseUrl is used to build the url for the request.
-  final String? placesBaseUrl;
-
-  /// Session token for Google Places API
-  final String? sessionToken;
-
-  /// Offset for pagination of results
-  /// offset: int,
-  final num? offset;
-
-  /// Origin location for calculating distance from results
-  /// origin: Location(lat: -33.852, lng: 151.211),
-  final Location? origin;
-
   /// currentLatLng init location for camera position
-  /// currentLatLng: Location(lat: -33.852, lng: 151.211),
   final LatLng? currentLatLng;
 
-  /// Location bounds for restricting results to a radius around a location
-  /// location: Location(lat: -33.867, lng: 151.195)
-  final Location? location;
-
-  /// Radius for restricting results to a radius around a location
-  /// radius: Radius in meters
-  final num? radius;
-
   /// Language code for Places API results
-  /// language: 'en',
   final String? language;
-
-  /// Types for restricting results to a set of place types
-  final List<String> types;
-
-  /// Components set results to be restricted to a specific area
-  /// components: [Component(Component.country, "us")]
-  final List<Component> components;
-
-  /// Bounds for restricting results to a set of bounds
-  final bool strictbounds;
-
-  /// Region for restricting results to a set of regions
-  /// region: "us"
-  final String? region;
-
-  /// fields
-  final List<String> fields;
 
   /// Hide Suggestions on keyboard hide
   final bool hideSuggestionsOnKeyboardHide;
@@ -183,12 +135,7 @@ class MapLocationPicker extends StatefulWidget {
     Key? key,
     this.desiredAccuracy = LocationAccuracy.high,
     required this.apiKey,
-    this.geoCodingBaseUrl,
-    this.geoCodingHttpClient,
-    this.geoCodingApiHeaders,
     this.language,
-    this.locationType = const [],
-    this.resultType = const [],
     this.minMaxZoomPreference = const MinMaxZoomPreference(10, 20),
     this.padding = const EdgeInsets.all(0),
     this.compassEnabled = true,
@@ -215,19 +162,6 @@ class MapLocationPicker extends StatefulWidget {
     this.backButton,
     this.showMoreOptions = true,
     this.dialogTitle = 'You can also use the following options',
-    this.placesHttpClient,
-    this.placesApiHeaders,
-    this.placesBaseUrl,
-    this.sessionToken,
-    this.offset,
-    this.origin,
-    this.location,
-    this.radius,
-    this.region,
-    this.fields = const [],
-    this.types = const [],
-    this.components = const [],
-    this.strictbounds = false,
     this.hideSuggestionsOnKeyboardHide = false,
     this.mapType = MapType.normal,
     this.searchController,
@@ -261,19 +195,6 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     return BitmapDescriptor.fromBytes(pngBytes);
   }
 
-  // Add marker to Google Map
-  Future<void> addEmojiMarker(
-      GoogleMapController mapController, LatLng position, String emoji) async {
-    final emojiMarker = await createEmojiMarker(emoji);
-
-    // mapController.addMarkers(
-    //   Marker(
-    //       markerId: MarkerId('emojiMarker'),
-    //       position: position,
-    //       icon: emojiMarker),
-    // );
-  }
-
   String autocompletePlace = '';
   var _searchResults = [];
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -297,10 +218,10 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   late double _zoom = 19.0;
 
   /// GeoCoding result for further use
-  GeocodingResult? _geocodingResult;
+  CustomGeocodingResult? _geocodingResult;
 
   /// GeoCoding results list for further use
-  late List<GeocodingResult> _geocodingResultList = [];
+  late List<CustomGeocodingResult> _geocodingResultList = [];
 
   /// Camera position moved to location
   CameraPosition cameraPosition() {
@@ -313,52 +234,81 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   /// Search text field controller
   late TextEditingController _searchController = TextEditingController();
 
-  /// Decode address from latitude & longitude
-  void _decodeAddress(Location location, BuildContext context) async {
+  /// Decode address from latitude & longitude using geocoding package
+  void _decodeAddress(LatLng position, BuildContext context) async {
     final _addressViewController =
         Provider.of<MainAddressViewController>(context, listen: false);
     try {
-      final geocoding = GoogleMapsGeocoding(
-        apiKey: widget.apiKey,
-        baseUrl: widget.geoCodingBaseUrl,
-        apiHeaders: widget.geoCodingApiHeaders,
-        httpClient: widget.geoCodingHttpClient,
-      );
-      final response = await geocoding.searchByLocation(
-        location,
-        language: widget.language,
-        locationType: widget.locationType,
-        resultType: widget.resultType,
+      // Use the geocoding package for reverse geocoding
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
       );
 
-      /// When get any error from the API, show the error in the console.
-      if (response.hasNoResults ||
-          response.isDenied ||
-          response.isInvalid ||
-          response.isNotFound ||
-          response.unknownError ||
-          response.isOverQueryLimit) {
-        logger.e(response.errorMessage);
-        _address = response.status;
+      if (placemarks.isEmpty) {
+        _address = "Address not found";
         if (mounted) {
           GenericSnackBar().showCustomSnackBar(
               null, context, 'Address not found, something went wrong!', true);
         }
         return;
       }
-      _address = response.results.first.formattedAddress ?? "";
-      _geocodingResult = response.results.first;
+
+      Placemark placemark = placemarks.first;
+
+      // Format address from placemark
+      String formattedAddress = _formatAddressFromPlacemark(placemark);
+
+      _address = formattedAddress;
+
+      // Create custom result
+      _geocodingResult = CustomGeocodingResult(
+        formattedAddress: formattedAddress,
+        latitude: position.latitude,
+        longitude: position.longitude,
+        placemark: placemark,
+      );
 
       ///Assign user current location to the controller
       _addressViewController.onAddressAutocomplete(
-          _address, location.lat, location.lng);
-      if (response.results.length > 1) {
-        _geocodingResultList = response.results;
-      }
+          _address, position.latitude, position.longitude);
+
       setState(() {});
     } catch (e) {
-      logger.e(e);
+      logger.e('Geocoding error: $e');
+      _address = "Error getting address";
+      if (mounted) {
+        GenericSnackBar().showCustomSnackBar(
+            null, context, 'Failed to get address: $e', true);
+      }
     }
+  }
+
+  /// Format address from Placemark
+  String _formatAddressFromPlacemark(Placemark placemark) {
+    List<String> addressParts = [];
+
+    if (placemark.street != null && placemark.street!.isNotEmpty) {
+      addressParts.add(placemark.street!);
+    }
+    if (placemark.subLocality != null && placemark.subLocality!.isNotEmpty) {
+      addressParts.add(placemark.subLocality!);
+    }
+    if (placemark.locality != null && placemark.locality!.isNotEmpty) {
+      addressParts.add(placemark.locality!);
+    }
+    if (placemark.administrativeArea != null &&
+        placemark.administrativeArea!.isNotEmpty) {
+      addressParts.add(placemark.administrativeArea!);
+    }
+    if (placemark.postalCode != null && placemark.postalCode!.isNotEmpty) {
+      addressParts.add(placemark.postalCode!);
+    }
+    if (placemark.country != null && placemark.country!.isNotEmpty) {
+      addressParts.add(placemark.country!);
+    }
+
+    return addressParts.join(', ');
   }
 
   @override
@@ -380,11 +330,10 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             )
             .toList() ??
         [];
-    final emojiMarker = createEmojiMarker('\u{1F4CD}');
     final markers = Set<Marker>.from(additionalMarkers);
 
     markers.add(Marker(
-      markerId: const MarkerId("two"),
+      markerId: const MarkerId("current_location"),
       position: _initialPosition,
     ));
 
@@ -396,59 +345,11 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
         body: Column(
           children: [
             Container(
-              height: 72.0,
-              color: Colors.white,
-              child: PlacesAutocomplete(
-                hideOnEmpty: false,
-                hideOnLoading: false,
-                components: [Component(Component.country, "za")],
-                mounted: mounted,
-                apiKey: widget.apiKey,
-                searchController: _searchController,
-                borderRadius: widget.borderRadius,
-                offset: widget.offset,
-                radius: widget.radius,
-                fields: widget.fields,
-                hideSuggestionsOnKeyboardHide:
-                    widget.hideSuggestionsOnKeyboardHide,
-                language: widget.language,
-                location: widget.location,
-                origin: widget.origin,
-                placesApiHeaders: widget.placesApiHeaders,
-                placesBaseUrl: widget.placesBaseUrl,
-                placesHttpClient: widget.placesHttpClient,
-                region: widget.region,
-                searchHintText: widget.searchHintText,
-                sessionToken: widget.sessionToken,
-                showBackButton: false,
-                strictbounds: widget.strictbounds,
-                topCardColor: widget.topCardColor,
-                topCardMargin: widget.topCardMargin,
-                topCardShape: widget.topCardShape,
-                types: widget.types,
-                onGetDetailsByPlaceId: (placesDetails) async {
-                  if (placesDetails == null) {
-                    logger.e("placesDetails is null");
-                    return;
-                  }
-                  var resultsDetails =
-                      placesDetails.result.formattedAddress ?? "";
-                  final userLat = placesDetails.result.geometry?.location.lat;
-                  final userLng = placesDetails.result.geometry?.location.lng;
-                  addressViewController.onAddressAutocomplete(
-                      resultsDetails, userLat, userLng);
-                  _initialPosition = LatLng(
-                    placesDetails.result.geometry?.location.lat ?? 0,
-                    placesDetails.result.geometry?.location.lng ?? 0,
-                  );
-                  final controller = await _controller.future;
-                  controller.animateCamera(
-                      CameraUpdate.newCameraPosition(cameraPosition()));
-                  _address = placesDetails.result.formattedAddress ?? "";
-                  widget.onSuggestionSelected?.call(placesDetails);
-                },
-              ),
-            ),
+                height: 72.0,
+                color: Colors.white,
+                child:
+                    Text('Search Location') // Replace with your search widget
+                ),
             Expanded(
               child: Stack(
                 children: [
@@ -468,21 +369,13 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                       final controller = await _controller.future;
                       controller.animateCamera(
                           CameraUpdate.newCameraPosition(cameraPosition()));
-                      _decodeAddress(
-                          Location(
-                              lat: position.latitude, lng: position.longitude),
-                          context);
+                      _decodeAddress(position, context); // Updated call
                       setState(() {});
                     },
                     onMapCreated: (GoogleMapController controller) async {
                       _controller.complete(controller);
                     },
-                    markers: {
-                      Marker(
-                        markerId: const MarkerId('two'),
-                        position: _initialPosition,
-                      ),
-                    },
+                    markers: markers,
                     myLocationButtonEnabled: false,
                     myLocationEnabled: true,
                     zoomControlsEnabled: false,
@@ -520,11 +413,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                                 controller.animateCamera(
                                     CameraUpdate.newCameraPosition(
                                         cameraPosition()));
-                                _decodeAddress(
-                                    Location(
-                                        lat: position.latitude,
-                                        lng: position.longitude),
-                                    context);
+                                _decodeAddress(latLng, context); // Updated call
                               },
                               child: Icon(
                                 Icons.my_location_sharp,

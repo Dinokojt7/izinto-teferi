@@ -59,17 +59,6 @@ class PhoneAuthViewController extends ChangeNotifier {
   // Updated to accept termsAccepted parameter
   Future<void> onConfirmButtonTapped(
       BuildContext widgetContext, bool termsAccepted) async {
-    if (!termsAccepted) {
-      // Don't proceed if terms not accepted
-      Get.snackbar(
-        'Terms Required',
-        'Please accept the terms and conditions to continue',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
     if (_isGoogleAuth) {
       await loginWithGoogleAccount(widgetContext, termsAccepted);
       _isInitialized = false;

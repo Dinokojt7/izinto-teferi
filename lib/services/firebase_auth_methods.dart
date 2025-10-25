@@ -30,7 +30,7 @@ class FirebaseAuthMethods {
   var verificationId = ''.obs;
   bool isCurrentViewOtp = false;
   bool isExistingUser = false;
-
+  final GoogleSignIn signIn = GoogleSignIn.instance;
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   final _random = Random();
@@ -153,26 +153,55 @@ class FirebaseAuthMethods {
   Future<dynamic> signInWithGoogle(
       BuildContext context, bool termsAccepted) async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-      final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
+      print('Starting new Google Sign-In process...');
 
-      if (googleUser == null) {
+      // Initialize Google Sign-In
+      await GoogleSignIn.instance.initialize();
+
+      // Check if platform supports authenticate
+      if (!GoogleSignIn.instance.supportsAuthenticate()) {
+        print('Platform does not support authenticate method');
+        Get.snackbar(
+          'Unsupported Platform',
+          'Google Sign-In is not supported on this platform',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
         return null;
       }
 
+      print('Initiating Google authentication...');
+      final GoogleSignInAccount? googleUser =
+          await GoogleSignIn.instance.authenticate(scopeHint: ['email']);
+
+      if (googleUser == null) {
+        print('Google Sign-In was cancelled by user');
+        return null;
+      }
+
+      print('Google user obtained: ${googleUser.email}');
+
+      // Get authentication tokens
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
+
+      print('Google auth tokens obtained');
+      print('Has ID token: ${googleAuth.idToken != null}');
+
+      // Create Firebase credential
+      final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
 
-      UserCredential userCredential =
+      print('Signing into Firebase with Google credential...');
+      final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
       if (userCredential.user != null) {
-        User? user = userCredential.user;
+        print(
+            'Firebase authentication successful! User ID: ${userCredential.user!.uid}');
 
-        // Handle user data
+        User? user = userCredential.user;
         String? combinedName = user?.displayName;
         List<String> nameParts = combinedName?.split(" ") ?? ["User"];
         String firstName = nameParts[0];
@@ -182,35 +211,64 @@ class FirebaseAuthMethods {
             (lastName.isNotEmpty ? lastName[0] : "U") +
             generateRandomNumber();
 
-        // Check if new user
+        // Handle new vs existing user
         if (userCredential.additionalUserInfo!.isNewUser) {
-          // Create a new document for the user with the uid INCLUDING TERMS ACCEPTANCE
+          print('New user detected, creating user document...');
           await DatabaseService(uid: user?.uid).updateUserData(
-              firstName,
-              lastName,
-              user?.phoneNumber ?? "",
-              user?.email ?? "",
-              'Subscribe',
-              0.0,
-              _uniquePromoCode,
-              termsAccepted: termsAccepted, // Add this
-              termsAcceptedAt: DateTime.now() // Add this
-              );
+            firstName,
+            lastName,
+            user?.phoneNumber ?? "",
+            user?.email ?? "",
+            'Subscribe',
+            0.0,
+            _uniquePromoCode,
+            termsAccepted: termsAccepted,
+            termsAcceptedAt: DateTime.now(),
+          );
+          print('Navigating to ProfileView...');
           Get.offAll(() => ProfileView());
         } else {
-          // For existing users, update terms acceptance
+          print('Existing user, updating terms acceptance...');
           await _updateUserTermsAcceptance(user!.uid, termsAccepted);
+          print('Navigating to HomePage...');
           Get.offAll(() => HomePage());
         }
+
         return _userFromFirebaseUser(user);
+      } else {
+        print('Firebase authentication failed - no user returned');
+        return null;
       }
     } on FirebaseAuthException catch (e) {
-      showSnackBar(context, 'Firebase Auth Error: ${e.message}');
+      print('Firebase Auth Exception: ${e.code} - ${e.message}');
+      Get.snackbar(
+        'Authentication Error',
+        'Firebase error: ${e.message}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: Duration(seconds: 5),
+      );
     } on GoogleSignInException catch (e) {
-      showSnackBar(context, e.toString());
-    } catch (e) {
-      showSnackBar(context, 'Google Sign-In failed: $e');
+      print('Google Sign-In Exception: ${e}');
+      Get.snackbar(
+        'Google Sign-In Error',
+        'Error: ${e}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: Duration(seconds: 5),
+      );
+    } catch (e, stackTrace) {
+      print('Unexpected error during Google Sign-In: $e');
+      print('Stack trace: $stackTrace');
+      Get.snackbar(
+        'Unexpected Error',
+        'Something went wrong. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: Duration(seconds: 5),
+      );
     }
+
     return null;
   }
 

@@ -18,11 +18,13 @@ import 'controller/phone_auth_view_controller.dart';
 class PhoneVerificationView extends StatefulWidget {
   final String phone;
   final String verificationId;
-  const PhoneVerificationView({
-    Key? key,
-    required this.phone,
-    required this.verificationId,
-  }) : super(key: key);
+  final bool? termsAccepted;
+  const PhoneVerificationView(
+      {Key? key,
+      required this.phone,
+      required this.verificationId,
+      this.termsAccepted})
+      : super(key: key);
 
   @override
   State<PhoneVerificationView> createState() => _PhoneVerificationViewState();

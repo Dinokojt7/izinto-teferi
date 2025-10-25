@@ -1,7 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/auth_view/phone_verification_view.dart';
 
 import '../view_widgets/otp_screen.dart';
@@ -25,6 +25,7 @@ class PhoneAuthViewController extends ChangeNotifier {
 
   bool _isGoogleAuth = false;
   bool get isGoogleAuth => _isGoogleAuth;
+
   Future<void> setAuthContextToGoogle() async {
     _isGoogleAuth = true;
     notifyListeners();
@@ -52,14 +53,25 @@ class PhoneAuthViewController extends ChangeNotifier {
   // Function to handle General terms dialog display
   Future<void> _onLoader() async {
     _isInitialized = true;
-
     notifyListeners();
   }
 
-  // Function to handle isInitialize state
-  Future<void> onConfirmButtonTapped(BuildContext widgetContext) async {
+  // Updated to accept termsAccepted parameter
+  Future<void> onConfirmButtonTapped(
+      BuildContext widgetContext, bool termsAccepted) async {
+    if (!termsAccepted) {
+      // Don't proceed if terms not accepted
+      Get.snackbar(
+        'Terms Required',
+        'Please accept the terms and conditions to continue',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     if (_isGoogleAuth) {
-      await loginWithGoogleAccount(widgetContext);
+      await loginWithGoogleAccount(widgetContext, termsAccepted);
       _isInitialized = false;
     } else {
       if (_isValid) {
@@ -68,13 +80,14 @@ class PhoneAuthViewController extends ChangeNotifier {
         String phoneNumber = phoneNumberController.text;
 
         // Verify phone and navigate to OTP screen
-        await _verifyPhone(widgetContext, phoneNumber);
+        await _verifyPhone(widgetContext, phoneNumber, termsAccepted);
       }
     }
     notifyListeners();
   }
 
-  Future<void> _verifyPhone(BuildContext context, String phoneNumber) async {
+  Future<void> _verifyPhone(
+      BuildContext context, String phoneNumber, bool termsAccepted) async {
     try {
       String formattedPhone = _formatPhoneNumber(phoneNumber);
       print('Verifying phone: $formattedPhone');
@@ -84,7 +97,15 @@ class PhoneAuthViewController extends ChangeNotifier {
         verificationCompleted: (PhoneAuthCredential credential) async {
           // Auto-sign in if verification completes automatically
           print('Verification completed automatically');
-          await FirebaseAuth.instance.signInWithCredential(credential);
+          UserCredential userCredential =
+              await FirebaseAuth.instance.signInWithCredential(credential);
+
+          // Update user data with terms acceptance
+          if (userCredential.user != null) {
+            await _updateUserTermsAcceptance(
+                userCredential.user!.uid, termsAccepted);
+          }
+
           if (context.mounted) {
             Get.offAll(() => HomeView());
           }
@@ -98,6 +119,8 @@ class PhoneAuthViewController extends ChangeNotifier {
                 builder: (context) => PhoneVerificationView(
                   phone: formattedPhone,
                   verificationId: verificationId,
+                  termsAccepted:
+                      termsAccepted, // Pass terms acceptance to OTP screen
                 ),
               ),
             );
@@ -140,7 +163,8 @@ class PhoneAuthViewController extends ChangeNotifier {
   }
 
   Future<void> resendOTP(String phoneNumber, BuildContext context) async {
-    await _verifyPhone(context, phoneNumber);
+    await _verifyPhone(
+        context, phoneNumber, true); // Assume terms accepted for resend
   }
 
   String _formatPhoneNumber(String phoneNumber) {
@@ -159,17 +183,30 @@ class PhoneAuthViewController extends ChangeNotifier {
     return '+$digitsOnly';
   }
 
-  Future<void> loginWithGoogleAccount(BuildContext? context) async {
+  Future<void> loginWithGoogleAccount(
+      BuildContext? context, bool termsAccepted) async {
     await onShowTermsDialog();
     _isInitialized = true;
-    await FirebaseAuthMethods().signInWithGoogle(context!);
-    //_isInitialized = false;
+    await FirebaseAuthMethods().signInWithGoogle(context!, termsAccepted);
     notifyListeners();
+  }
+
+  // Update user data with terms acceptance
+  Future<void> _updateUserTermsAcceptance(
+      String uid, bool termsAccepted) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'termsAccepted': termsAccepted,
+        'termsAcceptedAt': FieldValue.serverTimestamp(),
+      });
+      print('Terms acceptance updated for user: $uid');
+    } catch (e) {
+      print('Error updating terms acceptance: $e');
+    }
   }
 
   void onPageChange() {
     _isInitialized = true;
-
     notifyListeners();
   }
 
@@ -203,41 +240,9 @@ class PhoneAuthViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // _verifyPhone(context) async {
-  //   String phoneNumber = phoneNumberController.text;
-  //   print('let\'s verify $phoneNumber');
-  //   await FirebaseAuth.instance.verifyPhoneNumber(
-  //       phoneNumber: '+27${phoneNumber}',
-  //       verificationCompleted: (PhoneAuthCredential credential) async {
-  //         await FirebaseAuth.instance
-  //             .signInWithCredential(credential)
-  //             .then((value) async {
-  //           if (value.user != null) {
-  //             Navigator.pushReplacement(
-  //                 context,
-  //                 MaterialPageRoute(
-  //                     builder: (BuildContext context) => HomeView()));
-  //           }
-  //         });
-  //       },
-  //       codeSent: (String verificationID, int? resendToken) {
-  //         _verificationCode = verificationID;
-  //       },
-  //       verificationFailed: (FirebaseAuthException error) {
-  //         print(error.message);
-  //       },
-  //       codeAutoRetrievalTimeout: (String verificationID) {
-  //         _verificationCode = verificationID;
-  //       },
-  //       timeout: Duration(seconds: 60));
-  //
-  //   notifyListeners();
-  // }
-
   @override
   void dispose() {
     phoneNumberController.dispose();
-    //loginWithGoogleAccount(null);
     super.dispose();
   }
 }

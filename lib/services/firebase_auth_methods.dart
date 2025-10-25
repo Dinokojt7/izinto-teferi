@@ -30,6 +30,7 @@ class FirebaseAuthMethods {
   var verificationId = ''.obs;
   bool isCurrentViewOtp = false;
   bool isExistingUser = false;
+
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   final _random = Random();
@@ -149,33 +150,22 @@ class FirebaseAuthMethods {
 
 //
 //  GOOGLE SIGN IN - Updated using official example pattern
-  Future<dynamic> signInWithGoogle(BuildContext context) async {
+  Future<dynamic> signInWithGoogle(
+      BuildContext context, bool termsAccepted) async {
     try {
-      // Use the singleton instance as shown in the example
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-
-      // Initialize if needed (optional in most cases)
-      // await googleSignIn.initialize();
-
-      // Authenticate using the new pattern
       final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
 
       if (googleUser == null) {
-        // User canceled the sign-in
         return null;
       }
 
-      // Get authentication details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
-      // Create Firebase credential
       final credential = GoogleAuthProvider.credential(
-        // accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase with Google credentials
       UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
@@ -194,7 +184,7 @@ class FirebaseAuthMethods {
 
         // Check if new user
         if (userCredential.additionalUserInfo!.isNewUser) {
-          // Create a new document for the user with the uid
+          // Create a new document for the user with the uid INCLUDING TERMS ACCEPTANCE
           await DatabaseService(uid: user?.uid).updateUserData(
               firstName,
               lastName,
@@ -202,9 +192,14 @@ class FirebaseAuthMethods {
               user?.email ?? "",
               'Subscribe',
               0.0,
-              _uniquePromoCode);
+              _uniquePromoCode,
+              termsAccepted: termsAccepted, // Add this
+              termsAcceptedAt: DateTime.now() // Add this
+              );
           Get.offAll(() => ProfileView());
         } else {
+          // For existing users, update terms acceptance
+          await _updateUserTermsAcceptance(user!.uid, termsAccepted);
           Get.offAll(() => HomePage());
         }
         return _userFromFirebaseUser(user);
@@ -217,6 +212,18 @@ class FirebaseAuthMethods {
       showSnackBar(context, 'Google Sign-In failed: $e');
     }
     return null;
+  }
+
+  Future<void> _updateUserTermsAcceptance(
+      String uid, bool termsAccepted) async {
+    try {
+      await _firebaseFirestore.collection('users').doc(uid).update({
+        'termsAccepted': termsAccepted,
+        'termsAcceptedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error updating terms acceptance: $e');
+    }
   }
 
   // PHONE SIGN IN

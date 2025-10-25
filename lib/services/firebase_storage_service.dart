@@ -15,13 +15,16 @@ class DatabaseService {
 
   //These parameters must be put in a consistent sequence otherwise they will be mixed up in the database
   Future updateUserData(
-      String? name,
-      String? surname,
-      String? phone,
-      String? email,
-      String? subStatus,
-      double? iTokens,
-      String? promoCode) async {
+    String? name,
+    String? surname,
+    String? phone,
+    String? email,
+    String? subStatus,
+    double? iTokens,
+    String? promoCode, {
+    bool termsAccepted = false,
+    DateTime? termsAcceptedAt,
+  }) async {
     return await izintoCollection.doc(uid).set({
       'uid': uid,
       'name': name,
@@ -29,6 +32,8 @@ class DatabaseService {
       'phone': phone,
       'email': email,
       'loyalty': iTokens,
+      'termsAccepted': termsAccepted, // Add this
+      'termsAcceptedAt': termsAcceptedAt ?? FieldValue.serverTimestamp(),
       'createdAt': Timestamp.now(),
       'promo code': promoCode
     });

@@ -6,12 +6,13 @@ class IntroductionText extends StatelessWidget {
   final String text;
   final double? textSize;
   final int? maxLines;
-  const IntroductionText({
-    super.key,
-    required this.text,
-    this.textSize,
-    this.maxLines = 2,
-  });
+  final Color? color;
+  const IntroductionText(
+      {super.key,
+      required this.text,
+      this.textSize,
+      this.maxLines = 2,
+      this.color = Colors.black});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class IntroductionText extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           fontSize: textSize ?? Dimensions.font26,
           fontFamily: 'Poppins',
-          color: Colors.black,
+          color: color,
           fontWeight: FontWeight.w600,
         ),
       ),

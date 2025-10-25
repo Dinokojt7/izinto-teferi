@@ -13,7 +13,7 @@ class ContinueWithGoogle extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        await FirebaseAuthMethods().signInWithGoogle(context);
+        await FirebaseAuthMethods().signInWithGoogle(context, true);
       },
       child: Container(
         decoration: BoxDecoration(

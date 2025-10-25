@@ -31,7 +31,7 @@ class ContinueWithIosAndGoogle extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 onTap: () async {
-                  await FirebaseAuthMethods().signInWithGoogle(context);
+                  await FirebaseAuthMethods().signInWithGoogle(context, true);
                 },
                 child: Container(
                   height: Dimensions.bottomHeightBar,
@@ -63,7 +63,7 @@ class ContinueWithIosAndGoogle extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 onTap: () async {
-                  await FirebaseAuthMethods().signInWithGoogle(context);
+                  await FirebaseAuthMethods().signInWithGoogle(context, true);
                 },
                 child: Container(
                   height: Dimensions.bottomHeightBar,

@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/auth_view/phone_verification_view.dart';
 
 import '../view_widgets/otp_screen.dart';
@@ -64,23 +66,97 @@ class PhoneAuthViewController extends ChangeNotifier {
         await onShowTermsDialog();
         _isInitialized = true;
         String phoneNumber = phoneNumberController.text;
-        // await _verifyPhone(widgetContext);
-        Future.delayed(const Duration(seconds: 4), () async {
-          await Navigator.of(widgetContext).push(
-            MaterialPageRoute(
-              builder: (context) => PhoneVerificationView(
-                phone: phoneNumber,
-                verificationId: _verificationCode,
-              ),
-            ),
-          );
-          _isInitialized = false;
-          notifyListeners();
-        });
+
+        // Verify phone and navigate to OTP screen
+        await _verifyPhone(widgetContext, phoneNumber);
       }
     }
-
     notifyListeners();
+  }
+
+  Future<void> _verifyPhone(BuildContext context, String phoneNumber) async {
+    try {
+      String formattedPhone = _formatPhoneNumber(phoneNumber);
+      print('Verifying phone: $formattedPhone');
+
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: formattedPhone,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Auto-sign in if verification completes automatically
+          print('Verification completed automatically');
+          await FirebaseAuth.instance.signInWithCredential(credential);
+          if (context.mounted) {
+            Get.offAll(() => HomeView());
+          }
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          print('Code sent: $verificationId');
+          _verificationCode = verificationId;
+          if (context.mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => PhoneVerificationView(
+                  phone: formattedPhone,
+                  verificationId: verificationId,
+                ),
+              ),
+            );
+          }
+          _isInitialized = false;
+          notifyListeners();
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          print('Verification failed: ${e.message}');
+          _isInitialized = false;
+          if (context.mounted) {
+            Get.snackbar(
+              'Error',
+              'Failed to verify phone number: ${e.message}',
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+          }
+          notifyListeners();
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          print('Code auto retrieval timeout: $verificationId');
+          _verificationCode = verificationId;
+        },
+        timeout: Duration(seconds: 60),
+      );
+    } catch (e) {
+      print('Error in _verifyPhone: $e');
+      _isInitialized = false;
+      if (context.mounted) {
+        Get.snackbar(
+          'Error',
+          'Something went wrong. Please try again.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+      notifyListeners();
+    }
+  }
+
+  Future<void> resendOTP(String phoneNumber, BuildContext context) async {
+    await _verifyPhone(context, phoneNumber);
+  }
+
+  String _formatPhoneNumber(String phoneNumber) {
+    // Remove any non-digit characters
+    String digitsOnly = phoneNumber.replaceAll(RegExp(r'\D'), '');
+
+    // Handle South African numbers
+    if (digitsOnly.startsWith('0')) {
+      digitsOnly = digitsOnly.substring(1);
+    }
+
+    if (!digitsOnly.startsWith('27')) {
+      digitsOnly = '27$digitsOnly';
+    }
+
+    return '+$digitsOnly';
   }
 
   Future<void> loginWithGoogleAccount(BuildContext? context) async {
@@ -127,36 +203,36 @@ class PhoneAuthViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  _verifyPhone(context) async {
-    String phoneNumber = phoneNumberController.text;
-    print('let\'s verify $phoneNumber');
-    await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+27${phoneNumber}',
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await FirebaseAuth.instance
-              .signInWithCredential(credential)
-              .then((value) async {
-            if (value.user != null) {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (BuildContext context) => HomeView()));
-            }
-          });
-        },
-        codeSent: (String verificationID, int? resendToken) {
-          _verificationCode = verificationID;
-        },
-        verificationFailed: (FirebaseAuthException error) {
-          print(error.message);
-        },
-        codeAutoRetrievalTimeout: (String verificationID) {
-          _verificationCode = verificationID;
-        },
-        timeout: Duration(seconds: 60));
-
-    notifyListeners();
-  }
+  // _verifyPhone(context) async {
+  //   String phoneNumber = phoneNumberController.text;
+  //   print('let\'s verify $phoneNumber');
+  //   await FirebaseAuth.instance.verifyPhoneNumber(
+  //       phoneNumber: '+27${phoneNumber}',
+  //       verificationCompleted: (PhoneAuthCredential credential) async {
+  //         await FirebaseAuth.instance
+  //             .signInWithCredential(credential)
+  //             .then((value) async {
+  //           if (value.user != null) {
+  //             Navigator.pushReplacement(
+  //                 context,
+  //                 MaterialPageRoute(
+  //                     builder: (BuildContext context) => HomeView()));
+  //           }
+  //         });
+  //       },
+  //       codeSent: (String verificationID, int? resendToken) {
+  //         _verificationCode = verificationID;
+  //       },
+  //       verificationFailed: (FirebaseAuthException error) {
+  //         print(error.message);
+  //       },
+  //       codeAutoRetrievalTimeout: (String verificationID) {
+  //         _verificationCode = verificationID;
+  //       },
+  //       timeout: Duration(seconds: 60));
+  //
+  //   notifyListeners();
+  // }
 
   @override
   void dispose() {

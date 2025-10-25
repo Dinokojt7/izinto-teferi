@@ -22,6 +22,7 @@ dependencies:
   firebase_auth: 6.1.1
   firebase_storage: ^13.0.3
   firebase_messaging: ^16.0.3
+
   # REMOVE these problematic packages:
   # firebase_image: ^1.1.1
   firebase_core_platform_interface: 6.0.2

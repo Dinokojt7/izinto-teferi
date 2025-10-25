@@ -5,10 +5,12 @@ import '../../../utils/dimensions.dart';
 class IntroductionText extends StatelessWidget {
   final String text;
   final double? textSize;
+  final int? maxLines;
   const IntroductionText({
     super.key,
     required this.text,
     this.textSize,
+    this.maxLines = 2,
   });
 
   @override
@@ -16,7 +18,7 @@ class IntroductionText extends StatelessWidget {
     return Container(
       child: Text(
         text,
-        maxLines: 2,
+        maxLines: maxLines,
         style: TextStyle(
           height: 1.2,
           overflow: TextOverflow.ellipsis,

@@ -15,6 +15,7 @@ import 'package:izinto/pages/home/specialty_page_body.dart';
 import 'package:izinto/routes/route_helper.dart';
 import 'package:izinto/services/firebase_storage_service.dart';
 import '../base/show_snackbar.dart';
+import '../live/utilities/generic_snackbar.dart';
 import '../live/view/auth_view/view_widgets/countdown_controller.dart';
 import '../live/view/auth_view/view_widgets/otp_screen.dart';
 import '../pages/auth/otp_screen.dart';
@@ -117,7 +118,12 @@ class FirebaseAuthMethods {
       //   await sendEmailVerification(context);
       // }
     } on FirebaseAuthException catch (e) {
-      print(e.message);
+      GenericSnackBar().showCustomSnackBar(
+        null, // No onTap callback
+        context,
+        'Error: ${e.message}',
+        false, // isWiderSnack
+      );
       return null;
     }
   }
@@ -125,15 +131,18 @@ class FirebaseAuthMethods {
   //DELETE USER ACCOUNT
   Future<dynamic> deleteUser(BuildContext context) async {
     try {
-      print('Attempt to delete');
-
       await _auth.currentUser?.delete();
       await _firebaseFirestore
           .collection('users')
           .doc(_auth.currentUser?.uid)
           .delete();
     } on FirebaseAuthException catch (e) {
-      print(e.message);
+      GenericSnackBar().showCustomSnackBar(
+        null, // No onTap callback
+        context,
+        'Error: ${e.message}',
+        false, // isWiderSnack
+      );
     }
   }
 
@@ -141,7 +150,11 @@ class FirebaseAuthMethods {
   Future<dynamic> sendEmailVerification(BuildContext context) async {
     try {
       _auth.currentUser!.sendEmailVerification();
-      showSnackBar(context, 'Email verification sent!');
+      GenericSnackBar().showCustomSnackBar(
+        null, // No onTap callback
+        context,
+        'Email verification sent!', false, // isWiderSnack
+      );
     } on FirebaseAuthException catch (e) {
       showSnackBar(context, e.message!);
     }
@@ -153,54 +166,42 @@ class FirebaseAuthMethods {
   Future<dynamic> signInWithGoogle(
       BuildContext context, bool termsAccepted) async {
     try {
-      print('Starting new Google Sign-In process...');
-
       // Initialize Google Sign-In
       await GoogleSignIn.instance.initialize();
 
       // Check if platform supports authenticate
       if (!GoogleSignIn.instance.supportsAuthenticate()) {
-        print('Platform does not support authenticate method');
-        Get.snackbar(
-          'Unsupported Platform',
+        GenericSnackBar().showCustomSnackBar(
+          null, // No onTap callback
+          context,
           'Google Sign-In is not supported on this platform',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
+          false, // isWiderSnack
         );
         return null;
       }
 
-      print('Initiating Google authentication...');
       final GoogleSignInAccount? googleUser =
           await GoogleSignIn.instance.authenticate(scopeHint: ['email']);
 
       if (googleUser == null) {
-        print('Google Sign-In was cancelled by user');
+        GenericSnackBar().showCustomSnackBar(
+            null, context, 'Google Sign-In was cancelled by user', false);
         return null;
       }
-
-      print('Google user obtained: ${googleUser.email}');
 
       // Get authentication tokens
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
-      print('Google auth tokens obtained');
-      print('Has ID token: ${googleAuth.idToken != null}');
 
       // Create Firebase credential
       final AuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
 
-      print('Signing into Firebase with Google credential...');
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
       if (userCredential.user != null) {
-        print(
-            'Firebase authentication successful! User ID: ${userCredential.user!.uid}');
-
         User? user = userCredential.user;
         String? combinedName = user?.displayName;
         List<String> nameParts = combinedName?.split(" ") ?? ["User"];
@@ -213,7 +214,6 @@ class FirebaseAuthMethods {
 
         // Handle new vs existing user
         if (userCredential.additionalUserInfo!.isNewUser) {
-          print('New user detected, creating user document...');
           await DatabaseService(uid: user?.uid).updateUserData(
             firstName,
             lastName,
@@ -225,47 +225,57 @@ class FirebaseAuthMethods {
             termsAccepted: termsAccepted,
             termsAcceptedAt: DateTime.now(),
           );
-          print('Navigating to ProfileView...');
           Get.offAll(() => ProfileView());
         } else {
-          print('Existing user, updating terms acceptance...');
           await _updateUserTermsAcceptance(user!.uid, termsAccepted);
-          print('Navigating to HomePage...');
           Get.offAll(() => HomePage());
         }
 
         return _userFromFirebaseUser(user);
       } else {
-        print('Firebase authentication failed - no user returned');
+        GenericSnackBar().showCustomSnackBar(
+          null,
+          context,
+          'Authentication failed. Please try again.',
+          false,
+        );
         return null;
       }
     } on FirebaseAuthException catch (e) {
-      print('Firebase Auth Exception: ${e.code} - ${e.message}');
-      Get.snackbar(
-        'Authentication Error',
-        'Firebase error: ${e.message}',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: Duration(seconds: 5),
+      String errorMessage = 'Authentication error';
+      if (e.code == 'network-request-failed') {
+        errorMessage = 'Network error. Please check your connection.';
+      } else if (e.code == 'invalid-credential') {
+        errorMessage = 'Invalid credentials. Please try again.';
+      } else if (e.code == 'user-disabled') {
+        errorMessage = 'This account has been disabled.';
+      } else if (e.code == 'user-not-found') {
+        errorMessage = 'Account not found.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Invalid credentials. Please try again.';
+      } else {
+        errorMessage = 'Authentication failed: ${e.message}';
+      }
+
+      GenericSnackBar().showCustomSnackBar(
+        null,
+        context,
+        errorMessage,
+        false,
       );
     } on GoogleSignInException catch (e) {
-      print('Google Sign-In Exception: ${e}');
-      Get.snackbar(
-        'Google Sign-In Error',
-        'Error: ${e}',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: Duration(seconds: 5),
+      GenericSnackBar().showCustomSnackBar(
+        null,
+        context,
+        'Google Sign-In failed. Please try again.',
+        false,
       );
     } catch (e, stackTrace) {
-      print('Unexpected error during Google Sign-In: $e');
-      print('Stack trace: $stackTrace');
-      Get.snackbar(
-        'Unexpected Error',
+      GenericSnackBar().showCustomSnackBar(
+        null,
+        context,
         'Something went wrong. Please try again.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: Duration(seconds: 5),
+        false,
       );
     }
 
@@ -335,7 +345,12 @@ class FirebaseAuthMethods {
           },
           codeAutoRetrievalTimeout: (verificationId) {});
     } on FirebaseAuthException catch (e) {
-      showSnackBar(context, e.message!);
+      GenericSnackBar().showCustomSnackBar(
+        null,
+        context,
+        'Phone sign-in failed: ${e.message}',
+        false,
+      );
     }
   }
 
@@ -345,7 +360,12 @@ class FirebaseAuthMethods {
       phoneNumber: phoneNumber,
       verificationCompleted: (PhoneAuthCredential credential) async {},
       verificationFailed: (e) {
-        showSnackBar(context, e.message!);
+        GenericSnackBar().showCustomSnackBar(
+          null,
+          context,
+          'Phone verification failed: ${e.message}',
+          false,
+        );
       },
       codeSent: ((verificationId, int? resendToken) async {
         this.verificationId.value = verificationId;
@@ -365,7 +385,12 @@ class FirebaseAuthMethods {
     try {
       await _auth.signOut();
     } on FirebaseAuthException catch (e) {
-      showSnackBar(context, e.message!);
+      GenericSnackBar().showCustomSnackBar(
+        null,
+        context,
+        'Error: ${e.message}',
+        false,
+      );
     }
   }
 
@@ -374,7 +399,12 @@ class FirebaseAuthMethods {
     try {
       await _auth.sendPasswordResetEmail(email: _email);
     } on FirebaseAuthException catch (e) {
-      showSnackBar(context, e.message!);
+      GenericSnackBar().showCustomSnackBar(
+        null,
+        context,
+        'Error: ${e.message}',
+        false,
+      );
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/view/auth_view/phone_verification_view.dart';
 
+import '../../../utilities/generic_snackbar.dart';
 import '../view_widgets/otp_screen.dart';
 import '../../../../pages/auth/phone_auth.dart';
 import '../../../../services/firebase_auth_methods.dart';
@@ -117,15 +118,16 @@ class PhoneAuthViewController extends ChangeNotifier {
           _isInitialized = false;
           notifyListeners();
         },
+        // In your _verifyPhone method in PhoneAuthViewController
         verificationFailed: (FirebaseAuthException e) {
           print('Verification failed: ${e.message}');
           _isInitialized = false;
           if (context.mounted) {
-            Get.snackbar(
-              'Error',
+            GenericSnackBar().showCustomSnackBar(
+              null,
+              context,
               'Failed to verify phone number: ${e.message}',
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
+              false,
             );
           }
           notifyListeners();

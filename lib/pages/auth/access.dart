@@ -12,7 +12,6 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/pages/auth/email_sign_in.dart';
 import 'package:izinto/pages/auth/login.dart';
 import 'package:izinto/pages/auth/sign_in.dart';
-import 'package:izinto/pages/home/home_page.dart';
 import 'package:provider/provider.dart';
 import '../../live/view/auth_view/view_widgets/countdown_controller.dart';
 import '../../models/user.dart';

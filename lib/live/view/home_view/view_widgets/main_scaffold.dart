@@ -110,19 +110,26 @@ class _MainScaffoldState extends State<MainScaffold> {
                 index: _controller.currentIndex,
                 children: _pages(context, _hasUser),
               ),
-              bottomNavigationBar: BottomAppBar(
-                clipBehavior: Clip.antiAlias,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                  ),
+              bottomNavigationBar: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          Colors.black.withOpacity(0.06), // Very subtle black
+                      blurRadius: 16, // Large blur for maximum softness
+                      spreadRadius: 0, // No spread for natural fade
+                      offset: Offset(0, -3), // Slightly higher offset
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  top: false,
                   child: BottomNavigationBar(
                     unselectedFontSize: 11,
                     selectedFontSize: 11,
                     backgroundColor: Colors.transparent,
                     selectedItemColor: LiveColors.primary,
-                    // unselectedItemColor: LiveColors.primary,
-                    //D0C9C0
                     elevation: 0,
                     type: BottomNavigationBarType.fixed,
                     showSelectedLabels: false,
@@ -134,47 +141,58 @@ class _MainScaffoldState extends State<MainScaffold> {
                     unselectedLabelStyle: TextStyle(
                       color: Colors.grey.shade500,
                     ),
+                    // Remove any internal padding
+                    iconSize: 24,
+                    // Fixed icon size
                     currentIndex: _controller.currentIndex,
                     onTap: _onBottomNavTapped,
                     items: [
                       BottomNavigationBarItem(
-                          icon: IconBuilder(
-                            selectedIndex: _controller.currentIndex,
-                            regularIconString: 'assets/icons/home.png',
-                            selectedIconString:
-                                'assets/icons/home-selected.png',
-                            itemIndex: 0,
-                          ),
-                          label: 'Home'),
+                        icon: IconBuilder(
+                          selectedIndex: _controller.currentIndex,
+                          regularIconString: 'assets/icons/home.png',
+                          selectedIconString: 'assets/icons/home-selected.png',
+                          itemIndex: 0,
+                        ),
+                        label: 'Home',
+                      ),
                       BottomNavigationBarItem(
-                          icon: IconBuilder(
-                            selectedIndex: _controller.currentIndex,
-                            regularIconString: 'assets/icons/order-history.png',
-                            selectedIconString:
-                                'assets/icons/order-history-selected.png',
-                            itemIndex: 1,
-                          ),
-                          label: 'Orders'),
+                        icon: IconBuilder(
+                          selectedIndex: _controller.currentIndex,
+                          regularIconString: 'assets/icons/order-history.png',
+                          selectedIconString:
+                              'assets/icons/order-history-selected.png',
+                          itemIndex: 1,
+                        ),
+                        label: 'Orders',
+                      ),
                       BottomNavigationBarItem(
-                          icon: BasketNavigationItem(), label: 'Basket'),
+                        icon: SizedBox(
+                          height: 30,
+                          width: 30,
+                          child: BasketNavigationItem(),
+                        ),
+                        label: 'Basket',
+                      ),
                       BottomNavigationBarItem(
-                          icon: IconBuilder(
-                            selectedIndex: _controller.currentIndex,
-                            regularIconString: 'assets/icons/bubble-chat.png',
-                            selectedIconString:
-                                'assets/icons/bubble-chat-selected-modified.png',
-                            itemIndex: 3,
-                          ),
-                          label: 'Inbox'),
+                        icon: IconBuilder(
+                          selectedIndex: _controller.currentIndex,
+                          regularIconString: 'assets/icons/bubble-chat.png',
+                          selectedIconString:
+                              'assets/icons/bubble-chat-selected-modified.png',
+                          itemIndex: 3,
+                        ),
+                        label: 'Inbox',
+                      ),
                       BottomNavigationBarItem(
-                          icon: IconBuilder(
-                            selectedIndex: _controller.currentIndex,
-                            regularIconString: 'assets/icons/user.png',
-                            selectedIconString:
-                                'assets/icons/user-selected.png',
-                            itemIndex: 4,
-                          ),
-                          label: 'Profile'),
+                        icon: IconBuilder(
+                          selectedIndex: _controller.currentIndex,
+                          regularIconString: 'assets/icons/user.png',
+                          selectedIconString: 'assets/icons/user-selected.png',
+                          itemIndex: 4,
+                        ),
+                        label: 'Profile',
+                      ),
                     ],
                   ),
                 ),

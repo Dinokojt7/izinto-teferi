@@ -31,7 +31,6 @@ import 'package:izinto/pages/cart/cart_page.dart';
 import 'package:izinto/pages/cart/cart_processes_and_widgets/cart_view_controller.dart';
 import 'package:izinto/pages/checkout/order_success.dart';
 import 'package:izinto/pages/checkout/payment_page.dart';
-import 'package:izinto/pages/home/home_page.dart';
 import 'package:izinto/pages/home/home_route.dart';
 import 'package:izinto/live/wrapper.dart';
 

@@ -93,7 +93,7 @@ class _WrapperState extends State<Wrapper> {
       final _profileController =
           Provider.of<ProfileViewController>(context, listen: false);
       final List<dynamic> _addresses = _profileController.savedAddresses;
-      if (_addresses.length == 0) {
+      if (_addresses.length > 0) {
         print('Going to get addressed via guest access!');
         if (_checkAddress) {
           return Scaffold(
@@ -109,9 +109,9 @@ class _WrapperState extends State<Wrapper> {
             ),
           );
         }
-        return GuestAccess();
+        return HomeView();
       }
-      return HomeView();
+      return GuestAccess();
     }
   }
 }

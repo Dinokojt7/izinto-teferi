@@ -67,8 +67,10 @@ class HomeScreenAppBarDelegate extends SliverPersistentHeaderDelegate {
         opacity: disappear(shrinkOffset),
         child: GetBuilder<RecommendedSpecialtyController>(
             builder: (recommendedSpecialties) {
-          return CarouselWithIndicator(
-            specialties: recommendedSpecialties.recommendedSpecialtyList,
+          return GestureDetector(
+            child: CarouselWithIndicator(
+              specialties: recommendedSpecialties.recommendedSpecialtyList,
+            ),
           );
         }),
       );

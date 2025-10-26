@@ -15,6 +15,7 @@ import '../../widgets/text_widgets/big_mallanna.dart';
 import '../profile_view/controller/profile_view_controller.dart';
 import 'category_view/category_view.dart';
 import 'category_view/controller/category_view_controller.dart';
+import 'category_view/view_widgets/specialty_item_view.dart';
 import 'controller/home_view_controller.dart';
 import 'main_address_view.dart';
 
@@ -57,29 +58,44 @@ class _CarouselWithIndicatorState extends State<CarouselWithIndicator> {
           MainAddressView(),
           SizedBox(height: Dimensions.height30),
           CarouselSlider(
-            items: widget.specialties.map((specialties) {
+            items: widget.specialties.map((specialty) {
               return Builder(
                 builder: (BuildContext context) {
-                  return GestureDetector(
-                    onTap: () {
-                      Provider.of<CategoryViewController>(context,
-                              listen: false)
-                          .updateCategoryList(2, 2);
-                      Provider.of<HomeViewController>(context, listen: false)
-                          .navigateToNestedWidget(context, CategoryView());
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: EdgeInsets.symmetric(horizontal: 5.0),
-                      decoration: BoxDecoration(
-                        borderRadius:
-                            BorderRadius.circular(Dimensions.radius15),
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: AssetImage(specialties.img!),
+                  return Stack(
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: EdgeInsets.symmetric(horizontal: 5.0),
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.circular(Dimensions.radius15),
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: AssetImage(specialty.img!),
+                          ),
                         ),
                       ),
-                    ),
+                      Positioned.fill(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              print('Carousel overlay tapped!');
+                              Provider.of<HomeViewController>(context,
+                                      listen: false)
+                                  .navigateToNestedWidget(
+                                      context,
+                                      SpecialityItemView(
+                                        serviceViewed:
+                                            specialty.name ?? 'Service Details',
+                                      ));
+                            },
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radius15),
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
               );
@@ -119,11 +135,6 @@ class _CarouselWithIndicatorState extends State<CarouselWithIndicator> {
               ),
             ],
           ),
-          // Row(
-          //   children: [
-          //     MovingProgressIndicator(),
-          //   ],
-          // ),
           buildHeading(),
         ],
       );
@@ -134,7 +145,7 @@ class _CarouselWithIndicatorState extends State<CarouselWithIndicator> {
         padding: EdgeInsets.only(
             left: Dimensions.width10,
             right: Dimensions.width10 / 2,
-            top: Dimensions.height10 * 11),
+            top: Dimensions.height10 * 13), // Increased top margin
         child: Column(
           children: [
             Row(
@@ -188,3 +199,27 @@ class _CarouselWithIndicatorState extends State<CarouselWithIndicator> {
         ),
       );
 }
+
+Widget buildWelcomeText(String firstName) => Padding(
+      padding: EdgeInsets.only(
+        left: Dimensions.width10,
+        right: Dimensions.width10 / 2,
+        top: Dimensions.height10 * 13, // Increased from 11 to 13 for more space
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Expanded(
+                child: BigMallanna(
+                  text1: 'HEY,',
+                  text2: firstName != '' ? '$firstName!' : 'Welcome',
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Dimensions.height10),
+        ],
+      ),
+    );

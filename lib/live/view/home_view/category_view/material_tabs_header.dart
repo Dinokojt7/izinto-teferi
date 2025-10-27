@@ -67,8 +67,60 @@ class _MaterialTabsHeaderState extends State<MaterialTabsHeader>
           color: Colors.black,
           child: Stack(
             children: [
+              // SizedBox(
+              //   width: 8,
+              // ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: // Listen to changes in the CategoryViewController to update the TabController
+                    Consumer<CategoryViewController>(
+                        builder: (context, categoryViewController, child) {
+                  if (_tabController.index !=
+                      categoryViewController.mainCategoryListIndex) {
+                    _tabController.animateTo(
+                        categoryViewController.mainCategoryListIndex);
+                  }
+                  return Material(
+                    color: Colors.transparent,
+                    child:
+                        GetBuilder<TabsHeaderController>(builder: (tabsHeader) {
+                      final List<Widget> _headerTabs = [];
+                      for (var i = 0;
+                          i < tabsHeader.tabsHeaderList.length;
+                          i++) {
+                        _headerTabs.add(
+                          Tab(
+                            child: HeaderTextButton(
+                              text: tabsHeader.tabsHeaderList[i].name,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return TabBar(
+                        labelPadding: EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 2.0),
+                        isScrollable: true,
+                        indicatorSize: TabBarIndicatorSize.label,
+                        physics: AlwaysScrollableScrollPhysics(),
+                        indicatorWeight: 4,
+                        indicatorColor:
+                            //isSpecialtiesLoaded
+                            //   ?
+                            LiveColors.secondary,
+                        // :
+                        //Colors.transparent,
+                        controller: _tabController,
+                        tabs: _headerTabs,
+                        // labelColor: AppColors.fontColor,
+                        // unselectedLabelColor: Colors.grey,
+                      );
+                    }),
+                  );
+                }),
+              ),
               Padding(
-                padding: const EdgeInsets.only(left: 16.0, top: 14.0),
+                padding: const EdgeInsets.only(top: 14.0),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: BackArrow(
@@ -79,75 +131,9 @@ class _MaterialTabsHeaderState extends State<MaterialTabsHeader>
                   ),
                 ),
               ),
-              // SizedBox(
-              //   width: 8,
-              // ),
-              Padding(
-                padding: const EdgeInsets.only(left: 50.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: // Listen to changes in the CategoryViewController to update the TabController
-                      Consumer<CategoryViewController>(
-                          builder: (context, categoryViewController, child) {
-                    if (_tabController.index !=
-                        categoryViewController.mainCategoryListIndex) {
-                      _tabController.animateTo(
-                          categoryViewController.mainCategoryListIndex);
-                    }
-                    return Material(
-                      color: Colors.transparent,
-                      child: GetBuilder<TabsHeaderController>(
-                          builder: (tabsHeader) {
-                        final List<Widget> _headerTabs = [];
-                        for (var i = 0;
-                            i < tabsHeader.tabsHeaderList.length;
-                            i++) {
-                          _headerTabs.add(
-                            Tab(
-                              child: HeaderTextButton(
-                                text: tabsHeader.tabsHeaderList[i].name,
-                              ),
-                            ),
-                          );
-                        }
-
-                        return TabBar(
-                          labelPadding: EdgeInsets.symmetric(
-                              horizontal: 8.0, vertical: 2.0),
-                          isScrollable: true,
-                          indicatorSize: TabBarIndicatorSize.label,
-                          physics: AlwaysScrollableScrollPhysics(),
-                          indicatorWeight: 4,
-                          indicatorColor:
-                              //isSpecialtiesLoaded
-                              //   ?
-                              LiveColors.secondary,
-                          // :
-                          //Colors.transparent,
-                          controller: _tabController,
-                          tabs: _headerTabs,
-                          // labelColor: AppColors.fontColor,
-                          // unselectedLabelColor: Colors.grey,
-                        );
-                      }),
-                    );
-                  }),
-                ),
-              ),
             ],
           ),
         ),
-        Positioned(
-          left: 30.0,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 18.0),
-            child: Container(
-              width: 12,
-              height: 40,
-              color: Colors.black54,
-            ),
-          ),
-        )
       ],
     );
   }

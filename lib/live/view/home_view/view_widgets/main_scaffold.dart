@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../models/user.dart';
 import '../../../../utils/colors.dart';
+import '../../../../utils/dimensions.dart';
 import '../../../auxiliery_classes/live_progress_indicator.dart';
 import '../../../utilities/colors.dart';
 import '../../../utilities/generic_system_navigation.dart';
@@ -111,89 +112,94 @@ class _MainScaffoldState extends State<MainScaffold> {
                 children: _pages(context, _hasUser),
               ),
               bottomNavigationBar: Container(
+                height: Dimensions.bottomHeightBar / 1.7,
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          Colors.black.withOpacity(0.06), // Very subtle black
-                      blurRadius: 16, // Large blur for maximum softness
-                      spreadRadius: 0, // No spread for natural fade
-                      offset: Offset(0, -3), // Slightly higher offset
+                      color: Colors.black12,
+                      blurRadius: 1.5,
+                      offset: Offset(0, -1), // Shadow at the top of bottom nav
                     ),
                   ],
+                  color: Colors.white,
                 ),
-                child: SafeArea(
-                  top: false,
-                  child: BottomNavigationBar(
-                    unselectedFontSize: 11,
-                    selectedFontSize: 11,
-                    backgroundColor: Colors.transparent,
-                    selectedItemColor: LiveColors.primary,
-                    elevation: 0,
-                    type: BottomNavigationBarType.fixed,
-                    showSelectedLabels: false,
-                    showUnselectedLabels: false,
-                    selectedLabelStyle: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.six,
+                child: ClipRect(
+                  child: SafeArea(
+                    top: false,
+                    child: Container(
+                      height: kBottomNavigationBarHeight,
+                      child: BottomNavigationBar(
+                        unselectedFontSize: 11,
+                        selectedFontSize: 11,
+                        backgroundColor: Colors.white,
+                        selectedItemColor: LiveColors.primary,
+                        elevation: 0,
+                        type: BottomNavigationBarType.fixed,
+                        showSelectedLabels: false,
+                        showUnselectedLabels: false,
+                        selectedLabelStyle: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.six,
+                        ),
+                        unselectedLabelStyle: TextStyle(
+                          color: Colors.grey.shade500,
+                        ),
+                        iconSize: 24,
+                        currentIndex: _controller.currentIndex,
+                        onTap: _onBottomNavTapped,
+                        items: [
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString: 'assets/icons/home.png',
+                              selectedIconString:
+                                  'assets/icons/home-selected.png',
+                              itemIndex: 0,
+                            ),
+                            label: 'Home',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString:
+                                  'assets/icons/order-history.png',
+                              selectedIconString:
+                                  'assets/icons/order-history-selected.png',
+                              itemIndex: 1,
+                            ),
+                            label: 'Orders',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: BasketNavigationItem(),
+                            ),
+                            label: 'Basket',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString: 'assets/icons/bubble-chat.png',
+                              selectedIconString:
+                                  'assets/icons/bubble-chat-selected-modified.png',
+                              itemIndex: 3,
+                            ),
+                            label: 'Inbox',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString: 'assets/icons/user.png',
+                              selectedIconString:
+                                  'assets/icons/user-selected.png',
+                              itemIndex: 4,
+                            ),
+                            label: 'Profile',
+                          ),
+                        ],
+                      ),
                     ),
-                    unselectedLabelStyle: TextStyle(
-                      color: Colors.grey.shade500,
-                    ),
-                    // Remove any internal padding
-                    iconSize: 24,
-                    // Fixed icon size
-                    currentIndex: _controller.currentIndex,
-                    onTap: _onBottomNavTapped,
-                    items: [
-                      BottomNavigationBarItem(
-                        icon: IconBuilder(
-                          selectedIndex: _controller.currentIndex,
-                          regularIconString: 'assets/icons/home.png',
-                          selectedIconString: 'assets/icons/home-selected.png',
-                          itemIndex: 0,
-                        ),
-                        label: 'Home',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: IconBuilder(
-                          selectedIndex: _controller.currentIndex,
-                          regularIconString: 'assets/icons/order-history.png',
-                          selectedIconString:
-                              'assets/icons/order-history-selected.png',
-                          itemIndex: 1,
-                        ),
-                        label: 'Orders',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: SizedBox(
-                          height: 30,
-                          width: 30,
-                          child: BasketNavigationItem(),
-                        ),
-                        label: 'Basket',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: IconBuilder(
-                          selectedIndex: _controller.currentIndex,
-                          regularIconString: 'assets/icons/bubble-chat.png',
-                          selectedIconString:
-                              'assets/icons/bubble-chat-selected-modified.png',
-                          itemIndex: 3,
-                        ),
-                        label: 'Inbox',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: IconBuilder(
-                          selectedIndex: _controller.currentIndex,
-                          regularIconString: 'assets/icons/user.png',
-                          selectedIconString: 'assets/icons/user-selected.png',
-                          itemIndex: 4,
-                        ),
-                        label: 'Profile',
-                      ),
-                    ],
                   ),
                 ),
               ),

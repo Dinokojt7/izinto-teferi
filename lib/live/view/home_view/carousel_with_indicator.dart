@@ -59,45 +59,36 @@ class _CarouselWithIndicatorState extends State<CarouselWithIndicator> {
           SizedBox(height: Dimensions.height30),
           CarouselSlider(
             items: widget.specialties.map((specialty) {
-              return Builder(
-                builder: (BuildContext context) {
-                  return Stack(
-                    children: [
-                      Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(Dimensions.radius15),
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: AssetImage(specialty.img!),
-                          ),
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              print('Carousel overlay tapped!');
-                              Provider.of<HomeViewController>(context,
-                                      listen: false)
-                                  .navigateToNestedWidget(
-                                      context,
-                                      SpecialityItemView(
-                                        serviceViewed:
-                                            specialty.name ?? 'Service Details',
-                                      ));
-                            },
-                            borderRadius:
-                                BorderRadius.circular(Dimensions.radius15),
-                          ),
-                        ),
-                      ),
-                    ],
+              return GestureDetector(
+                onTap: () {
+                  print('Carousel item tapped! Specialty: ${specialty.name}');
+                  Provider.of<HomeViewController>(context, listen: false)
+                      .navigateToNestedWidget(
+                    context,
+                    SpecialityItemView(
+                      serviceViewed: specialty.name ?? 'Service Details',
+                    ),
                   );
                 },
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(Dimensions.radius15),
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: AssetImage(specialty.img!),
+                    ),
+                  ),
+                  // Add a visual feedback for tap if needed
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(Dimensions.radius15),
+                      color: Colors.black.withOpacity(
+                          0.1), // Slight overlay for visual feedback
+                    ),
+                  ),
+                ),
               );
             }).toList(),
             carouselController: _controller,

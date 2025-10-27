@@ -18,6 +18,7 @@ import '../base/show_snackbar.dart';
 import '../live/utilities/generic_snackbar.dart';
 import '../live/view/auth_view/view_widgets/countdown_controller.dart';
 import '../live/view/auth_view/view_widgets/otp_screen.dart';
+import '../live/view/home_view/home_view.dart';
 import '../pages/auth/otp_screen.dart';
 import '../pages/home/home_page.dart';
 import '../pages/on_boarding/location_access.dart';
@@ -228,7 +229,7 @@ class FirebaseAuthMethods {
           Get.offAll(() => ProfileView());
         } else {
           await _updateUserTermsAcceptance(user!.uid, termsAccepted);
-          Get.offAll(() => HomePage());
+          Get.offAll(() => HomeView());
         }
 
         return _userFromFirebaseUser(user);

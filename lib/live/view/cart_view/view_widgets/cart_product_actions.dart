@@ -33,39 +33,53 @@ class CartProductActions extends StatelessWidget {
           Provider.of<CartActionsController>(context, listen: false);
 
       final List _cartList = _cartController.getItems;
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () async {
-              if (_cartList[index].quantity == 1) {
-                cartActionsController.clearCartData(
-                    context,
-                    'Remove ${productName} from cart?',
-                    'Remove',
-                    false,
-                    index,
-                    _cartList[index].specialty!);
-              } else {
-                _cartController.addItem(_cartList[index].specialty!, -1);
-              }
-            },
-            child: ActionButton(icon: Icons.remove),
-          ),
-          Text(
-            quantity.toString(),
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Poppins',
-                fontSize: Dimensions.font16),
-          ),
-          GestureDetector(
-              onTap: () {
-                _cartController.addItem(_cartList[index].specialty!, 1);
+      return Container(
+        width: 90,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.3),
+          color: Colors.black,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Remove item from cart
+            GestureDetector(
+              onTap: () async {
+                if (_cartList[index].quantity == 1) {
+                  cartActionsController.clearCartData(
+                      context,
+                      'Remove ${productName} from cart?',
+                      'Remove',
+                      false,
+                      index,
+                      _cartList[index].specialty!);
+                } else {
+                  _cartController.addItem(_cartList[index].specialty!, -1);
+                }
               },
-              child: ActionButton(icon: Icons.add)),
-        ],
+              child: ActionButton(
+                icon: Icons.remove,
+              ),
+            ),
+
+            // Cart Item count
+            Text(
+              quantity.toString(),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Poppins',
+                  fontSize: Dimensions.font16),
+            ),
+
+            // Add item to cart
+            GestureDetector(
+                onTap: () {
+                  _cartController.addItem(_cartList[index].specialty!, 1);
+                },
+                child: ActionButton(icon: Icons.add)),
+          ],
+        ),
       );
     });
   }
@@ -86,4 +100,21 @@ class ActionButton extends StatelessWidget {
       icon: icon,
     );
   }
+}
+
+Widget _cartActionBuild(IconData icon) {
+  return Container(
+    width: Dimensions.width30 * 1.1,
+    height: Dimensions.width30 * 1.1,
+    decoration: BoxDecoration(
+        // border: boxBorder,
+        borderRadius: BorderRadius.circular(Dimensions.width30 * 1.1 / 2),
+        color: Colors.black),
+    child: Icon(
+      icon,
+      weight: 5,
+      color: Colors.white,
+      size: Dimensions.iconSize24 * 1.4,
+    ),
+  );
 }

@@ -28,8 +28,8 @@ class AddToBasket extends StatelessWidget {
       return Stack(
         children: [
           AnimatedContainer(
-            duration: Duration(seconds: 2),
-            width: _isInCart ? 90 : 28,
+            duration: Duration(seconds: 1),
+            width: _isInCart ? 96 : 28,
             height: 28,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(Dimensions.radius15),
@@ -51,8 +51,8 @@ class AddToBasket extends StatelessWidget {
           ),
           _isInCart
               ? AnimatedContainer(
-                  duration: Duration(seconds: 2),
-                  width: 90,
+                  duration: Duration(seconds: 1),
+                  width: 96,
                   height: 28,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(Dimensions.radius15),

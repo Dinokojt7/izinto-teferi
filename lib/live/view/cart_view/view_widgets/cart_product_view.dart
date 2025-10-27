@@ -98,19 +98,11 @@ class CartProductView extends StatelessWidget {
                         overFlow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
-                      Container(
-                        width: 90,
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(Dimensions.radius15 * 1.3),
-                          color: Colors.black,
-                        ),
-                        child: CartProductActions(
-                          quantity: cartList[index].quantity,
-                          index: index,
-                          productName: cartList[index].name,
-                          viewContext: context,
-                        ),
+                      CartProductActions(
+                        quantity: cartList[index].quantity,
+                        index: index,
+                        productName: cartList[index].name,
+                        viewContext: context,
                       ),
                     ],
                   )

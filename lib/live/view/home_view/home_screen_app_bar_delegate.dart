@@ -75,50 +75,47 @@ class HomeScreenAppBarDelegate extends SliverPersistentHeaderDelegate {
         }),
       );
 
-  Widget buildHeading() => Padding(
-        padding: EdgeInsets.only(
-            left: 6, top: Dimensions.height45 / 2, bottom: Dimensions.height10),
-        child: Row(
-          children: [
-            PrimaryStyleText(
-              family: 'Poppins',
-              text: 'Popular',
-              weight: FontWeight.w600,
-            ),
-            SizedBox(
-              width: Dimensions.width10,
-            ),
-            Container(
-              margin: const EdgeInsets.only(bottom: 3),
-              child: BigText(
-                text: '.',
-                color: Colors.black26,
-                weight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(
-              width: Dimensions.width10,
-            ),
-            Container(
-              margin: const EdgeInsets.only(bottom: 1),
-              child: SmallText(
-                family: 'Poppins',
-                text: 'Services',
-                maxLines: 1,
-              ),
-            )
-          ],
-        ),
-      );
-
   Widget buildBackground(double shrinkOffset) => Opacity(
         opacity: disappear(shrinkOffset).clamp(0.0, 1.0),
-        child: Container(
-          height: expandedHeight * 1.5,
-          child: Image.asset(
-            'assets/image/wallpaper.png',
-            width: double.maxFinite,
-            fit: BoxFit.cover,
+        child: SizedBox(
+          height: expandedHeight -
+              Dimensions.height10, // keep your header height cleanly managed
+          child: Stack(
+            fit: StackFit.expand,
+            clipBehavior: Clip.none,
+            children: [
+              // 🔹 Oversized image that bleeds above & below
+              Positioned(
+                top: -expandedHeight *
+                    0.1, // pushes image upward (adds visible area above)
+                bottom: -expandedHeight * 0.1, // extends below too
+                left: 0,
+                right: 0,
+                child: Image.asset(
+                  'assets/image/wallpaper.png',
+                  width: double.maxFinite,
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+              // 🔹 Optional soft gradient fade to white or transparent
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.white.withOpacity(0.0),
+                        Colors.white.withOpacity(0.05),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.2, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );

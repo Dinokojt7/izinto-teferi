@@ -23,46 +23,53 @@ class GenericSnackBar {
         content: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: Dimensions.width10 / 2,
-                  height: Dimensions.height45 * 1.3,
-                  decoration: BoxDecoration(
-                    color: LiveColors.cartBlue,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(Dimensions.radius15 / 2),
-                      bottomLeft: Radius.circular(Dimensions.radius15 / 2),
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    width: Dimensions.width10 / 2,
+                    height: Dimensions.height45 * 1.3,
+                    decoration: BoxDecoration(
+                      color: LiveColors.cartBlue,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(Dimensions.radius15 / 2),
+                        bottomLeft: Radius.circular(Dimensions.radius15 / 2),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: Dimensions.width10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: LiveColors.cartBlue,
-                        size: Dimensions.iconSize26,
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: Dimensions.width10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: LiveColors.cartBlue,
+                            size: Dimensions.iconSize26,
+                          ),
+                          SizedBox(width: Dimensions.width10),
+                          Expanded(
+                            child: Text(
+                              message,
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                color: Colors.black,
+                                fontSize: Dimensions.font20 / 1.38,
+                                fontWeight: isWiderSnack
+                                    ? FontWeight.w500
+                                    : FontWeight.w300,
+                              ),
+                              maxLines: 2, // Allow up to 2 lines
+                              overflow: TextOverflow.ellipsis, // Add ellipsis
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(
-                        width: Dimensions.width10,
-                      ),
-                      Text(
-                        message,
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.black,
-                          fontSize: Dimensions.font20 / 1.38,
-                          fontWeight:
-                              isWiderSnack ? FontWeight.w500 : FontWeight.w300,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
+                    ),
+                  )
+                ],
+              ),
             ),
             onTap != null
                 ? BlueTextButton(text: 'login', onTap: onTap)

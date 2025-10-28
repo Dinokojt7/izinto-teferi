@@ -1,11 +1,17 @@
-import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
+
+import '../../utils/dimensions.dart';
 
 class LiveProgressIndicator extends StatefulWidget {
   final bool? hasOwnDialog;
   final Color? color;
-  const LiveProgressIndicator({Key? key, this.hasOwnDialog = false, this.color})
-      : super(key: key);
+  final double size;
+  const LiveProgressIndicator({
+    Key? key,
+    this.hasOwnDialog = false,
+    this.color,
+    this.size = 30.0,
+  }) : super(key: key);
 
   @override
   State<LiveProgressIndicator> createState() => _LiveProgressIndicatorState();
@@ -14,50 +20,20 @@ class LiveProgressIndicator extends StatefulWidget {
 class _LiveProgressIndicatorState extends State<LiveProgressIndicator>
     with TickerProviderStateMixin {
   late AnimationController _controller;
-  late AnimationController _secondController;
-  late Animation<double> _foregroundAnimation;
-  late Animation<double> _backgroundAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Animation controller for both progress bars
     _controller = AnimationController(
-      duration: const Duration(seconds: 8),
+      duration: const Duration(milliseconds: 1000), // Faster speed (was 1500)
       vsync: this,
     )..repeat();
-
-    _secondController = AnimationController(
-      duration: const Duration(seconds: 5),
-      vsync: this,
-    )..repeat();
-
-    // Fast animation for the foreground (white) indicator
-    _foregroundAnimation = Tween<double>(begin: 0.0, end: 0.6).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(0.0, 0.6, curve: Curves.linear),
-        reverseCurve: Interval(0.0, 0.6, curve: Curves.linear),
-      ),
-    );
-
-    // Slower animation for the background (black) indicator
-    _backgroundAnimation = Tween<double>(begin: 0.0, end: 0.6).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(0.0, 0.6, curve: Curves.linear),
-      ),
-    );
-
-    // Start the animations
-    _controller.repeat();
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _secondController.dispose();
     super.dispose();
   }
 
@@ -70,85 +46,93 @@ class _LiveProgressIndicatorState extends State<LiveProgressIndicator>
             ? Colors.transparent
             : Color(0xff000008).withOpacity(0.55),
         insetPadding: EdgeInsets.all(0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              child: Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Background (slower, black)
-                    SizedBox(
-                      width: 30.0,
-                      height: 30.0,
-                      child: Transform.rotate(
-                        angle:
-                            _secondController.value * 2.0 * 3.14159, // 2 * pi
-                        child: CircularCappedProgressIndicator(
-                            //      value: _backgroundAnimation.value,
-                            color: Colors.white,
-                            strokeWidth: 6.0,
-                            strokeCap: StrokeCap.round),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 30.0,
-                      height: 30.0,
-                      child: Transform.rotate(
-                        angle: _controller.value * 1.8 * 3.14159, // 2 * pi
-                        child: CircularCappedProgressIndicator(
-                            //   value: _foregroundAnimation.value,
-                            color: Colors.black.withOpacity(0.1),
-                            strokeWidth: 6.0,
-                            strokeCap: StrokeCap.round),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 30.0,
-                      height: 30.0,
-                      child: Transform.rotate(
-                        angle:
-                            _secondController.value * 1.5 * 3.14159, // 2 * pi
-                        child: CircularCappedProgressIndicator(
-                            //   value: _foregroundAnimation.value,
-                            color: Colors.black.withOpacity(0.1),
-                            strokeWidth: 6.0,
-                            strokeCap: StrokeCap.round),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 30.0,
-                      height: 30.0,
-                      child: Transform.rotate(
-                        angle: _controller.value * 0.9 * 3.14159, // 2 * pi
-                        child: CircularCappedProgressIndicator(
-                            //   value: _foregroundAnimation.value,
-                            color: Colors.black.withOpacity(0.1),
-                            strokeWidth: 6.0,
-                            strokeCap: StrokeCap.round),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 30.0,
-                      height: 30.0,
-                      child: Transform.rotate(
-                        angle:
-                            _secondController.value * 0.7 * 3.14159, // 2 * pi
-                        child: CircularCappedProgressIndicator(
-                            //   value: _foregroundAnimation.value,
-                            color: widget.color ?? Colors.white,
-                            strokeWidth: 6.0,
-                            strokeCap: StrokeCap.round),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+        ),
+        child: Container(
+          width: Dimensions.screenWidth,
+          height: Dimensions.screenHeight,
+          child: Center(
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return CustomPaint(
+                  size: Size(widget.size, widget.size),
+                  painter: _FadeTailProgressPainter(
+                    progress: _controller.value,
+                    color: widget.color ?? Colors.white,
+                    strokeWidth: 6.0,
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
+}
+
+class _FadeTailProgressPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double strokeWidth;
+
+  _FadeTailProgressPainter({
+    required this.progress,
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius =
+        size.width / 2 - strokeWidth / 3; // Was /1.4, now /3 for bigger radius
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    // Strong front tip with nice fade at the end
+    final gradient = SweepGradient(
+      colors: [
+        color.withValues(alpha: 0.1), // Back tip fade
+        color.withValues(alpha: 0.5), // Quick transition
+        color, // Long white section starts
+        color, // Long white section continues
+        color.withValues(alpha: 0.5), // Quick transition
+        color.withValues(alpha: 0.1), // Front tip fade
+      ],
+      stops: [
+        0.0,
+        0.1,
+        0.3,
+        0.7,
+        0.9,
+        1.0
+      ], // More space for white, less for fade
+      // Clockwise rotation
+      transform: GradientRotation(progress * 2 * 3.14159),
+    );
+
+    paint.shader = gradient.createShader(rect);
+
+    // Continuous clockwise motion with good arc length
+    final arcLength = 2.0; // Slightly shorter arc for better fade visibility
+    final startAngle = progress * 2 * 3.14159;
+
+    canvas.drawArc(
+      rect,
+      startAngle,
+      arcLength,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

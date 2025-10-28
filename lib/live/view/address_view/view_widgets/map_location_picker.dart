@@ -311,12 +311,81 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     return addressParts.join(', ');
   }
 
+  Future<BitmapDescriptor> _createCustomPinMarker() async {
+    final String emoji = '📍'; // Location pin emoji
+    final double fontSize = 60.0;
+
+    // Calculate container size based on font size
+    final double containerSize = fontSize * 1.5; // 90px for 60px font
+    final double center = containerSize / 2;
+
+    TextSpan span = TextSpan(
+      style: TextStyle(
+        fontSize: fontSize, // Smaller size for better appearance
+        backgroundColor: Colors.transparent,
+      ),
+      text: emoji,
+    );
+
+    TextPainter painter =
+        TextPainter(textDirection: TextDirection.ltr, text: span);
+    painter.layout();
+
+    ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    Canvas canvas = Canvas(pictureRecorder);
+
+    // Draw a subtle background circle
+    final backgroundPaint = Paint()
+      ..color = Colors.transparent
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+        Offset(center, center), containerSize * 0.4, backgroundPaint);
+
+    // Calculate position to center the emoji
+    final double textX = (containerSize - painter.width) / 2;
+    final double textY = (containerSize - painter.height) / 2;
+
+    // Draw the emoji centered
+    painter.paint(canvas, Offset(textX, textY));
+
+    // Use the calculated container size
+    final img = await pictureRecorder
+        .endRecording()
+        .toImage(containerSize.round(), containerSize.round());
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    final Uint8List pngBytes = byteData!.buffer.asUint8List();
+    return BitmapDescriptor.fromBytes(pngBytes);
+  }
+
+// Add this variable to store the custom marker icon
+  BitmapDescriptor? _customPinIcon;
+
+  void _onSearchTextChanged() {
+    final addressViewController =
+        Provider.of<MainAddressViewController>(context, listen: false);
+
+    if (_searchController.text.isEmpty) {
+      // Directly set hasData to false and clear the address
+      addressViewController.disposeDialog(); // This should set _hasData = false
+    }
+  }
+
   @override
   void initState() {
     _initialPosition = widget.currentLatLng ?? _initialPosition;
     _mapType = widget.mapType;
     _searchController = widget.searchController ?? _searchController;
+    _searchController.addListener(_onSearchTextChanged);
+
+    // Initialize the custom pin icon
+    _initializeCustomMarker();
+
     super.initState();
+  }
+
+  Future<void> _initializeCustomMarker() async {
+    _customPinIcon = await _createCustomPinMarker();
+    setState(() {}); // Trigger rebuild once marker is loaded
   }
 
   @override
@@ -338,7 +407,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     markers.add(Marker(
       markerId: const MarkerId("current_location"),
       position: _initialPosition,
-      icon: BitmapDescriptor.defaultMarker, // You can customize this
+      icon: _customPinIcon ??
+          BitmapDescriptor.defaultMarker, // Use custom pin or fallback
       infoWindow: InfoWindow(
         title: _address,
         snippet: "Selected location",
@@ -356,12 +426,67 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
               height: 72.0,
               color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 12.0),
                 child: GooglePlacesSuggestionsAutoCompleteField(
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey[100], // Light gray background
+                    hintText: "Search address", // Placeholder text
+                    hintStyle: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 16.0,
+                      fontFamily: 'Poppins',
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide.none, // No border for cleaner look
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide:
+                          BorderSide(color: Colors.grey[100]!, width: 1.0),
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    prefixIcon: Icon(
+                      Icons.search, // Magnifying glass icon
+                      color: Colors.black54,
+                      size: 25.0,
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.close, // X icon
+                              color: Colors.grey[800],
+                              size: 25.0,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+
+                              // Also clear the address controller data if needed
+                              final addressViewController =
+                                  Provider.of<MainAddressViewController>(
+                                      context,
+                                      listen: false);
+                              addressViewController.disposeDialog();
+                            },
+                          )
+                        : null,
+                  ),
+                  suggestionBackgroundColor: Colors.white,
+
+                  suggestionDividerColor:
+                      Colors.black45, // Divider color between the suggestions
+                  suggestionTextStyle: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
+                      backgroundColor: Colors.white),
                   controller: _searchController,
                   googleAPIKey: widget.apiKey,
                   countries: "za",
                   onPlaceSelected: (place) async {
+                    FocusScope.of(context).unfocus();
                     // When a place is selected, move the map to that location
                     final lat = place.latitude;
                     final lng = place.longitude;
@@ -399,57 +524,6 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                 ),
               ),
             ),
-            // PlacesAutocomplete(
-            //   hideOnEmpty: false,
-            //   hideOnLoading: false,
-            //   components: [Component(Component.country, "za")],
-            //   mounted: mounted,
-            //   apiKey: widget.apiKey,
-            //   searchController: _searchController,
-            //   borderRadius: widget.borderRadius,
-            //   offset: widget.offset,
-            //   radius: widget.radius,
-            //   fields: widget.fields,
-            //   hideSuggestionsOnKeyboardHide:
-            //   widget.hideSuggestionsOnKeyboardHide,
-            //   language: widget.language,
-            //   location: widget.location,
-            //   origin: widget.origin,
-            //   placesApiHeaders: widget.placesApiHeaders,
-            //   placesBaseUrl: widget.placesBaseUrl,
-            //   placesHttpClient: widget.placesHttpClient,
-            //   region: widget.region,
-            //   searchHintText: widget.searchHintText,
-            //   sessionToken: widget.sessionToken,
-            //   showBackButton: false,
-            //   strictbounds: widget.strictbounds,
-            //   topCardColor: widget.topCardColor,
-            //   topCardMargin: widget.topCardMargin,
-            //   topCardShape: widget.topCardShape,
-            //   types: widget.types,
-            //   onGetDetailsByPlaceId: (placesDetails) async {
-            //     if (placesDetails == null) {
-            //       logger.e("placesDetails is null");
-            //       return;
-            //     }
-            //     var resultsDetails =
-            //         placesDetails.result.formattedAddress ?? "";
-            //     final userLat = placesDetails.result.geometry?.location.lat;
-            //     final userLng = placesDetails.result.geometry?.location.lng;
-            //     addressViewController.onAddressAutocomplete(
-            //         resultsDetails, userLat, userLng);
-            //     _initialPosition = LatLng(
-            //       placesDetails.result.geometry?.location.lat ?? 0,
-            //       placesDetails.result.geometry?.location.lng ?? 0,
-            //     );
-            //     final controller = await _controller.future;
-            //     controller.animateCamera(
-            //         CameraUpdate.newCameraPosition(cameraPosition()));
-            //     _address = placesDetails.result.formattedAddress ?? "";
-            //     widget.onSuggestionSelected?.call(placesDetails);
-            //   },
-            // ),
-
             Expanded(
               child: Stack(
                 children: [
@@ -524,7 +598,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
                           ),
                         ],
                       ),
-                      addressViewController.hasData
+                      addressViewController.hasData &&
+                              _searchController.text.isNotEmpty
                           ? ShowResultsDialog()
                           : Container(),
                     ],
@@ -536,5 +611,11 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
         ),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchTextChanged);
+    super.dispose();
   }
 }

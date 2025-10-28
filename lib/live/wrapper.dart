@@ -87,7 +87,21 @@ class _WrapperState extends State<Wrapper> {
     if (user == null) {
       //Set the system navigation bar background to white
       //homeViewController.onAccess(Colors.white);
-      return PhoneAuthView();
+      return PopScope(
+          canPop:
+              false, // prevents auto-pop; similar to returning false from onWillPop
+          onPopInvoked: (didPop) {
+            if (!didPop) {
+              final focus = FocusScope.of(context);
+              if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
+                focus.unfocus();
+              } else {
+                Navigator.of(context)
+                    .maybePop(); // allow normal back if no keyboard
+              }
+            }
+          },
+          child: PhoneAuthView());
     } else {
       ///Here's a list of addresses from the controller
       final _profileController =

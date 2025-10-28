@@ -12,6 +12,7 @@ import '../../../../controllers/popular_specialty_controller.dart';
 import '../../../../controllers/tabs_header.dart';
 import '../../../utilities/colors.dart';
 import '../../../widgets/icons/back_arrow.dart';
+import '../../../widgets/icons/tabs_header_back_arrow.dart';
 import 'controller/category_view_controller.dart';
 
 class MaterialTabsHeader extends StatefulWidget {
@@ -123,7 +124,7 @@ class _MaterialTabsHeaderState extends State<MaterialTabsHeader>
                 padding: const EdgeInsets.only(top: 14.0),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: BackArrow(
+                  child: TabsHeaderBackArrow(
                     isSpecialtyView: true,
                     onTap: () {
                       Navigator.of(context).pop();

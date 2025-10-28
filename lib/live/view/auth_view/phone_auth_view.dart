@@ -53,140 +53,130 @@ class _PhoneAuthViewState extends State<PhoneAuthView> {
       _isInitialized = controller.isInitialized;
       _showTermsDialog = controller.showTermsDialog;
 
-      return WillPopScope(
-        onWillPop: () async {
-          if (_showTermsDialog) {
-            controller.onShowTermsDialog();
-            return false;
-          }
-          return true;
-        },
-        child: Stack(
-          children: [
-            Scaffold(
-              backgroundColor: Colors.white,
-              appBar: AppBar(
-                elevation: 0,
-                backgroundColor: _isInitialized
-                    ? Colors.transparent
-                    : Colors.white.withOpacity(0.2),
-                automaticallyImplyLeading: false,
-                toolbarHeight: 0,
-              ),
-              body: Padding(
-                padding: EdgeInsets.only(
-                    left: 26.0, top: Dimensions.height15, right: 26.0),
-                child: SingleChildScrollView(
-                  physics: NeverScrollableScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TopLogo(),
-                      SizedBox(height: Dimensions.height45 * 1.6),
-                      IntroductionText(
-                          text: 'Hi! Let\'s start with your phone number'),
-                      SizedBox(
-                        height: Dimensions.height20,
-                      ),
-                      DescriptionText(
-                          text:
-                              'Enter your number to log in, or to sign up for an account if your\'re new here.'),
-                      SizedBox(
-                        height: Dimensions.height20 * 1.5,
-                      ),
-                      Row(
-                        children: [
-                          CountryCodeSelector(),
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  EdgeInsets.only(left: Dimensions.width20),
-                              child: GenericTextField(
-                                textField: TextFormField(
-                                  maxLength: 13,
-                                  controller: controller.phoneNumberController,
-                                  keyboardType: TextInputType
-                                      .number, // Set input type to numbers
-                                  inputFormatters: <TextInputFormatter>[
-                                    FilteringTextInputFormatter
-                                        .digitsOnly, // Allow only digits
-                                  ],
-                                  validator: (val) => val!.isEmpty ||
-                                          val.toString() == 'Phone number'
-                                      ? "Required"
-                                      : null,
-                                  onChanged: (val) {
-                                    controller
-                                        .validatePhoneNumber(); // Validate the input
-                                  },
-                                  obscureText: false,
-                                  cursorColor: Colors.black,
-                                  decoration: buildInputDecoration(),
-                                  style: buildTextStyle(),
-                                ),
+      return Stack(
+        children: [
+          Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: _isInitialized
+                  ? Colors.transparent
+                  : Colors.white.withOpacity(0.2),
+              automaticallyImplyLeading: false,
+              toolbarHeight: 0,
+            ),
+            body: Padding(
+              padding: EdgeInsets.only(
+                  left: 26.0, top: Dimensions.height15, right: 26.0),
+              child: SingleChildScrollView(
+                physics: NeverScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TopLogo(),
+                    SizedBox(height: Dimensions.height45 * 1.6),
+                    IntroductionText(
+                        text: 'Hi! Let\'s start with your phone number'),
+                    SizedBox(
+                      height: Dimensions.height20,
+                    ),
+                    DescriptionText(
+                        text:
+                            'Enter your number to log in, or to sign up for an account if your\'re new here.'),
+                    SizedBox(
+                      height: Dimensions.height20 * 1.5,
+                    ),
+                    Row(
+                      children: [
+                        CountryCodeSelector(),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: Dimensions.width20),
+                            child: GenericTextField(
+                              textField: TextFormField(
+                                maxLength: 13,
+                                controller: controller.phoneNumberController,
+                                keyboardType: TextInputType
+                                    .number, // Set input type to numbers
+                                inputFormatters: <TextInputFormatter>[
+                                  FilteringTextInputFormatter
+                                      .digitsOnly, // Allow only digits
+                                ],
+                                validator: (val) => val!.isEmpty ||
+                                        val.toString() == 'Phone number'
+                                    ? "Required"
+                                    : null,
+                                onChanged: (val) {
+                                  controller
+                                      .validatePhoneNumber(); // Validate the input
+                                },
+                                obscureText: false,
+                                cursorColor: Colors.black,
+                                decoration: buildInputDecoration(),
+                                style: buildTextStyle(),
                               ),
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: Dimensions.height30 * 1.2,
+                    ),
+                    SaveButton(
+                      isActive: controller.isValid && controller.isActive,
+                      isLoading: controller.isValid ? _isInitialized : false,
+                      description: 'Continue',
+                      isAuthScreen: true,
+                      onTap: () async {
+                        if (controller.isValid) {
+                          FocusScope.of(context).unfocus();
+                          await controller.resetAuthContext();
+                          controller.displayTermsDialog();
+                        }
+                      },
+                    ),
+                    SizedBox(
+                      height: Dimensions.height20 / 1.4,
+                    ),
+                    SectionDivider(),
+                    SizedBox(
+                      height: Dimensions.height30 / 2,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: Dimensions.height10,
                       ),
-                      SizedBox(
-                        height: Dimensions.height30 * 1.2,
-                      ),
-                      SaveButton(
-                        isActive: controller.isValid && controller.isActive,
-                        isLoading: controller.isValid ? _isInitialized : false,
-                        description: 'Continue',
-                        isAuthScreen: true,
+                      child: GoogleAuthButton(
                         onTap: () async {
-                          if (controller.isValid) {
-                            FocusScope.of(context).unfocus();
-                            await controller.resetAuthContext();
-                            controller.displayTermsDialog();
-                          }
+                          await controller.setAuthContextToGoogle();
+                          controller.displayTermsDialog();
                         },
                       ),
-                      SizedBox(
-                        height: Dimensions.height20 / 1.4,
-                      ),
-                      SectionDivider(),
-                      SizedBox(
-                        height: Dimensions.height30 / 2,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: Dimensions.height10,
-                        ),
-                        child: GoogleAuthButton(
-                          onTap: () async {
-                            await controller.setAuthContextToGoogle();
-                            controller.displayTermsDialog();
-                          },
-                        ),
-                      )
-                    ],
-                  ),
+                    )
+                  ],
                 ),
               ),
-              bottomNavigationBar: ViewAsGuestText(
-                onTap: () {
-                  addressController.restartLoader();
-                  Get.to(() => GuestAccess(),
-                      transition: Transition.fade,
-                      duration: Duration(seconds: 1));
-                },
-              ),
             ),
-            if (_isInitialized && !controller.isValid)
-              MiniCircularProgressIndicator(
-                color: Colors.black87,
-                hasOwnDialog: false,
-              ),
-            if (_showTermsDialog)
-              TermsDialog(
-                widgetContext: widgetContext,
-              ),
-          ],
-        ),
+            bottomNavigationBar: ViewAsGuestText(
+              onTap: () {
+                addressController.restartLoader();
+                Get.to(() => GuestAccess(),
+                    transition: Transition.fade,
+                    duration: Duration(seconds: 1));
+              },
+            ),
+          ),
+          if (_isInitialized && !controller.isValid)
+            MiniCircularProgressIndicator(
+              color: Colors.black87,
+              hasOwnDialog: false,
+            ),
+          if (_showTermsDialog)
+            TermsDialog(
+              widgetContext: widgetContext,
+            ),
+        ],
       );
     });
   }

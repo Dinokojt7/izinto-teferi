@@ -62,6 +62,9 @@ class _TermsDialogState extends State<TermsDialog> {
           elevation: 0,
           backgroundColor: Color(0xff000008).withOpacity(0.55),
           insetPadding: EdgeInsets.all(0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -101,7 +104,7 @@ class _TermsDialogState extends State<TermsDialog> {
                           children: [
                             IntroductionText(
                               text: 'General Terms and Conditions',
-                              textSize: Dimensions.font20 / 1.5,
+                              textSize: Dimensions.font20 / 1.1,
                             ),
                           ],
                         ),

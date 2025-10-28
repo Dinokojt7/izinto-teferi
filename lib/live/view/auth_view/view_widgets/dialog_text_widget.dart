@@ -24,7 +24,7 @@ class _DialogTextWidgetState extends State<DialogTextWidget> {
       child: RichText(
         text: TextSpan(
           style: TextStyle(
-            fontSize: Dimensions.font20 / 1.3,
+            fontSize: Dimensions.font20 / 1.2,
             fontFamily: 'Poppins',
             fontWeight: widget.fontWeight,
             color: Colors.black,

@@ -37,7 +37,7 @@ class SpecialityItemView extends StatelessWidget {
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: Dimensions.height30),
+              padding: EdgeInsets.only(top: Dimensions.height30 / 10),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -60,7 +60,7 @@ class SpecialityItemView extends StatelessWidget {
                             textSize: Dimensions.font20 * 1.1,
                           ),
                           SizedBox(
-                            height: Dimensions.height30,
+                            height: Dimensions.height30 / 1.2,
                           ),
                           SecondaryBoldText(
                               text: 'Save time and wash at your convenience'),
@@ -103,10 +103,7 @@ class SpecialityItemView extends StatelessWidget {
                     ),
                     TryThisServiceWidget(),
                     SizedBox(
-                      height: Dimensions.height20 * 1.1,
-                    ),
-                    SizedBox(
-                      height: Dimensions.height20 * 1.1,
+                      height: Dimensions.height20 / 1.1,
                     ),
                   ],
                 ),

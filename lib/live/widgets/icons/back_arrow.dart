@@ -43,14 +43,13 @@ class _BackArrowState extends State<BackArrow> {
   Widget build(BuildContext context) {
     return Container(
       // height: Dimensions.height45 / 1.3,
-      width: 40,
-      height: 40,
+      width: 60,
+      height: 39,
       padding: EdgeInsets.all(2.0),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(40 / 2),
           color: _isTapped && !widget.isSpecialtyView
               ? Colors.grey.shade200
-              : Colors.transparent),
+              : Colors.black),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -63,7 +62,7 @@ class _BackArrowState extends State<BackArrow> {
               ? Colors.transparent
               : Colors.grey.shade200,
           child: Padding(
-            padding: EdgeInsets.all(2.0),
+            padding: EdgeInsets.only(left: 12.0),
             child: Icon(
               Icons.keyboard_backspace_outlined,
               weight: widget.weight,

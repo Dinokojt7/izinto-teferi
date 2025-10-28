@@ -102,19 +102,15 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
         elevation: 1.5,
         shadowColor: Colors.black54,
         color: Colors.white,
-        child: Container(
-          padding: const EdgeInsets.only(left: 2.0),
-          height: LiveDimensions.height45 * 1.5,
-          width: double.maxFinite,
-          child: TabBar(
-            labelPadding: EdgeInsets.symmetric(horizontal: 8.0),
-            isScrollable: true,
-            indicatorSize: TabBarIndicatorSize.label,
-            physics: AlwaysScrollableScrollPhysics(),
-            indicatorColor: Colors.transparent,
-            controller: _tabController,
-            tabs: _categoriesHeaderTabs,
-          ),
+        child: TabBar(
+          labelPadding:
+              EdgeInsets.symmetric(horizontal: 8.0), // Symmetric padding
+          isScrollable: true,
+          indicatorSize: TabBarIndicatorSize.label,
+          physics: AlwaysScrollableScrollPhysics(),
+          indicatorColor: Colors.transparent,
+          controller: _tabController,
+          tabs: _categoriesHeaderTabs,
         ),
       );
     });

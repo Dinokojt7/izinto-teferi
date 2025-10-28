@@ -133,15 +133,6 @@ class _CategoryViewState extends State<CategoryView> {
     });
   }
 
-  Widget notch() => Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: Container(
-          width: Dimensions.width30 * 1.4,
-          height: Dimensions.height10 / 3.5,
-          color: Colors.black87,
-        ),
-      );
-
   Widget buildHeading(String viewedService) => Padding(
         padding: EdgeInsets.only(
             top: 10.0, left: Dimensions.width10, bottom: Dimensions.height20),

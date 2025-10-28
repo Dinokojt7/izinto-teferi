@@ -28,65 +28,49 @@ class _AddNewAddressState extends State<AddNewAddress> {
     return Consumer<MainAddressViewController>(
         builder: (context, _controller, child) {
       final _isLoading = _controller.isAddressDialogLoading;
-      return WillPopScope(
-        onWillPop: () async {
-          if (widget.shouldReturnDarkStatus) {
-            setState(() {
-              _statusBarColor = Colors.black.withOpacity(0.05);
-            });
-            SystemNavigation().applyCustomSystemChromeSettings(
-              Colors.black,
-              Brightness.light,
-              Colors.transparent,
-              Brightness.light,
-            );
-          }
-          return true;
-        },
-        child: Stack(
-          children: [
-            Scaffold(
-              backgroundColor: Colors.white.withOpacity(0.94),
-              appBar: AppBar(
-                elevation: 0,
-                backgroundColor: _statusBarColor,
-                automaticallyImplyLeading: false,
-                toolbarHeight: 0,
-              ),
-              body: Container(
-                color: Colors.white,
-                child: Column(
-                  children: [
-                    buildHeader(context, widget.shouldReturnDarkStatus),
+      return Stack(
+        children: [
+          Scaffold(
+            backgroundColor: Colors.white.withOpacity(0.94),
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: _statusBarColor,
+              automaticallyImplyLeading: false,
+              toolbarHeight: 0,
+            ),
+            body: Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  buildHeader(context, widget.shouldReturnDarkStatus),
 
-                    /// Google map view
-                    Expanded(
-                      child: Container(
-                        width: double.maxFinite,
-                        color: Colors.transparent,
-                        child: MapLocationPicker(
-                          apiKey: AppConstants.PLACES_API,
-                          canPopOnNextButtonTaped: true,
-                          currentLatLng: const LatLng(-26.056, 28.060),
-                          onNext: (dynamic result) {
-                            // Use dynamic for now
-                            print('Location selected: $result');
-                            // if (result != null) {
-                            //   setState(() {
-                            //     address = result.formattedAddress ?? "";
-                            //   });
-                            // }
-                          },
-                        ),
+                  /// Google map view
+                  Expanded(
+                    child: Container(
+                      width: double.maxFinite,
+                      color: Colors.transparent,
+                      child: MapLocationPicker(
+                        apiKey: AppConstants.PLACES_API,
+                        canPopOnNextButtonTaped: true,
+                        currentLatLng: const LatLng(-26.056, 28.060),
+                        onNext: (dynamic result) {
+                          // Use dynamic for now
+                          print('Location selected: $result');
+                          // if (result != null) {
+                          //   setState(() {
+                          //     address = result.formattedAddress ?? "";
+                          //   });
+                          // }
+                        },
                       ),
-                    )
-                  ],
-                ),
+                    ),
+                  )
+                ],
               ),
             ),
-            if (_isLoading) LockScreen()
-          ],
-        ),
+          ),
+          if (_isLoading) LockScreen()
+        ],
       );
     });
   }
@@ -106,21 +90,12 @@ class _AddNewAddressState extends State<AddNewAddress> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 4.0),
+                padding: const EdgeInsets.only(top: 0.0),
                 child: BackArrow(
                   iconColor: Colors.black45,
                   onTap: () {
                     addressController.restartLoader();
-                    if (shouldReturnLightStatus) {
-                      setState(() {
-                        _statusBarColor = Colors.white;
-                      });
-                    } else {
-                      setState(() {
-                        _statusBarColor = Colors.black;
-                      });
-                    }
-                    //Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                   },
                 ),
               ),

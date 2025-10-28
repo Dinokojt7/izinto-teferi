@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_places_suggestions_autocomplete_field/google_places_suggestions_autocomplete_field.dart';
 import 'package:http/http.dart';
 import 'package:geocoding/geocoding.dart'; // Updated import
 import 'package:izinto/live/utilities/colors.dart';
@@ -16,7 +17,6 @@ import 'package:izinto/live/view/checkout_view/view_widgets/generic_white_contai
 import 'package:izinto/live/widgets/buttons/blue_text_button.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
-
 import '../../../../base/transitions.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../controller/address_dropdown_controller.dart';
@@ -332,9 +332,17 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
         [];
     final markers = Set<Marker>.from(additionalMarkers);
 
+// Remove the old current_location marker and add the new one
+    markers
+        .removeWhere((marker) => marker.markerId.value == "current_location");
     markers.add(Marker(
       markerId: const MarkerId("current_location"),
       position: _initialPosition,
+      icon: BitmapDescriptor.defaultMarker, // You can customize this
+      infoWindow: InfoWindow(
+        title: _address,
+        snippet: "Selected location",
+      ),
     ));
 
     return Consumer<MainAddressViewController>(
@@ -345,11 +353,103 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
         body: Column(
           children: [
             Container(
-                height: 72.0,
-                color: Colors.white,
-                child:
-                    Text('Search Location') // Replace with your search widget
+              height: 72.0,
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GooglePlacesSuggestionsAutoCompleteField(
+                  controller: _searchController,
+                  googleAPIKey: widget.apiKey,
+                  countries: "za",
+                  onPlaceSelected: (place) async {
+                    // When a place is selected, move the map to that location
+                    final lat = place.latitude;
+                    final lng = place.longitude;
+
+                    // Update the initial position
+                    _initialPosition = LatLng(lat!, lng!);
+
+                    // Move the map camera to the selected location
+                    final controller = await _controller.future;
+                    controller.animateCamera(
+                      CameraUpdate.newCameraPosition(
+                        CameraPosition(
+                          target: _initialPosition,
+                          zoom: _zoom,
+                        ),
+                      ),
+                    );
+
+                    // Decode the address for the selected location
+                    _decodeAddress(_initialPosition, context);
+
+                    // Update the address in the controller
+                    final addressViewController =
+                        Provider.of<MainAddressViewController>(context,
+                            listen: false);
+                    addressViewController.onAddressAutocomplete(
+                      place.streetAddress ?? "Address not available",
+                      lat,
+                      lng,
+                    );
+
+                    // Trigger widget rebuild to show the new marker
+                    setState(() {});
+                  },
                 ),
+              ),
+            ),
+            // PlacesAutocomplete(
+            //   hideOnEmpty: false,
+            //   hideOnLoading: false,
+            //   components: [Component(Component.country, "za")],
+            //   mounted: mounted,
+            //   apiKey: widget.apiKey,
+            //   searchController: _searchController,
+            //   borderRadius: widget.borderRadius,
+            //   offset: widget.offset,
+            //   radius: widget.radius,
+            //   fields: widget.fields,
+            //   hideSuggestionsOnKeyboardHide:
+            //   widget.hideSuggestionsOnKeyboardHide,
+            //   language: widget.language,
+            //   location: widget.location,
+            //   origin: widget.origin,
+            //   placesApiHeaders: widget.placesApiHeaders,
+            //   placesBaseUrl: widget.placesBaseUrl,
+            //   placesHttpClient: widget.placesHttpClient,
+            //   region: widget.region,
+            //   searchHintText: widget.searchHintText,
+            //   sessionToken: widget.sessionToken,
+            //   showBackButton: false,
+            //   strictbounds: widget.strictbounds,
+            //   topCardColor: widget.topCardColor,
+            //   topCardMargin: widget.topCardMargin,
+            //   topCardShape: widget.topCardShape,
+            //   types: widget.types,
+            //   onGetDetailsByPlaceId: (placesDetails) async {
+            //     if (placesDetails == null) {
+            //       logger.e("placesDetails is null");
+            //       return;
+            //     }
+            //     var resultsDetails =
+            //         placesDetails.result.formattedAddress ?? "";
+            //     final userLat = placesDetails.result.geometry?.location.lat;
+            //     final userLng = placesDetails.result.geometry?.location.lng;
+            //     addressViewController.onAddressAutocomplete(
+            //         resultsDetails, userLat, userLng);
+            //     _initialPosition = LatLng(
+            //       placesDetails.result.geometry?.location.lat ?? 0,
+            //       placesDetails.result.geometry?.location.lng ?? 0,
+            //     );
+            //     final controller = await _controller.future;
+            //     controller.animateCamera(
+            //         CameraUpdate.newCameraPosition(cameraPosition()));
+            //     _address = placesDetails.result.formattedAddress ?? "";
+            //     widget.onSuggestionSelected?.call(placesDetails);
+            //   },
+            // ),
+
             Expanded(
               child: Stack(
                 children: [

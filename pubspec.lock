@@ -821,6 +821,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.7"
+  google_places_suggestions_autocomplete_field:
+    dependency: "direct main"
+    description:
+      name: google_places_suggestions_autocomplete_field
+      sha256: d0f35fbf52abe2095e272dab55ea94e23ab6c8d7bdb3a04e57c7ad3cd1b94b51
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   google_sign_in:
     dependency: "direct main"
     description:

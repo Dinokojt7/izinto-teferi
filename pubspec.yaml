@@ -85,6 +85,11 @@ dependencies:
   capped_progress_indicator: ^0.0.2
   auto_size_text: ^3.0.0
   webview_flutter: ^4.4.2
+  google_places_suggestions_autocomplete_field: ^0.0.4
+
+dependency_overrides:
+  uuid: ^4.5.1
+
 
 
 # Remove this override

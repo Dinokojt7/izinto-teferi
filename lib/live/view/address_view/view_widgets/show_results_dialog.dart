@@ -19,8 +19,6 @@ class ShowResultsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // SystemNavigation()
-    //     .applyCustomSystemChromeSettings(Colors.white, Brightness.dark);
     return Consumer<MainAddressViewController>(
         builder: (context, controller, child) {
       final _street = controller.street;

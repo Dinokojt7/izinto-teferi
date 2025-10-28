@@ -91,6 +91,7 @@ class _GuestAccessState extends State<GuestAccess> {
                           height: Dimensions.height20 * 1.5,
                         ),
                         DescriptionText(
+                            maxLines: 3,
                             text:
                                 'Add your address so we can check if we\'re available in your area, and how many minutes your delivery take. \u{1F680}'),
                         SizedBox(

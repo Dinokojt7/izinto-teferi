@@ -96,14 +96,29 @@ class _WrapperState extends State<Wrapper> {
       if (_addresses.length > 0) {
         print('Going to get addressed via guest access!');
         if (_checkAddress) {
-          return Scaffold(
-            body: Container(
-              height: double.maxFinite,
-              color: Colors.white,
-              child: Center(
-                child: LiveProgressIndicator(
-                  hasOwnDialog: true,
-                  color: Colors.black,
+          return PopScope(
+            canPop:
+                false, // prevents auto-pop; similar to returning false from onWillPop
+            onPopInvoked: (didPop) {
+              if (!didPop) {
+                final focus = FocusScope.of(context);
+                if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
+                  focus.unfocus();
+                } else {
+                  Navigator.of(context)
+                      .maybePop(); // allow normal back if no keyboard
+                }
+              }
+            },
+            child: Scaffold(
+              body: Container(
+                height: double.maxFinite,
+                color: Colors.white,
+                child: Center(
+                  child: LiveProgressIndicator(
+                    hasOwnDialog: true,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),

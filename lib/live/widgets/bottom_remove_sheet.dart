@@ -91,8 +91,8 @@ class BottomRemoveSheet extends StatelessWidget {
                           child: HeadingStyleText(
                             text: description!,
                             weight: FontWeight.w400,
-                            size: Dimensions.font16,
-                            maxLines: 2,
+                            size: Dimensions.font16 / 1.1,
+                            maxLines: 3,
                           ),
                         ),
                       ],

@@ -11,6 +11,7 @@ import '../../../../controllers/cart_controller.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/bottom_remove_sheet.dart';
+import '../../../wrapper.dart';
 import '../../auth_view/phone_auth_view.dart';
 
 class ProfileViewController extends ChangeNotifier {
@@ -189,6 +190,18 @@ class ProfileViewController extends ChangeNotifier {
     );
   }
 
+  Future<void> updateNewUser(firstName, lastName, emailAddress, phone,
+      telephoneSurveyConsent, emailMarketingConsent) async {
+    _firstName = firstName;
+    _lastName = lastName;
+    _emailAddress = emailAddress;
+    _phoneNumber = phone;
+    _telephoneSurveyConsent = telephoneSurveyConsent;
+    _emailMarketingConsent = emailMarketingConsent;
+    notifyListeners();
+    return;
+  }
+
   Future<void> updateUserData(context) async {
     var _emailString =
         emailController.text.isNotEmpty ? emailController.text : _emailAddress;
@@ -204,6 +217,7 @@ class ProfileViewController extends ChangeNotifier {
 
     final bool hasValidEmail = isEmail(_emailString);
     final bool hasValidPhoneNumber = isValidPhone(_phoneNumberString);
+
     if (hasValidEmail) {
       if (_firstNameString != '') {
         if (_lastNameString != '') {
@@ -211,12 +225,22 @@ class ProfileViewController extends ChangeNotifier {
             _onPageClose(context);
             await saveChanges(_firstNameString, _lastNameString,
                 _phoneNumberString, _emailString);
-            await Future.delayed(const Duration(seconds: 2), () async {
+
+            // Update state immediately
+            _isLoading = false;
+            _errorText = '';
+            notifyListeners();
+
+            // Navigate without delay
+            if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
-              _isLoading = false;
-              _errorText = '';
-              notifyListeners();
-            });
+            } else {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => Wrapper()),
+                (route) => false,
+              );
+            }
           } else {
             GenericSnackBar().showCustomSnackBar(
                 null, context, 'Phone number entered is not valid', false);
@@ -445,7 +469,7 @@ class ProfileViewController extends ChangeNotifier {
     }
   }
 
-  // Add confirm delete dialog
+// Add confirm delete dialog
   void confirmDeleteAccount(BuildContext sheetContext) {
     showModalBottomSheet(
       backgroundColor: Colors.transparent,
@@ -461,15 +485,20 @@ class ProfileViewController extends ChangeNotifier {
           onTap: () async {
             Navigator.of(sheetContext).pop(); // Close bottom sheet
             bool success = await deleteAccount();
+
             if (success) {
-              Navigator.pushAndRemoveUntil(
-                sheetContext,
-                MaterialPageRoute(builder: (context) => PhoneAuthView()),
-                (route) => false,
-              );
-              // Show success message and navigate from a safe context
+              // Show success message first
               GenericSnackBar().showCustomSnackBar(
                   null, sheetContext, 'Account deleted successfully', true);
+
+              // Then navigate after a short delay
+              Future.delayed(Duration(milliseconds: 1500), () {
+                Navigator.pushAndRemoveUntil(
+                  sheetContext,
+                  MaterialPageRoute(builder: (context) => PhoneAuthView()),
+                  (route) => false,
+                );
+              });
             } else {
               GenericSnackBar().showCustomSnackBar(
                   null, sheetContext, 'Error deleting account', false);

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/generic_white_container.dart';
@@ -26,6 +28,37 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   final _formKey = GlobalKey<FormState>();
+  @override
+  void initState() {
+    super.initState();
+    _loadUserDataImmediately();
+  }
+
+  Future<void> _loadUserDataImmediately() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        DocumentSnapshot userData = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (userData.exists) {
+          final controller =
+              Provider.of<ProfileViewController>(context, listen: false);
+          controller.updateNewUser(
+              userData['name'] ?? '',
+              userData['surname'] ?? '',
+              userData['email'] ?? '',
+              userData['phone'] ?? '',
+              userData['telephoneSurveyConsent'] ?? false,
+              userData['emailMarketingConsent'] ?? false);
+        }
+      } catch (e) {
+        print('Error loading user data: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +75,15 @@ class _ProfileViewState extends State<ProfileView> {
           if (!didPop) {
             final focus = FocusScope.of(context);
 
+            // Handle keyboard first
             if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
               focus.unfocus();
+              // Don't return here - let the back button press continue
+              // The user will press back again to actually navigate
               return;
             }
 
+            // If keyboard is already dismissed, handle navigation
             if (hasMissingFields || isNewUser) {
               controller.showExitConfirmationDialog(context);
               return;

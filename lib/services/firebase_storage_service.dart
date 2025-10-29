@@ -34,6 +34,8 @@ class DatabaseService {
       'loyalty': iTokens,
       'termsAccepted': termsAccepted,
       'isNewUser': true,
+      'telephoneSurveyConsent': false,
+      'emailMarketingConsent': false,
       'termsAcceptedAt': termsAcceptedAt ?? FieldValue.serverTimestamp(),
       'createdAt': Timestamp.now(),
       'promo code': promoCode

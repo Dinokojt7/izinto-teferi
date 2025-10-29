@@ -206,8 +206,9 @@ class MainAddressViewController extends ChangeNotifier {
   }
 
   Future<void> requestLocationPermission() async {
-    await Geolocator.requestPermission();
     await setInitialLoader();
+    await Geolocator.requestPermission();
+
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.best,
     );

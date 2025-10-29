@@ -26,53 +26,38 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   final _formKey = GlobalKey<FormState>();
-  late String _firstName;
-  late String _lastName;
-  late String _phoneNumber;
-  late String _emailAddress;
-  late bool _hasMissingFields;
-
-  void _onTap() {
-    if (_hasMissingFields) {
-      GenericSnackBar().showCustomSnackBar(
-          null, context, 'Please provide all the required fields.', false);
-    } else {
-      Future.delayed(const Duration(milliseconds: 200), () async {
-        setState(() {
-          SystemNavigation().applyCustomSystemChromeSettings(
-              Colors.black, Brightness.light, Colors.black, Brightness.light);
-        });
-      });
-      Navigator.of(context).pop();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     //Set the system navigation bar background to white
     return Consumer<ProfileViewController>(
         builder: (context, controller, child) {
-      _firstName = controller.firstName;
-      _lastName = controller.lastName;
-      _phoneNumber = controller.phoneNumber;
-      _emailAddress = controller.emailAddress;
-      final emailMarketingText = controller.emailMarketingText;
-      final telephoneSurveyText = controller.telephoneSurveyText;
-      _hasMissingFields = controller.isUserinfoIncomplete;
-      return WillPopScope(
-        onWillPop: () async {
-          if (_hasMissingFields) {
-            GenericSnackBar().showCustomSnackBar(null, context,
-                'Please provide all the required fields.', false);
-            return false;
-          }
-          Future.delayed(const Duration(milliseconds: 200), () async {
-            setState(() {
+      // Use controller getters directly instead of local variables
+      final hasMissingFields = controller.hasMissingFields;
+      final isNewUser = controller.isNewUser;
+
+      return PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            final focus = FocusScope.of(context);
+
+            if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
+              focus.unfocus();
+              return;
+            }
+
+            if (hasMissingFields || isNewUser) {
+              controller.showExitConfirmationDialog(context);
+              return;
+            }
+
+            Future.delayed(const Duration(milliseconds: 200), () {
               SystemNavigation().applyCustomSystemChromeSettings(Colors.black,
                   Brightness.light, Colors.black, Brightness.light);
             });
-          });
-          return true;
+            Navigator.of(context).pop();
+          }
         },
         child: Stack(
           children: [
@@ -90,11 +75,32 @@ class _ProfileViewState extends State<ProfileView> {
                     Stack(
                       children: [
                         GenericAppBar(
-                          onTap: _onTap,
+                          onTap: () {
+                            if (controller.isNewUser) {
+                              GenericSnackBar().showCustomSnackBar(
+                                  null,
+                                  context,
+                                  'Please provide all the required fields.',
+                                  false);
+                            } else {
+                              Future.delayed(const Duration(milliseconds: 200),
+                                  () async {
+                                setState(() {
+                                  SystemNavigation()
+                                      .applyCustomSystemChromeSettings(
+                                          Colors.black,
+                                          Brightness.light,
+                                          Colors.black,
+                                          Brightness.light);
+                                });
+                              });
+                              Navigator.of(context).pop();
+                            }
+                          },
                           backgroundColor: Colors.white,
                           textColor: Colors.black,
                           heading: 'Edit profile',
-                          hasMissingProfileData: _hasMissingFields,
+                          hasMissingProfileData: controller.hasMissingFields,
                         )
                       ],
                     ),
@@ -127,7 +133,8 @@ class _ProfileViewState extends State<ProfileView> {
                                           obscureText: false,
                                           cursorColor: Colors.black,
                                           decoration: buildInputDecoration(
-                                              'First name', _firstName),
+                                              'First name',
+                                              controller.firstName),
                                           style: buildTextStyle(),
                                         ),
                                       ),
@@ -151,7 +158,7 @@ class _ProfileViewState extends State<ProfileView> {
                                           obscureText: false,
                                           cursorColor: Colors.black,
                                           decoration: buildInputDecoration(
-                                              'Last name', _lastName),
+                                              'Last name', controller.lastName),
                                           style: buildTextStyle(),
                                         ),
                                       ),
@@ -176,7 +183,8 @@ class _ProfileViewState extends State<ProfileView> {
                                           obscureText: false,
                                           cursorColor: Colors.black,
                                           decoration: buildInputDecoration(
-                                              'Phone number', _phoneNumber),
+                                              'Phone number',
+                                              controller.phoneNumber),
                                           style: buildTextStyle(),
                                         ),
                                       ),
@@ -201,7 +209,8 @@ class _ProfileViewState extends State<ProfileView> {
                                           obscureText: false,
                                           cursorColor: Colors.black,
                                           decoration: buildInputDecoration(
-                                              'Email Address', _emailAddress),
+                                              'Email Address',
+                                              controller.emailAddress),
                                           style: buildTextStyle(),
                                         ),
                                       ),
@@ -217,27 +226,35 @@ class _ProfileViewState extends State<ProfileView> {
                                   child: Column(
                                     children: [
                                       MarketingConsentForm(
-                                        description: emailMarketingText,
-                                        isSelected: false,
+                                        description:
+                                            controller.emailMarketingText,
                                         fontWeight: FontWeight.w300,
+                                        isEmailMarketing: true,
                                       ),
                                       SizedBox(
                                         height: Dimensions.height18,
                                       ),
                                       MarketingConsentForm(
-                                        description: telephoneSurveyText,
-                                        isSelected: false,
+                                        description:
+                                            controller.telephoneSurveyText,
                                         fontWeight: FontWeight.w300,
+                                        isEmailMarketing: false,
                                       ),
                                       SizedBox(
                                         height: Dimensions.height45 / 1.3,
                                       ),
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                            left: Dimensions.width30),
-                                        child: DeleteWidget(
-                                          description: 'Delete account',
-                                          imagePath: 'assets/image/trash.png',
+                                      GestureDetector(
+                                        onTap: () {
+                                          controller
+                                              .confirmDeleteAccount(context);
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                              left: Dimensions.width30),
+                                          child: DeleteWidget(
+                                            description: 'Delete account',
+                                            imagePath: 'assets/image/trash.png',
+                                          ),
                                         ),
                                       ),
                                     ],

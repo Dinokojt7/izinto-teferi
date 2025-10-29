@@ -381,20 +381,6 @@ class FirebaseAuthMethods {
   //   phoneAuthLogin(context, phoneNumber)
   // }
 
-  // SIGN OUT
-  Future<void> signOut(BuildContext context) async {
-    try {
-      await _auth.signOut();
-    } on FirebaseAuthException catch (e) {
-      GenericSnackBar().showCustomSnackBar(
-        null,
-        context,
-        'Error: ${e.message}',
-        false,
-      );
-    }
-  }
-
   // FORGOT PASSWORD
   Future<dynamic> passwordReset(String _email, BuildContext context) async {
     try {

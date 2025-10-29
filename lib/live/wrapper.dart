@@ -83,6 +83,9 @@ class _WrapperState extends State<Wrapper> {
         if (user == null) {
           return PhoneAuthView();
         } else {
+          if (_isNewUser) {
+            return ProfileView();
+          }
           if (_addresses.length == 0) {
             if (profileController.isLoading) {
               return Scaffold(
@@ -99,9 +102,6 @@ class _WrapperState extends State<Wrapper> {
               );
             }
             return GuestAccess();
-          }
-          if (_isNewUser) {
-            return ProfileView();
           }
           return HomeView();
         }

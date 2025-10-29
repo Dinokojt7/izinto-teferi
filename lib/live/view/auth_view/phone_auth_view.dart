@@ -186,7 +186,7 @@ class _PhoneAuthViewState extends State<PhoneAuthView> {
             ),
             if (_isInitialized && !controller.isValid)
               LiveProgressIndicator(
-                color: Colors.white,
+                color: Colors.black,
                 hasOwnDialog: false,
               ),
             if (_showTermsDialog)

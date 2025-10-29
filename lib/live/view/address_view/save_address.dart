@@ -20,6 +20,7 @@ import '../../widgets/lock_screen.dart';
 import '../../widgets/text_widgets/description_text.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
 import '../../widgets/text_widgets/introduction_text.dart';
+import '../../wrapper.dart';
 import '../home_view/home_view.dart';
 import '../profile_view/controller/profile_view_controller.dart';
 import '../profile_view/view_widgets/text_input_container.dart';
@@ -191,7 +192,7 @@ class _SaveAddressState extends State<SaveAddress> {
                               Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => HomeView()),
+                                      builder: (context) => Wrapper()),
                                   (route) => false);
                               setState(() {
                                 _statusBarColor =

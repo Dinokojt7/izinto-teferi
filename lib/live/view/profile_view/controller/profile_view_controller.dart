@@ -8,6 +8,9 @@ import 'package:get/get_core/src/get_main.dart';
 
 import '../../../../controllers/cart_controller.dart';
 import '../../../utilities/generic_snackbar.dart';
+import '../../../utilities/generic_system_navigation.dart';
+import '../../../widgets/bottom_remove_sheet.dart';
+import '../../auth_view/phone_auth_view.dart';
 
 class ProfileViewController extends ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -53,11 +56,21 @@ class ProfileViewController extends ChangeNotifier {
 
   void promptProfileForm() {
     _isUserInfoIncomplete = true;
+    notifyListeners();
   }
 
   //User profile details
   bool _isNewUser = false;
-  bool get isNewUser => _isNewUser;
+  // Update hasMissingFields logic
+  bool get hasMissingFields {
+    return _firstName.isEmpty ||
+        _lastName.isEmpty ||
+        _phoneNumber.isEmpty ||
+        _emailAddress.isEmpty;
+  }
+
+  // Update isNewUser logic
+  bool get isNewUser => hasMissingFields;
 
   String _firstName = '';
 
@@ -100,30 +113,6 @@ class ProfileViewController extends ChangeNotifier {
 
   String get errorText => _errorText;
 
-  void enableChanges() {
-    var _emailString =
-        emailController.text.isNotEmpty ? emailController.text : _emailAddress;
-    var _firstNameString = firstNameController.text.trim().isNotEmpty
-        ? firstNameController.text
-        : _firstName;
-    var _lastNameString = lastNameController.text.trim().isNotEmpty
-        ? lastNameController.text
-        : _lastName;
-    var _phoneNumberString = phoneNumberController.text.isNotEmpty
-        ? phoneNumberController.text
-        : _phoneNumber;
-
-    if (_firstNameString != '' &&
-        _lastNameString != '' &&
-        _phoneNumberString != '' &&
-        _emailString != '') {
-      _isValid = true;
-    } else {
-      _isValid = false;
-    }
-    notifyListeners();
-  }
-
   Future<void> _onPageClose(BuildContext context) async {
     _isLoading = true;
     notifyListeners(); // Immediately notify listeners about the change
@@ -165,15 +154,31 @@ class ProfileViewController extends ChangeNotifier {
     return _isValid;
   }
 
-  Future<void> saveChanges(String firstName, String lastName,
-      String phoneNumber, String emailAddress) async {
-    User? user = await _firebaseAuth.currentUser;
-    await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
-      'name': firstName,
-      'phone': phoneNumber,
-      'surname': lastName,
-      'email': emailAddress,
-    });
+  void showExitConfirmationDialog(BuildContext context) {
+    showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      context: context,
+      builder: (BuildContext context) {
+        return BottomRemoveSheet(
+          headerText: 'Unsaved Changes?',
+          description:
+              'You have unsaved changes. Are you sure you want to leave?',
+          action: 'Yes, Leave',
+          isMiniaturized: true, // Use miniaturized style
+          isCartView: false,
+          onTap: () {
+            // Update system UI
+            Future.delayed(const Duration(milliseconds: 200), () {
+              SystemNavigation().applyCustomSystemChromeSettings(Colors.black,
+                  Brightness.light, Colors.black, Brightness.light);
+            });
+            // Close both dialogs and return
+            Navigator.of(context).pop(); // Close bottom sheet
+            Navigator.of(context).pop(); // Pop current screen
+          },
+        );
+      },
+    );
   }
 
   Future<void> updateUserData(context) async {
@@ -234,24 +239,6 @@ class ProfileViewController extends ChangeNotifier {
     {"Saturday": "08:00 AM - 18:00 PM"},
     {"Sunday": "08:00 AM - 18:00 PM"},
   ];
-
-  Future<void> getData() async {
-    User? user = await _firebaseAuth.currentUser;
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(user?.uid)
-        .snapshots()
-        .listen((userData) {
-      _firstName = userData['name'];
-      _lastName = userData['surname'];
-      _emailAddress = userData['email'];
-      _promoCode = userData['promo code'];
-      _phoneNumber = userData['phone'];
-      _isNewUser = userData['isNewUser'];
-      enableChanges();
-      notifyListeners(); // Notify listeners after updating the data
-    });
-  }
 
   Future<void> getAddresses() async {
     User? user = await _firebaseAuth.currentUser;
@@ -354,6 +341,156 @@ class ProfileViewController extends ChangeNotifier {
     _emailAddress = '';
     _phoneNumber = '';
     notifyListeners();
+  }
+
+  // Add these marketing consent fields
+  bool _emailMarketingConsent = false;
+  bool get emailMarketingConsent => _emailMarketingConsent;
+
+  bool _telephoneSurveyConsent = false;
+  bool get telephoneSurveyConsent => _telephoneSurveyConsent;
+
+  // Update enableChanges to sync with isNewUser
+  void enableChanges() {
+    var _emailString =
+        emailController.text.isNotEmpty ? emailController.text : _emailAddress;
+    var _firstNameString = firstNameController.text.trim().isNotEmpty
+        ? firstNameController.text
+        : _firstName;
+    var _lastNameString = lastNameController.text.trim().isNotEmpty
+        ? lastNameController.text
+        : _lastName;
+    var _phoneNumberString = phoneNumberController.text.isNotEmpty
+        ? phoneNumberController.text
+        : _phoneNumber;
+
+    if (_firstNameString != '' &&
+        _lastNameString != '' &&
+        _phoneNumberString != '' &&
+        _emailString != '') {
+      _isValid = true;
+      _isUserInfoIncomplete = false;
+    } else {
+      _isValid = false;
+      _isUserInfoIncomplete = true;
+    }
+    notifyListeners();
+  }
+
+  // Add marketing consent methods
+  void updateEmailMarketingConsent(bool value) {
+    _emailMarketingConsent = value;
+    notifyListeners();
+  }
+
+  void updateTelephoneSurveyConsent(bool value) {
+    _telephoneSurveyConsent = value;
+    notifyListeners();
+  }
+
+  // Update saveChanges to include marketing consents
+  Future<void> saveChanges(String firstName, String lastName,
+      String phoneNumber, String emailAddress) async {
+    User? user = await _firebaseAuth.currentUser;
+    await FirebaseFirestore.instance.collection('users').doc(user?.uid).update({
+      'name': firstName,
+      'phone': phoneNumber,
+      'surname': lastName,
+      'email': emailAddress,
+      'isNewUser': false,
+      'emailMarketingConsent': _emailMarketingConsent,
+      'telephoneSurveyConsent': _telephoneSurveyConsent,
+      'marketingConsentUpdatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Add delete account method
+  Future<bool> deleteAccount() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      User? user = _auth.currentUser;
+
+      if (user != null) {
+        // Delete user data from Firestore first
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .delete();
+
+        // Delete user from Firebase Auth
+        await user.delete();
+
+        // Clear local data
+        await removeUserData();
+
+        return true; // Success
+      }
+      return false;
+    } catch (e) {
+      print('Error deleting account: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Add confirm delete dialog
+  void confirmDeleteAccount(BuildContext sheetContext) {
+    showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      context: sheetContext,
+      builder: (BuildContext context) {
+        return BottomRemoveSheet(
+          headerText: 'Delete Account',
+          description:
+              'Are you sure you want to delete your account? This action cannot be undone.',
+          action: 'Delete Account',
+          isMiniaturized: false,
+          isCartView: false,
+          onTap: () async {
+            Navigator.of(sheetContext).pop(); // Close bottom sheet
+            bool success = await deleteAccount();
+            if (success) {
+              Navigator.pushAndRemoveUntil(
+                sheetContext,
+                MaterialPageRoute(builder: (context) => PhoneAuthView()),
+                (route) => false,
+              );
+              // Show success message and navigate from a safe context
+              GenericSnackBar().showCustomSnackBar(
+                  null, sheetContext, 'Account deleted successfully', true);
+            } else {
+              GenericSnackBar().showCustomSnackBar(
+                  null, sheetContext, 'Error deleting account', false);
+            }
+          },
+        );
+      },
+    );
+  }
+
+  // Update getData to load marketing consents
+  Future<void> getData() async {
+    User? user = await _firebaseAuth.currentUser;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
+        .snapshots()
+        .listen((userData) {
+      _firstName = userData['name'] ?? '';
+      _lastName = userData['surname'] ?? '';
+      _emailAddress = userData['email'] ?? '';
+      _promoCode = userData['promo code'] ?? '';
+      _phoneNumber = userData['phone'] ?? '';
+      _isNewUser = userData['isNewUser'] ?? true;
+      _emailMarketingConsent = userData['emailMarketingConsent'] ?? false;
+      _telephoneSurveyConsent = userData['telephoneSurveyConsent'] ?? false;
+      enableChanges();
+      notifyListeners();
+    });
   }
 
   @override

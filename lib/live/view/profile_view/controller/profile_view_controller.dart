@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -158,13 +159,13 @@ class ProfileViewController extends ChangeNotifier {
     showModalBottomSheet(
       backgroundColor: Colors.transparent,
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext bottomSheetContext) {
         return BottomRemoveSheet(
-          headerText: 'Unsaved Changes?',
+          headerText: 'Unsaved Changes',
           description:
               'You have unsaved changes. Are you sure you want to leave?',
           action: 'Yes, Leave',
-          isMiniaturized: true, // Use miniaturized style
+          isMiniaturized: true,
           isCartView: false,
           onTap: () {
             // Update system UI
@@ -172,9 +173,16 @@ class ProfileViewController extends ChangeNotifier {
               SystemNavigation().applyCustomSystemChromeSettings(Colors.black,
                   Brightness.light, Colors.black, Brightness.light);
             });
-            // Close both dialogs and return
-            Navigator.of(context).pop(); // Close bottom sheet
-            Navigator.of(context).pop(); // Pop current screen
+
+            // Close bottom sheet
+            Navigator.of(context).pop();
+
+            // Check if we can pop normally
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(); // Normal back navigation
+            } else {
+              exit(0); // Force close app if at root
+            }
           },
         );
       },

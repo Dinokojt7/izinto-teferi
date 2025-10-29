@@ -34,6 +34,7 @@ class _TermsDialogState extends State<TermsDialog> {
               content:
                   Text('Please accept the terms and conditions to continue'),
               backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
             ),
           );
           return;

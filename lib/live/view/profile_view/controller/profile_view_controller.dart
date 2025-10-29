@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +56,9 @@ class ProfileViewController extends ChangeNotifier {
   }
 
   //User profile details
+  bool _isNewUser = false;
+  bool get isNewUser => _isNewUser;
+
   String _firstName = '';
 
   String get firstName => _firstName;
@@ -242,6 +247,7 @@ class ProfileViewController extends ChangeNotifier {
       _emailAddress = userData['email'];
       _promoCode = userData['promo code'];
       _phoneNumber = userData['phone'];
+      _isNewUser = userData['isNewUser'];
       enableChanges();
       notifyListeners(); // Notify listeners after updating the data
     });
@@ -250,24 +256,42 @@ class ProfileViewController extends ChangeNotifier {
   Future<void> getAddresses() async {
     User? user = await _firebaseAuth.currentUser;
     _isLoading = true;
-    notifyListeners(); // ✅ Notify that loading started & _isLoading changed
+    notifyListeners();
 
     if (user != null) {
-      // Fetch all documents from the "Addresses" collection
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('addresses')
-          .get();
+      try {
+        // Add timeout to prevent hanging
+        final querySnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('addresses')
+            .get()
+            .timeout(const Duration(seconds: 10), onTimeout: () {
+          throw TimeoutException('Address fetch timed out after 10 seconds');
+        });
 
-      // Store each document's data into the _savedAddresses list
-      _savedAddresses = querySnapshot.docs.map((doc) {
-        // Return the data of each document directly
-        return doc.data() as Map<String, dynamic>;
-      }).toList();
-      // ⚠️ _savedAddresses was updated here - need to notify!
+        _savedAddresses = querySnapshot.docs.map((doc) {
+          return doc.data();
+        }).toList();
+      } on TimeoutException catch (e) {
+        print('Timeout getting addresses: $e');
+        // Handle timeout - maybe show error to user or use cached data
+        _savedAddresses = []; // Reset or keep previous addresses?
+      } on FirebaseException catch (e) {
+        print('Firebase error getting addresses: $e');
+        // Handle Firebase specific errors
+        _savedAddresses = [];
+      } catch (e) {
+        print('Unexpected error getting addresses: $e');
+        // Handle any other errors
+        _savedAddresses = [];
+      } finally {
+        _isLoading = false;
+        notifyListeners();
+      }
+    } else {
       _isLoading = false;
-      notifyListeners(); // ✅ Notify that _savedAddresses changed & loading finished
+      notifyListeners();
     }
   }
 

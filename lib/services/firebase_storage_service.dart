@@ -32,7 +32,8 @@ class DatabaseService {
       'phone': phone,
       'email': email,
       'loyalty': iTokens,
-      'termsAccepted': termsAccepted, // Add this
+      'termsAccepted': termsAccepted,
+      'isNewUser': true,
       'termsAcceptedAt': termsAcceptedAt ?? FieldValue.serverTimestamp(),
       'createdAt': Timestamp.now(),
       'promo code': promoCode

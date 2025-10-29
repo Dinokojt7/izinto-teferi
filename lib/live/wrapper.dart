@@ -15,6 +15,7 @@ import 'package:izinto/live/view/home_view/controller/home_view_controller.dart'
 import 'package:izinto/live/view/home_view/guest_access.dart';
 import 'package:izinto/live/view/home_view/home_view.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
+import 'package:izinto/live/view/profile_view/profile_view.dart';
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 import '../controllers/cart_controller.dart';
@@ -78,7 +79,7 @@ class _WrapperState extends State<Wrapper> {
     return Consumer<ProfileViewController>(
       builder: (context, profileController, child) {
         final List<dynamic> _addresses = profileController.savedAddresses;
-
+        final bool _isNewUser = profileController.isNewUser;
         if (user == null) {
           return PhoneAuthView();
         } else {
@@ -97,20 +98,10 @@ class _WrapperState extends State<Wrapper> {
                 ),
               );
             }
-            return PopScope(
-              canPop: false,
-              onPopInvoked: (didPop) {
-                if (!didPop) {
-                  final focus = FocusScope.of(context);
-                  if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
-                    focus.unfocus();
-                  } else {
-                    Navigator.of(context).maybePop();
-                  }
-                }
-              },
-              child: GuestAccess(),
-            );
+            return GuestAccess();
+          }
+          if (_isNewUser) {
+            return ProfileView();
           }
           return HomeView();
         }

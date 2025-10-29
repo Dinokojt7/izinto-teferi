@@ -164,25 +164,6 @@ class MainAddressViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Clear all address data when search is cleared
-  void clearData() {
-    _hasData = false;
-    _autocompletePlace = '';
-    _searchResults = [];
-    _street = '';
-    _suburb = '';
-    _zipCode = '';
-    _town = '';
-    _searchStatusText = '';
-    _isValidAddress = false;
-
-    // Also clear the text controllers if needed
-    additionalDetailsController.clear();
-    addressLabelController.clear();
-
-    notifyListeners();
-  }
-
   Future<void> _assignAddressValues(output) async {
     ///From the format of street, suburb, town, zip code, country we set these parameters
 

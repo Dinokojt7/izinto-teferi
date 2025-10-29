@@ -204,7 +204,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                 ),
               ),
             ),
-            if (!_controller.isLoadingIndicator) LiveProgressIndicator(),
+            if (_controller.isLoadingIndicator) LiveProgressIndicator(),
           ],
         ),
       );

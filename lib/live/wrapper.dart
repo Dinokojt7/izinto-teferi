@@ -55,16 +55,10 @@ class _WrapperState extends State<Wrapper> {
     FlutterNativeSplash.remove();
   }
 
-  bool _checkAddress = true;
-
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 3), () {
-      setState(() {
-        _checkAddress = false;
-      });
-    });
+
     _loadResources();
   }
 
@@ -80,67 +74,60 @@ class _WrapperState extends State<Wrapper> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
-    final cartItems = Get.find<CartController>().getItems;
-    final homeViewController =
-        Provider.of<HomeViewController>(context, listen: false);
-    //return either home or authenticate widget
-    if (user == null) {
-      //Set the system navigation bar background to white
-      //homeViewController.onAccess(Colors.white);
-      return PopScope(
-          canPop:
-              false, // prevents auto-pop; similar to returning false from onWillPop
-          onPopInvoked: (didPop) {
-            if (!didPop) {
-              final focus = FocusScope.of(context);
-              if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
-                focus.unfocus();
-              } else {
-                Navigator.of(context)
-                    .maybePop(); // allow normal back if no keyboard
-              }
-            }
-          },
-          child: PhoneAuthView());
-    } else {
-      ///Here's a list of addresses from the controller
-      final _profileController =
-          Provider.of<ProfileViewController>(context, listen: false);
-      final List<dynamic> _addresses = _profileController.savedAddresses;
-      if (_addresses.length > 0) {
-        print('Going to get addressed via guest access!');
-        if (_checkAddress) {
+
+    return Consumer<ProfileViewController>(
+      builder: (context, profileController, child) {
+        final List<dynamic> _addresses = profileController.savedAddresses;
+
+        if (user == null) {
           return PopScope(
-            canPop:
-                false, // prevents auto-pop; similar to returning false from onWillPop
+            canPop: false,
             onPopInvoked: (didPop) {
               if (!didPop) {
                 final focus = FocusScope.of(context);
                 if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
                   focus.unfocus();
                 } else {
-                  Navigator.of(context)
-                      .maybePop(); // allow normal back if no keyboard
+                  Navigator.of(context).maybePop();
                 }
               }
             },
-            child: Scaffold(
-              body: Container(
-                height: double.maxFinite,
-                color: Colors.white,
-                child: Center(
-                  child: LiveProgressIndicator(
-                    hasOwnDialog: true,
-                    color: Colors.black,
+            child: PhoneAuthView(),
+          );
+        } else {
+          if (_addresses.length == 0) {
+            if (profileController.isLoading) {
+              return Scaffold(
+                body: Container(
+                  height: double.maxFinite,
+                  color: Colors.white,
+                  child: Center(
+                    child: LiveProgressIndicator(
+                      hasOwnDialog: true,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
+              );
+            }
+            return PopScope(
+              canPop: false,
+              onPopInvoked: (didPop) {
+                if (!didPop) {
+                  final focus = FocusScope.of(context);
+                  if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
+                    focus.unfocus();
+                  } else {
+                    Navigator.of(context).maybePop();
+                  }
+                }
+              },
+              child: GuestAccess(),
+            );
+          }
+          return HomeView();
         }
-        return HomeView();
-      }
-      return GuestAccess();
-    }
+      },
+    );
   }
 }

@@ -249,6 +249,8 @@ class ProfileViewController extends ChangeNotifier {
 
   Future<void> getAddresses() async {
     User? user = await _firebaseAuth.currentUser;
+    _isLoading = true;
+    notifyListeners(); // ✅ Notify that loading started & _isLoading changed
 
     if (user != null) {
       // Fetch all documents from the "Addresses" collection
@@ -263,7 +265,9 @@ class ProfileViewController extends ChangeNotifier {
         // Return the data of each document directly
         return doc.data() as Map<String, dynamic>;
       }).toList();
-      notifyListeners();
+      // ⚠️ _savedAddresses was updated here - need to notify!
+      _isLoading = false;
+      notifyListeners(); // ✅ Notify that _savedAddresses changed & loading finished
     }
   }
 

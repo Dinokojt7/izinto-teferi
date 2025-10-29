@@ -17,9 +17,6 @@ class MiniCircularProgressIndicator extends StatelessWidget {
             ? Colors.transparent
             : Color(0xff000008).withOpacity(0.55),
         insetPadding: EdgeInsets.all(0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

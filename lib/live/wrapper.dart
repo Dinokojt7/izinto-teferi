@@ -80,20 +80,7 @@ class _WrapperState extends State<Wrapper> {
         final List<dynamic> _addresses = profileController.savedAddresses;
 
         if (user == null) {
-          return PopScope(
-            canPop: false,
-            onPopInvoked: (didPop) {
-              if (!didPop) {
-                final focus = FocusScope.of(context);
-                if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
-                  focus.unfocus();
-                } else {
-                  Navigator.of(context).maybePop();
-                }
-              }
-            },
-            child: PhoneAuthView(),
-          );
+          return PhoneAuthView();
         } else {
           if (_addresses.length == 0) {
             if (profileController.isLoading) {

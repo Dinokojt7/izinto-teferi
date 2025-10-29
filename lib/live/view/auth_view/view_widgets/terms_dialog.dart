@@ -18,7 +18,6 @@ class TermsDialog extends StatefulWidget {
 
 class _TermsDialogState extends State<TermsDialog> {
   bool _isTapped = false;
-  bool _termsAccepted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +27,8 @@ class _TermsDialogState extends State<TermsDialog> {
     return Consumer<PhoneAuthViewController>(
         builder: (context, phoneAuthController, child) {
       void _handleTap() {
-        if (!_termsAccepted) {
-          // Show error if terms not accepted
+        if (!phoneAuthController.isTermsAccepted) {
+          phoneAuthController.onShowTermsDialog();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
@@ -39,13 +38,11 @@ class _TermsDialogState extends State<TermsDialog> {
           );
           return;
         }
-
         setState(() {
           _isTapped = true;
         });
 
-        phoneAuthController.onConfirmButtonTapped(
-            widget.widgetContext, _termsAccepted);
+        phoneAuthController.onConfirmButtonTapped(widget.widgetContext);
 
         // Optional: Reset border visibility after a short delay
         Future.delayed(const Duration(milliseconds: 200), () {
@@ -114,11 +111,9 @@ class _TermsDialogState extends State<TermsDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Checkbox(
-                              value: _termsAccepted,
+                              value: phoneAuthController.isTermsAccepted,
                               onChanged: (bool? value) {
-                                setState(() {
-                                  _termsAccepted = value ?? false;
-                                });
+                                phoneAuthController.acceptTerms(value ?? false);
                               },
                             ),
                             SizedBox(width: Dimensions.width10),
@@ -149,7 +144,7 @@ class _TermsDialogState extends State<TermsDialog> {
                                       textSize: _isTapped
                                           ? Dimensions.font20 / 1.15
                                           : Dimensions.font20 / 1.1,
-                                      color: _termsAccepted
+                                      color: phoneAuthController.isTermsAccepted
                                           ? Colors.black
                                           : Colors.grey,
                                     ),

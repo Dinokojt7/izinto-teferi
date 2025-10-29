@@ -57,11 +57,17 @@ class PhoneAuthViewController extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isTermsAccepted = false;
+  bool get isTermsAccepted => _isTermsAccepted;
+  Future<void> acceptTerms(bool value) async {
+    _isTermsAccepted = value;
+    notifyListeners();
+  }
+
   // Updated to accept termsAccepted parameter
-  Future<void> onConfirmButtonTapped(
-      BuildContext widgetContext, bool termsAccepted) async {
+  Future<void> onConfirmButtonTapped(BuildContext widgetContext) async {
     if (_isGoogleAuth) {
-      await loginWithGoogleAccount(widgetContext, termsAccepted);
+      await loginWithGoogleAccount(widgetContext, _isTermsAccepted);
       _isInitialized = false;
     } else {
       if (_isValid) {
@@ -70,7 +76,7 @@ class PhoneAuthViewController extends ChangeNotifier {
         String phoneNumber = phoneNumberController.text;
 
         // Verify phone and navigate to OTP screen
-        await _verifyPhone(widgetContext, phoneNumber, termsAccepted);
+        await _verifyPhone(widgetContext, phoneNumber, _isTermsAccepted);
       }
     }
     notifyListeners();

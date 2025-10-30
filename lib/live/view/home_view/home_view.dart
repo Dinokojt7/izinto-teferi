@@ -73,15 +73,10 @@ class _HomeViewState extends State<HomeView> {
           }
           if (snapshot.connectionState == ConnectionState.active) {
             QuerySnapshot querySnapshot = snapshot.data;
-            return Stack(
-              children: [
-                MainScaffold(
-                    // index: _selectedIndex,
+            return MainScaffold(
+                // index: _selectedIndex,
 
-                    ),
-                if (_isLockScreen) LockScreen()
-              ],
-            );
+                );
           }
 
           return Scaffold(

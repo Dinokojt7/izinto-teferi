@@ -160,18 +160,20 @@ class HomeViewController extends ChangeNotifier {
             notifyListeners();
             if (_isLogOutLoading) {
               try {
-                await _auth.signOut();
                 var removeUserData =
                     Provider.of<ProfileViewController>(context, listen: false)
                         .removeUserData();
+                await removeUserData;
+                await _auth.signOut();
+
                 Future.delayed(const Duration(milliseconds: 50), () async {
+                  _isLogOutLoading = false;
                   SystemNavigation().applyCustomSystemChromeSettings(
                       Colors.white,
                       Brightness.dark,
                       Colors.white,
                       Brightness.dark);
                 });
-                await removeUserData;
               } on FirebaseAuthException catch (e) {
                 GenericSnackBar()
                     .showCustomSnackBar(null, context, e.message!, true);

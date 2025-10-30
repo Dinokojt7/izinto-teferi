@@ -156,6 +156,35 @@ class ProfileViewController extends ChangeNotifier {
     return _isValid;
   }
 
+  Future<Map<String, dynamic>?> getUserProfileData(String userId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      return doc.data();
+    } catch (e) {
+      print('Error getting user profile data: $e');
+      return null;
+    }
+  }
+
+  Future<bool> hasAddresses(String userId) async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('addresses')
+          .limit(1) // Only get 1 document to check existence
+          .get();
+
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      print('Error checking addresses: $e');
+      return false;
+    }
+  }
+
   void showExitConfirmationDialog(BuildContext context) {
     showModalBottomSheet(
       backgroundColor: Colors.transparent,

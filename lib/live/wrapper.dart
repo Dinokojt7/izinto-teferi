@@ -9,6 +9,7 @@ import 'package:izinto/controllers/home_items_controller.dart';
 import 'package:izinto/controllers/laundry_support_questions_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
 import 'package:izinto/controllers/tabs_header.dart';
+import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/view/auth_view/phone_auth_view.dart';
 import 'package:izinto/live/view/cart_view/cart_view_page.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
@@ -16,6 +17,9 @@ import 'package:izinto/live/view/home_view/guest_access.dart';
 import 'package:izinto/live/view/home_view/home_view.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/view/profile_view/profile_view.dart';
+import 'package:izinto/live/widgets/buttons/save_button.dart';
+import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
+import 'package:izinto/live/widgets/text_widgets/profile_big_text.dart';
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 import '../controllers/cart_controller.dart';
@@ -73,39 +77,55 @@ class _WrapperState extends State<Wrapper> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
 
     return Consumer<ProfileViewController>(
       builder: (context, profileController, child) {
-        final List<dynamic> _addresses = profileController.savedAddresses;
-        final bool _isNewUser = profileController.isNewUser;
+        // Show loader while initial data is being loaded
+        if (user != null &&
+            profileController.firstName.isEmpty &&
+            profileController.isLoading) {
+          return _buildLoadingScreen();
+        }
+
         if (user == null) {
-          return PhoneAuthView();
+          return const PhoneAuthView();
+        }
+
+        // At this point, we should have user data loaded via getData()
+        final hasBasicInfo = profileController.firstName.isNotEmpty &&
+            profileController.lastName.isNotEmpty &&
+            profileController.emailAddress.isNotEmpty &&
+            profileController.phoneNumber.isNotEmpty;
+
+        final hasAddresses = profileController.savedAddresses.isNotEmpty;
+
+        // Decision tree
+        if (!hasBasicInfo) {
+          return const ProfileView();
+        } else if (!hasAddresses) {
+          return const GuestAccess();
         } else {
-          if (_isNewUser) {
-            return ProfileView();
-          }
-          if (_addresses.length == 0) {
-            if (profileController.isLoading) {
-              return Scaffold(
-                body: Container(
-                  height: double.maxFinite,
-                  color: Colors.white,
-                  child: Center(
-                    child: LiveProgressIndicator(
-                      hasOwnDialog: true,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              );
-            }
-            return GuestAccess();
-          }
-          return HomeView();
+          return const HomeView();
         }
       },
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Scaffold(
+      body: Container(
+        height: double.maxFinite,
+        color: Colors.white,
+        child: const Center(
+          child: LiveProgressIndicator(
+            hasOwnDialog: true,
+            color: Colors.black,
+          ),
+        ),
+      ),
     );
   }
 }

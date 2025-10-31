@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/inbox_view/inbox_view.dart';
+import 'package:izinto/live/view/light_theme_home_view/light_theme_home.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../models/user.dart';
@@ -48,7 +49,8 @@ class _MainScaffoldState extends State<MainScaffold> {
   List<Widget> _pages(BuildContext context, bool hasUser) {
     if (hasUser) {
       return [
-        _buildNavigator(context, _navigatorKeys[0], SliverHomePage()),
+        // _buildNavigator(context, _navigatorKeys[0], SliverHomePage()),
+        _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
         _buildNavigator(context, _navigatorKeys[1], OrderHistoryView()),
         _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
         _buildNavigator(context, _navigatorKeys[3], InboxView()),
@@ -56,7 +58,9 @@ class _MainScaffoldState extends State<MainScaffold> {
       ];
     } else {
       return [
-        _buildNavigator(context, _navigatorKeys[0], SliverHomePage()),
+        // _buildNavigator(context, _navigatorKeys[0], SliverHomePage()),
+        _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
+
         OrderHistoryView(),
         _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
         InboxView(),
@@ -65,12 +69,28 @@ class _MainScaffoldState extends State<MainScaffold> {
     }
   }
 
-  /// This method returns a Navigator for each page in the BottomNavigationBar
+  @override
+  void initState() {
+    super.initState();
+    // Apply initial system chrome settings for the first tab
+    _applySystemChromeForTab(0);
+  }
+
+  void _applySystemChromeForTab(int tabIndex) {
+    if (tabIndex == 0) {
+      // First tab - keep original settings
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+    } else {
+      // Other tabs - use different settings
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.black, Brightness.light, Colors.black, Brightness.light);
+    }
+  }
+
+  // Simplified _buildNavigator without system chrome calls
   Widget _buildNavigator(
       BuildContext context, GlobalKey<NavigatorState> key, Widget child) {
-    SystemNavigation().applyCustomSystemChromeSettings(
-        Colors.black, Brightness.light, Colors.black, Brightness.light);
-
     return Navigator(
       key: key,
       onGenerateRoute: (routeSettings) {

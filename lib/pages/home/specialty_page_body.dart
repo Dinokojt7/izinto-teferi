@@ -165,13 +165,15 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                         SpecialtyModel
                                                             specialty =
                                                             laundrySpecialties
-                                                                    .laundrySpecialtyList[
-                                                                index];
+                                                                        .laundrySpecialtyList[
+                                                                    index]
+                                                                as SpecialtyModel;
                                                         var quantity = (_cartController
                                                             .getQuantity(
                                                                 laundrySpecialties
-                                                                        .laundrySpecialtyList[
-                                                                    index]));
+                                                                            .laundrySpecialtyList[
+                                                                        index]
+                                                                    as SpecialtyModel));
                                                         var price =
                                                             laundrySpecialties
                                                                 .laundrySpecialtyList[
@@ -179,10 +181,11 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                 .price;
                                                         var itemPrice = _cartController.getQuantity(
                                                                     laundrySpecialties
-                                                                            .laundrySpecialtyList[
-                                                                        index]) !=
+                                                                            .laundrySpecialtyList[index]
+                                                                        as SpecialtyModel) !=
                                                                 0
-                                                            ? quantity * price
+                                                            ? quantity *
+                                                                price![0]
                                                             : laundrySpecialties
                                                                 .laundrySpecialtyList[
                                                                     index]
@@ -244,7 +247,8 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                       Spacer(),
                                                                       //Item details
                                                                       Padding(
-                                                                        padding: const EdgeInsets.symmetric(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
                                                                             horizontal:
                                                                                 8,
                                                                             vertical:
@@ -264,7 +268,7 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                                 child: Center(
                                                                                   child: Image(
                                                                                     height: 40,
-                                                                                    image: AssetImage(laundrySpecialties.laundrySpecialtyList[index].createAt!),
+                                                                                    image: AssetImage(laundrySpecialties.laundrySpecialtyList[index].img!),
                                                                                   ),
                                                                                 ),
                                                                               ),
@@ -315,7 +319,7 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                   child:
                                                                       Padding(
                                                                     padding: const EdgeInsets
-                                                                            .symmetric(
+                                                                        .symmetric(
                                                                         horizontal:
                                                                             8,
                                                                         vertical:
@@ -324,20 +328,22 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                       crossAxisAlignment:
                                                                           CrossAxisAlignment
                                                                               .start,
-                                                                      mainAxisAlignment: _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index]) == 0
+                                                                      mainAxisAlignment: _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index]
+                                                                                  as SpecialtyModel) ==
+                                                                              0
                                                                           ? MainAxisAlignment
                                                                               .end
                                                                           : MainAxisAlignment
                                                                               .spaceBetween,
                                                                       children: [
-                                                                        _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index]) !=
+                                                                        _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel) !=
                                                                                 0
                                                                             ? GestureDetector(
                                                                                 onTap: () {
                                                                                   setState(() {
                                                                                     specialty.isSelected = false;
                                                                                   });
-                                                                                  controller.removeSpecialty(laundrySpecialties.laundrySpecialtyList[index]);
+                                                                                  controller.removeSpecialty(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel);
                                                                                 },
                                                                                 child: Container(
                                                                                   width: 35,
@@ -369,16 +375,16 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                                     children: [
                                                                                       GestureDetector(
                                                                                         onTap: () async {
-                                                                                          if (_cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index]) == 1) {
+                                                                                          if (_cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel) == 1) {
                                                                                             controller.setQuantity(false);
-                                                                                            controller.addItem(laundrySpecialties.laundrySpecialtyList[index]);
+                                                                                            controller.addItem(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel);
                                                                                             setState(() {
                                                                                               specialty.isSelected = false;
                                                                                             });
                                                                                           } else {
                                                                                             // Add item
                                                                                             controller.setQuantity(false);
-                                                                                            controller.addItem(laundrySpecialties.laundrySpecialtyList[index]);
+                                                                                            controller.addItem(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel);
                                                                                             // Set isSelected to true
                                                                                             setState(() {
                                                                                               specialty.isSelected = true;
@@ -414,7 +420,7 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                                         ),
                                                                                       ),
                                                                                       Text(
-                                                                                        '${_cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index])}',
+                                                                                        '${_cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel)}',
                                                                                         style: TextStyle(fontSize: Dimensions.font16 * 1.2, fontFamily: 'Poppins', color: AppColors.fontColor, fontWeight: FontWeight.w600),
                                                                                       ),
                                                                                     ],
@@ -483,7 +489,7 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                                               const Color(0xff9A9483),
                                                                                             ],
                                                                                           ),
-                                                                                          border: _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index]) != 0
+                                                                                          border: _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel) != 0
                                                                                               ? Border.all(
                                                                                                   color: LiveColors.whiteTextColor,
                                                                                                 )
@@ -492,9 +498,9 @@ class _SpecialtyPageBodyState extends State<SpecialtyPageBody> {
                                                                                                   color: const Color(0xff9A9483).withOpacity(0.5),
                                                                                                 )),
                                                                                       child: Center(
-                                                                                          child: _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index]) != 0
+                                                                                          child: _cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel) != 0
                                                                                               ? Text(
-                                                                                                  '${_cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index])}',
+                                                                                                  '${_cartController.getQuantity(laundrySpecialties.laundrySpecialtyList[index] as SpecialtyModel)}',
                                                                                                   style: TextStyle(fontSize: Dimensions.font16 * 1.2, fontFamily: 'Mukta', color: LiveColors.whiteTextColor, fontWeight: FontWeight.w600),
                                                                                                 )
                                                                                               : Text(

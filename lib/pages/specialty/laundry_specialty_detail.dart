@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/models/popular_specialty_model.dart';
 import 'package:izinto/pages/options/settings_view/get_help_popup.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -37,7 +38,7 @@ class _LaundrySpecialtyDetailState extends State<LaundrySpecialtyDetail> {
     var specialty = Get.find<LaundrySpecialtyController>()
         .laundrySpecialtyList[widget.pageId];
     Get.find<RecommendedSpecialtyController>()
-        .initSpecialty(specialty, Get.find<CartController>());
+        .initSpecialty(specialty as SpecialtyModel, Get.find<CartController>());
     return Scaffold(
         backgroundColor: Colors.white,
         body: CustomScrollView(
@@ -161,7 +162,7 @@ class _LaundrySpecialtyDetailState extends State<LaundrySpecialtyDetail> {
                     child: IntegerText(
                       color: AppColors.mainColor2,
                       size: Dimensions.font20 + 4,
-                      text: specialty.name,
+                      text: specialty.name!,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -181,7 +182,7 @@ class _LaundrySpecialtyDetailState extends State<LaundrySpecialtyDetail> {
               expandedHeight: 300,
               flexibleSpace: FlexibleSpaceBar(
                 background: Image.asset(
-                  specialty.img,
+                  specialty.img!,
                   width: double.maxFinite,
                   fit: BoxFit.cover,
                 ),
@@ -191,7 +192,7 @@ class _LaundrySpecialtyDetailState extends State<LaundrySpecialtyDetail> {
               child: Column(
                 children: [
                   Container(
-                    child: ExpandableText(text: specialty.introduction),
+                    child: ExpandableText(text: specialty.introduction!),
                     margin: EdgeInsets.only(
                         left: Dimensions.width20, right: Dimensions.width20),
                   ),
@@ -296,7 +297,7 @@ class _LaundrySpecialtyDetailState extends State<LaundrySpecialtyDetail> {
                     setState(() {
                       _isTouching = true;
                     });
-                    controller.addItem(specialty);
+                    controller.addItem(specialty as SpecialtyModel);
                   },
                   onTapUp: (details) {
                     setState(() {

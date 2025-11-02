@@ -11,14 +11,12 @@ class CartRepo {
   List<String> cart = [];
   List<String> cartHistory = [];
 
+  // ORIGINAL METHOD: For old CartModel
   void addToCartList(List<CartModel> cartList) {
     sharedPreferences.remove(AppConstants.CART_LIST);
     sharedPreferences.remove(AppConstants.CART_HISTORY_LIST);
     var time = DateTime.now().toString();
     cart = [];
-    /*
-      convert objects to string because shared preferences only accepts string
-     */
 
     cartList.forEach((element) {
       element.time = time;
@@ -26,15 +24,30 @@ class CartRepo {
     });
 
     sharedPreferences.setStringList(AppConstants.CART_LIST, cart);
-    // print(sharedPreferences.getStringList(AppConstants.CART_LIST));
-    // getCartList();
   }
 
+  // NEW METHOD: For NewCartModel
+  void addToNewCartList(List<NewCartModel> cartList) {
+    sharedPreferences.remove(AppConstants.NEW_CART_LIST);
+    var time = DateTime.now().toString();
+    final newCart = <String>[];
+
+    cartList.forEach((element) {
+      // If time is not set, set it
+      if (element.time == null) {
+        element.time = time;
+      }
+      return newCart.add(jsonEncode(element.toJson()));
+    });
+
+    sharedPreferences.setStringList(AppConstants.NEW_CART_LIST, newCart);
+  }
+
+  // ORIGINAL: Get old cart list
   List<CartModel> getCartList() {
     List<String> carts = [];
     if (sharedPreferences.containsKey(AppConstants.CART_LIST)) {
       carts = sharedPreferences.getStringList(AppConstants.CART_LIST)!;
-      // print('inside getCartList ' + carts.toString());
     }
     List<CartModel> cartList = [];
 
@@ -44,9 +57,33 @@ class CartRepo {
     return cartList;
   }
 
+  // NEW: Get new cart list
+  List<NewCartModel> getNewCartList() {
+    List<String> carts = [];
+    if (sharedPreferences.containsKey(AppConstants.NEW_CART_LIST)) {
+      carts = sharedPreferences.getStringList(AppConstants.NEW_CART_LIST)!;
+    }
+    List<NewCartModel> cartList = [];
+
+    carts.forEach(
+        (element) => cartList.add(NewCartModel.fromJson(jsonDecode(element))));
+
+    return cartList;
+  }
+
+  // UNIVERSAL METHOD: Handles both old and new models dynamically
+  void addToCartListUniversal(List<dynamic> cartList) {
+    if (cartList.isEmpty) return;
+
+    if (cartList.first is NewCartModel) {
+      addToNewCartList(cartList.cast<NewCartModel>());
+    } else if (cartList.first is CartModel) {
+      addToCartList(cartList.cast<CartModel>());
+    }
+  }
+
   List<CartModel> getCartHistoryList() {
     if (sharedPreferences.containsKey(AppConstants.CART_HISTORY_LIST)) {
-      // cartHistory = [];
       cartHistory =
           sharedPreferences.getStringList(AppConstants.CART_HISTORY_LIST)!;
     }
@@ -63,18 +100,11 @@ class CartRepo {
           sharedPreferences.getStringList(AppConstants.CART_HISTORY_LIST)!;
     }
     for (int i = 0; i < cart.length; i++) {
-      print('history list ' + cart[i]);
       cartHistory.add(cart[i]);
     }
     removeCart();
     sharedPreferences.setStringList(
         AppConstants.CART_HISTORY_LIST, cartHistory);
-    print('The length of history list is ' +
-        getCartHistoryList().length.toString());
-    for (int j = 0; j < getCartHistoryList().length; j++) {
-      print('The time for the order is ' +
-          getCartHistoryList()[j].time.toString());
-    }
   }
 
   void removeCart() {
@@ -82,36 +112,22 @@ class CartRepo {
     sharedPreferences.remove(AppConstants.CART_LIST);
   }
 
+  void removeNewCart() {
+    sharedPreferences.remove(AppConstants.NEW_CART_LIST);
+  }
+
   void clearCartHistory() {
     removeCart();
+    removeNewCart();
     cartHistory = [];
     sharedPreferences.remove(AppConstants.CART_HISTORY_LIST);
   }
 
-  // Add to existing CartRepo class
-  Future<void> addToNewCartList(List<NewCartModel> cartList) async {
-    final prefs = await SharedPreferences.getInstance();
-    final cartJsonList =
-        cartList.map((item) => json.encode(item.toJson())).toList();
-    prefs.setStringList(AppConstants.NEW_CART_LIST, cartJsonList);
-  }
-
-  Future<List<NewCartModel>> getNewCartList() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cartList = prefs.getStringList(AppConstants.NEW_CART_LIST) ?? [];
-    return cartList
-        .map((item) => NewCartModel.fromJson(json.decode(item)))
-        .toList();
-  }
-
-// Migration function
+  // Migration function
   Future<void> migrateOldCartToNew() async {
-    final prefs = await SharedPreferences.getInstance();
-    final useNewModels = prefs.getBool(AppConstants.USE_NEW_MODELS) ?? false;
+    final oldCart = getCartList();
+    if (oldCart.isEmpty) return;
 
-    if (!useNewModels) return; // Only migrate once
-
-    final oldCart = await getCartList();
     final newCart = <NewCartModel>[];
 
     for (var oldItem in oldCart) {
@@ -131,8 +147,7 @@ class CartRepo {
       newCart.add(newItem);
     }
 
-    await addToNewCartList(newCart);
-    // Optionally clear old cart
-    // await prefs.remove(AppConstants.CART_LIST);
+    addToNewCartList(newCart);
+    print('✅ Migrated ${newCart.length} items from old cart to new cart');
   }
 }

@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
 import 'package:izinto/helpers/data/repository/laundry_specialty_repo.dart';
+import 'package:izinto/models/new_specialty_model.dart'; // ADD: Import new model
+import 'package:izinto/models/new_cart_model.dart'; // ADD: Import new cart model
 
-import '../models/cart_model.dart';
-import '../models/popular_specialty_model.dart';
-import 'cart_controller.dart';
 import '../helpers/data/repository/cart_repo.dart';
+import '../live/utilities/price_helper.dart'; // ADD: Import price helper
 
 class LaundrySpecialtyController extends GetxController {
   final LaundrySpecialtyRepo laundrySpecialtyRepo;
@@ -12,11 +12,11 @@ class LaundrySpecialtyController extends GetxController {
   LaundrySpecialtyController(
       {required this.cartRepo, required this.laundrySpecialtyRepo});
 
-  Map<int, CartModel> _items = {};
+  Map<int, NewCartModel> _items = {}; // CHANGE: Use NewCartModel
 
-  List<dynamic> _laundrySpecialtyList = [];
-  List<dynamic> get laundrySpecialtyList => _laundrySpecialtyList;
-  late CartController _cart;
+  List<NewSpecialtyModel> _laundrySpecialtyList =
+      []; // CHANGE: Use NewSpecialtyModel
+  List<NewSpecialtyModel> get laundrySpecialtyList => _laundrySpecialtyList;
 
   bool _isLoaded = false;
   bool get isLoaded => _isLoaded;
@@ -26,14 +26,14 @@ class LaundrySpecialtyController extends GetxController {
   int _inCartItems = 0;
   int get inCartItems => _inCartItems + _quantity;
 
-  get getItems => _items;
+  Map<int, NewCartModel> get getItems => _items; // CHANGE: Return type
 
   Future<void> getLaundrySpecialtyList() async {
     Response response = await laundrySpecialtyRepo.getLaundrySpecialtyList();
     if (response.statusCode == 200) {
       _laundrySpecialtyList = [];
-      _laundrySpecialtyList
-          .addAll(Specialty.fromJson(response.body).specialties);
+      _laundrySpecialtyList.addAll(NewSpecialty.fromJson(response.body)
+          .specialties); // CHANGE: Use NewSpecialty
       _isLoaded = true;
       update();
     } else {
@@ -41,23 +41,25 @@ class LaundrySpecialtyController extends GetxController {
     }
   }
 
-  void addItem(SpecialtyModel specialty, int quantity) {
+  void addItem(NewSpecialtyModel specialty, int quantity) {
+    // CHANGE: Parameter type
     var totalQuantity = 0;
     if (_items.containsKey(specialty.id!)) {
       _items.update(specialty.id!, (value) {
         totalQuantity = value.quantity! + quantity;
 
-        return CartModel(
+        return NewCartModel(
+          // CHANGE: Use NewCartModel
           id: value.id,
           name: value.name,
-          price: value.price,
+          price: PriceHelper.getPrice(specialty), // CHANGE: Use price helper
           time: DateTime.now().toString(),
-          img: value.img,
-          type: value.type,
-          material: value.material,
+          img: specialty.img, // FIXED: Use specialty.img not value.img
+          type: specialty.type,
+          material: specialty.material,
           quantity: value.quantity! + quantity,
           isExist: true,
-          provider: value.provider,
+          provider: specialty.provider,
           specialty: specialty,
         );
       });
@@ -68,10 +70,11 @@ class LaundrySpecialtyController extends GetxController {
     } else {
       if (quantity > 0) {
         _items.putIfAbsent(specialty.id!, () {
-          return CartModel(
+          return NewCartModel(
+            // CHANGE: Use NewCartModel
             id: specialty.id,
             name: specialty.name,
-            price: specialty.price,
+            price: PriceHelper.getPrice(specialty), // CHANGE: Use price helper
             time: DateTime.now().toString(),
             img: specialty.img,
             type: specialty.type,
@@ -84,12 +87,13 @@ class LaundrySpecialtyController extends GetxController {
         });
       } else {
         Get.snackbar(
-          'Item count 0', 'Please select items to add to cart',
-          // backgroundColor: AppColors.mainColor, colorText: Colors.white
+          'Item count 0',
+          'Please select items to add to cart',
         );
       }
     }
-    cartRepo.addToCartList(getItems);
+    cartRepo.addToNewCartList(getItems.values.toList());
+// MAY NEED ADJUSTMENT: Convert map to list
     update();
   }
 
@@ -119,5 +123,15 @@ class LaundrySpecialtyController extends GetxController {
     } else {
       return quantity;
     }
+  }
+
+  // ADD: Helper method to get quantity for a specialty
+  int getQuantity(NewSpecialtyModel specialty) {
+    return _items[specialty.id]?.quantity ?? 0;
+  }
+
+  // ADD: Helper method to check if item exists in cart
+  bool existInCart(NewSpecialtyModel specialty) {
+    return _items.containsKey(specialty.id);
   }
 }

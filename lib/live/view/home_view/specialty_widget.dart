@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/new_specialty_model.dart';
 import '../../../models/popular_specialty_model.dart';
 import '../../../utils/dimensions.dart';
 import '../../widgets/text_widgets/small_black_text.dart';
@@ -11,7 +12,7 @@ import 'category_view/controller/category_view_controller.dart';
 
 class SpecialtyWidget extends StatefulWidget {
   final int index;
-  final List<SpecialtyModel> homeItemList;
+  final List<NewSpecialtyModel> homeItemList; // CHANGE: Use NewSpecialtyModel
   final BuildContext context;
 
   const SpecialtyWidget({
@@ -27,19 +28,64 @@ class SpecialtyWidget extends StatefulWidget {
 
 class _SpecialtyWidgetState extends State<SpecialtyWidget> {
   bool _isTapped = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Simulate loading delay
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
+  }
+
+  // ADD THIS METHOD BACK:
+  Widget _buildSkeletonWidget() {
+    return Stack(
+      children: [
+        // Skeleton for text
+        Padding(
+          padding: EdgeInsets.only(left: 8.0, right: 2.0, bottom: 8.0),
+          child: Container(
+            width: 60,
+            height: 16,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+        // Skeleton for image
+        Positioned(
+          top: Dimensions.height45 * 1.2,
+          left: 20,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<CategoryViewController>(
       builder: (context, _categoryViewController, child) {
-        // SAFETY CHECK: Ensure index is valid
+        // Safe index check
         final bool isValidIndex = widget.index < widget.homeItemList.length;
 
-        if (!isValidIndex) {
-          return Container(); // Return empty container if invalid index
-        }
-
         void _handleTap() {
+          if (!isValidIndex || _isLoading) return;
+
           setState(() {
             _isTapped = true;
           });
@@ -47,10 +93,11 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
           Provider.of<CategoryViewController>(context, listen: false)
               .updateCategoryList(1, 1);
 
-          Provider.of<CategoryViewController>(context, listen: false)
-              .updateTabsControllerIndex(
-                  widget.homeItemList[widget.index].name ?? "Unnamed",
-                  widget.index);
+          if (isValidIndex) {
+            Provider.of<CategoryViewController>(context, listen: false)
+                .updateTabsControllerIndex(
+                    widget.homeItemList[widget.index].name!, widget.index);
+          }
 
           Provider.of<HomeViewController>(context, listen: false)
               .navigateToNestedWidget(context, CategoryView());
@@ -67,16 +114,16 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Container(
-            width: Dimensions.screenWidth / 2.5,
-            height: Dimensions.height45 * 4,
+            width: Dimensions.screenWidth / 2,
+            height: Dimensions.height45 * 4.2,
             margin: EdgeInsets.only(
-              left: Dimensions.width15 / 2,
-              right: Dimensions.width15 / 2,
+              left: Dimensions.width10 / 1.2,
+              right: Dimensions.width10 / 1.2,
             ),
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withOpacity(0.2),
                   blurRadius: 0.5,
                   offset: Offset(0, 0.8),
                 ),
@@ -86,14 +133,18 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
                 color: Colors.black.withOpacity(0.04),
               ),
               borderRadius: BorderRadius.circular(Dimensions.radius15),
-              color: _isTapped ? Colors.grey.shade200 : Colors.white,
+              color: _isTapped
+                  ? Colors.grey.shade200
+                  : (_isLoading ? Colors.grey.shade100 : Colors.white),
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(Dimensions.radius15),
-                onTap: _handleTap,
-                child: buildSpecialtyWidget(),
+                onTap: _isLoading ? null : _handleTap,
+                child: _isLoading
+                    ? _buildSkeletonWidget() // USING THE SKELETON HERE
+                    : buildSpecialtyWidget(isValidIndex),
               ),
             ),
           ),
@@ -102,10 +153,9 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
     );
   }
 
-  Widget buildSpecialtyWidget() {
-    // SAFETY CHECK again
-    if (widget.index >= widget.homeItemList.length) {
-      return Center(child: Text('Error'));
+  Widget buildSpecialtyWidget(bool isValidIndex) {
+    if (!isValidIndex) {
+      return _buildSkeletonWidget(); // AND HERE FOR INVALID INDEX
     }
 
     final item = widget.homeItemList[widget.index];
@@ -121,7 +171,9 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
             right: 2.0,
             bottom: _getBottomPadding(widget.index),
           ),
-          child: SmallBlackText(text: itemName),
+          child: SmallBlackText(
+            text: itemName,
+          ),
         ),
         Positioned(
           top: _getTopPosition(widget.index),
@@ -166,7 +218,7 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
     );
   }
 
-  // Helper methods
+  // Your existing helper methods...
   double _getBottomPadding(int index) {
     switch (index) {
       case 1:
@@ -193,10 +245,11 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
     switch (index) {
       case 1:
         return 5.0;
-      case 3:
-      case 4:
       case 5:
         return 14.0;
+      case 3:
+      case 4:
+        return 18.0;
       default:
         return 0.0;
     }
@@ -204,8 +257,8 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
 
   double _getImageTopPadding(int index) {
     switch (index) {
-      case 3:
       case 5:
+      case 3:
         return 12.0;
       case 4:
         return 14.0;
@@ -214,16 +267,16 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
     }
   }
 
-  double _getImageHeight(int id) {
+  double _getImageHeight(int? id) {
     switch (id) {
-      case 2:
-        return 90;
-      case 3:
-      case 4:
-        return 65;
       case 5:
       case 6:
         return 70;
+      case 3:
+      case 4:
+        return 65;
+      case 2:
+        return 90;
       default:
         return 56;
     }

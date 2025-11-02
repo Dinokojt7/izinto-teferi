@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../controllers/cart_controller.dart';
@@ -18,7 +19,7 @@ class AddToBasket extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<CartController>(builder: (_cartController) {
+    return GetBuilder<NewCartController>(builder: (_cartController) {
       var specialty = specialtyList![index!];
       var _quantity = _cartController.getQuantity(specialty);
       var _isInCart = _quantity > 0;

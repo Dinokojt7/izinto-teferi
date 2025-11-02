@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/add_to_basket.dart';
 import 'package:provider/provider.dart';
 
@@ -69,7 +70,7 @@ class ServiceWidget extends StatelessWidget {
       var specialtyController, BuildContext viewContext) {
     return GetBuilder<LaundrySpecialtyController>(
         builder: (laundrySpecialties) {
-      return GetBuilder<CartController>(builder: (_cartController) {
+      return GetBuilder<NewCartController>(builder: (_cartController) {
         var _quantity = _cartController.getQuantity(homeItemList[index]);
         var _isInCart = _quantity > 0;
         return Column(
@@ -79,7 +80,7 @@ class ServiceWidget extends StatelessWidget {
             Center(
               child: Image(
                 height: 60,
-                image: AssetImage(homeItemList[index].createAt),
+                image: AssetImage(homeItemList[index].img),
               ),
             ),
             Padding(

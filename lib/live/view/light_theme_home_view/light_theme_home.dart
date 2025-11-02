@@ -207,7 +207,6 @@ class _LightThemeHomeState extends State<LightThemeHome> {
       );
 
   Widget _buildServicesGrid(HomeItemsController homeItemsController) {
-    // FIXED: Accept controller
     final itemCount = homeItemsController.homeItemsList.length;
 
     return Padding(
@@ -217,16 +216,15 @@ class _LightThemeHomeState extends State<LightThemeHome> {
         shrinkWrap: true,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          crossAxisSpacing: Dimensions.width10 / 8,
-          mainAxisSpacing: Dimensions.height10 / 5,
+          crossAxisSpacing: Dimensions.width10 / 5,
+          mainAxisSpacing: Dimensions.height10,
           childAspectRatio: 0.9,
         ),
-        itemCount: itemCount > 6 ? 6 : itemCount, // Use actual count with max 6
+        itemCount: itemCount > 6 ? 6 : itemCount,
         itemBuilder: (context, index) {
           return SpecialtyWidget(
             index: index,
-            homeItemList:
-                homeItemsController.homeItemsList, // FIXED: Use homeItemsList
+            homeItemList: homeItemsController.homeItemsList,
             context: context,
           );
         },

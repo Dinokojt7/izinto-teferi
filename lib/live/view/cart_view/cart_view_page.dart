@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/view/cart_view/view_widgets/cart_heading.dart';
 import 'package:izinto/live/view/cart_view/view_widgets/cart_product_view.dart';
@@ -21,7 +22,7 @@ class CartViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<CartController>(builder: (_cartController) {
+    return GetBuilder<NewCartController>(builder: (_cartController) {
       final homeViewController =
           Provider.of<HomeViewController>(context, listen: false);
       final user = Provider.of<UserModel?>(context);

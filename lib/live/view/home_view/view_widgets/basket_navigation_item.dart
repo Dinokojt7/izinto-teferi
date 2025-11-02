@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +17,7 @@ class BasketNavigationItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HomeViewController>(
         builder: (context, homeController, child) {
-      return GetBuilder<CartController>(builder: (_cartController) {
+      return GetBuilder<NewCartController>(builder: (_cartController) {
         var totalCartItems = _cartController.totalItems;
         return Stack(
           children: [

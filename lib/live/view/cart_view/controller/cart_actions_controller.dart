@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
+import 'package:izinto/models/new_specialty_model.dart';
 
 import '../../../../controllers/cart_controller.dart';
 import '../../../../models/popular_specialty_model.dart';
@@ -22,7 +24,7 @@ class CartActionsController extends ChangeNotifier {
 
   // CLEAR CART
   void clearCartData(context, String headerText, String action,
-      bool isClearAllCached, int? index, SpecialtyModel? specialty) {
+      bool isClearAllCached, int? index, NewSpecialtyModel? specialty) {
     showModalBottomSheet(
       backgroundColor: Colors.transparent,
       context: context,
@@ -54,16 +56,16 @@ class CartActionsController extends ChangeNotifier {
   }
 
   Future<void> removeCachedData() async {
-    final cart = await Get.find<CartController>();
+    final cart = await Get.find<NewCartController>();
     cart.clear();
-    cart.clearCartHistory();
+    //  cart.clearCartHistory();
     notifyListeners();
   }
 
   // REMOVE INDIVIDUAL CART ITEM
 
-  Future<void> removeItem(int index, SpecialtyModel specialty) async {
-    final cart = await Get.find<CartController>();
+  Future<void> removeItem(int index, NewSpecialtyModel specialty) async {
+    final cart = await Get.find<NewCartController>();
     cart.addItem(specialty, -1);
   }
 }

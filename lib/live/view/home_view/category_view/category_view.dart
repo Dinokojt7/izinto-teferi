@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/controllers/carpet_care_specialty_controller.dart';
+import 'package:izinto/controllers/gas_refill_specialty_controller.dart';
+import 'package:izinto/controllers/pet_care_specialty_controller.dart';
 import 'package:izinto/live/view/home_view/category_view/service_widget.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/cta_button.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/page_view_items.dart';
@@ -35,13 +38,20 @@ class CategoryView extends StatefulWidget {
 
 class _CategoryViewState extends State<CategoryView> {
   dynamic specialty = SpecialtyModel();
-  final List homeList =
+
+  // Get different specialty lists from controllers
+  final List laundryList =
       Get.find<LaundrySpecialtyController>().laundrySpecialtyList;
+  final List gasRefillList =
+      Get.find<GasRefillSpecialtyController>().gasRefillSpecialtyList;
+  final List carpetCareList =
+      Get.find<CarpetCareSpecialtyController>().carpetCareSpecialtyList;
+  final List petCareList =
+      Get.find<PetCareSpecialtyController>().petCareSpecialtyList;
 
   @override
   void initState() {
     super.initState();
-
     Get.find<RecommendedSpecialtyController>()
         .initSpecialty(specialty, Get.find<CartController>());
   }
@@ -52,6 +62,85 @@ class _CategoryViewState extends State<CategoryView> {
     super.dispose();
   }
 
+  // Helper method to get the relevant list based on service type
+  List<dynamic> _getRelevantList(String serviceViewed) {
+    switch (serviceViewed) {
+      case 'Laundry':
+        return laundryList;
+      case 'Gas Refill':
+        return gasRefillList;
+      case 'Carpet Care':
+        return carpetCareList;
+      case 'Pet Care':
+        return petCareList;
+      default:
+        return []; // Return empty list for other services
+    }
+  }
+
+  // Build service slivers for grid layout
+  List<Widget> _buildServiceSlivers(String serviceViewed) {
+    final relevantList = _getRelevantList(serviceViewed);
+
+    // Show empty state if list is empty
+    if (relevantList.isEmpty) {
+      return [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.only(top: Dimensions.height45 * 2),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.category_outlined,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  SizedBox(height: Dimensions.height15),
+                  HeadingStyleText(
+                    text: 'No Services Available',
+                    size: 18,
+                    weight: FontWeight.w500,
+                  ),
+                  SizedBox(height: Dimensions.height10),
+                  DescriptionText(
+                    text: 'Services for $serviceViewed will be available soon.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    return [
+      SliverToBoxAdapter(
+        child: Column(
+          children: [
+            _buildHeading(serviceViewed),
+          ],
+        ),
+      ),
+      SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          mainAxisSpacing: 20.0,
+          crossAxisSpacing: Dimensions.width15,
+          childAspectRatio: 0.5,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => ServiceWidget(
+            index: index,
+            homeItemList: relevantList,
+          ),
+          childCount: relevantList.length,
+        ),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<HomeViewController>(
@@ -60,48 +149,26 @@ class _CategoryViewState extends State<CategoryView> {
           builder: (context, categoryViewController, child) {
         final pageId = categoryViewController.selectedListIndex;
         final serviceViewed = categoryViewController.specialtyName;
-        final List<Widget> laundrySlivers = [
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                buildHeading(serviceViewed),
-              ],
-            ),
-          ),
 
-          // Conditionally show SliverGrid or an alternative
+        // Define which services should use the grid layout vs alternative layout
+        final gridServices = [
+          'Laundry',
+          'Gas Refill',
+          'Carpet Care',
+          'Pet Care'
+        ];
+        final shouldShowGrid = gridServices.contains(serviceViewed);
 
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 20.0,
-              crossAxisSpacing: Dimensions.width15,
-              childAspectRatio: 0.5,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => ServiceWidget(
-                index: index,
-                homeItemList: homeList,
-              ),
-              childCount: homeList.length,
-            ),
-          ),
-        ];
-        final List<Widget> popularServicesSlivers = [
-          SliverToBoxAdapter(
-              child: SpecialityItemView(
-            serviceViewed: serviceViewed,
-          )
-              // PageViewItems(
-              //   serviceViewed: serviceViewed,
-              // ),
-              ),
-        ];
-        var viewedCategory = serviceViewed == 'Laundry'
-            ? laundrySlivers
-            : serviceViewed == 'Gas Refill'
-                ? laundrySlivers
-                : popularServicesSlivers;
+        final List<Widget> serviceSlivers = shouldShowGrid
+            ? _buildServiceSlivers(serviceViewed)
+            : [
+                SliverToBoxAdapter(
+                  child: SpecialityItemView(
+                    serviceViewed: serviceViewed,
+                  ),
+                ),
+              ];
+
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
@@ -113,34 +180,28 @@ class _CategoryViewState extends State<CategoryView> {
           body: Stack(
             children: [
               Padding(
-                padding: serviceViewed == 'Laundry'
+                padding: shouldShowGrid
                     ? EdgeInsets.only(
                         left: Dimensions.width15,
                         right: Dimensions.width15,
                         top: Dimensions.height45 * 2.9)
-                    : serviceViewed == 'Gas Refill'
-                        ? EdgeInsets.only(
-                            left: Dimensions.width15,
-                            right: Dimensions.width15,
-                            top: Dimensions.height45 * 2.9)
-                        : EdgeInsets.only(top: Dimensions.height45 * 2.6),
+                    : EdgeInsets.only(top: Dimensions.height45 * 2.6),
                 child: CustomScrollView(
-                  slivers: viewedCategory,
+                  slivers: serviceSlivers,
                 ),
               ),
               CategoryViewHeaderSection(
-                specialties: homeList,
+                specialties: _getRelevantList(serviceViewed),
                 pageId: pageId,
               ),
             ],
           ),
-          //  bottomNavigationBar: GenericBottomAppBar(),
         );
       });
     });
   }
 
-  Widget buildHeading(String viewedService) => Padding(
+  Widget _buildHeading(String viewedService) => Padding(
         padding: EdgeInsets.only(
             top: 10.0, left: Dimensions.width10, bottom: Dimensions.height20),
         child: Row(

@@ -103,8 +103,8 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
         shadowColor: Colors.black54,
         color: Colors.white,
         child: TabBar(
-          labelPadding: EdgeInsets.symmetric(
-              horizontal: 8.0, vertical: 6.0), // Symmetric padding
+          labelPadding:
+              EdgeInsets.symmetric(horizontal: 8.0), // Symmetric padding
           isScrollable: true,
           indicatorSize: TabBarIndicatorSize.label,
           physics: AlwaysScrollableScrollPhysics(),

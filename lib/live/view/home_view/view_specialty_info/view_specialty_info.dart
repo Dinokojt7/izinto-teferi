@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
+import '../../../../models/new_specialty_model.dart';
+import '../../../../models/popular_specialty_model.dart';
+import '../../../../models/recommended_specialty_model.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../../widgets/texts/expandable_text.dart';
 import '../../../../widgets/texts/small_text.dart';
@@ -18,6 +21,8 @@ class ViewSpecialtyInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var item = homeItemList[index];
+
     return Scaffold(
       backgroundColor: Colors.white.withOpacity(0.98),
       body: CustomScrollView(
@@ -49,7 +54,7 @@ class ViewSpecialtyInfo extends StatelessWidget {
             expandedHeight: 300,
             flexibleSpace: FlexibleSpaceBar(
               background: Image.asset(
-                homeItemList[index].createAt,
+                homeItemList[index].img,
                 width: double.maxFinite,
                 fit: BoxFit.scaleDown,
               ),
@@ -85,8 +90,8 @@ class ViewSpecialtyInfo extends StatelessWidget {
                     height: Dimensions.height30,
                   ),
                   GenericHeaderRow(
-                    headingChild: IntroductionText(
-                        text: 'R${homeItemList[index].price},00*'),
+                    headingChild:
+                        IntroductionText(text: 'R${_getPrice(item)},00*'),
                     actionButtonChild: CartActionButton(
                       isActive: true,
                       description: 'Add to basket',
@@ -122,5 +127,12 @@ class ViewSpecialtyInfo extends StatelessWidget {
       ),
       //bottomNavigationBar: GenericBottomAppBar(),
     );
+  }
+
+  int _getPrice(dynamic item) {
+    if (item is NewSpecialtyModel) return item.firstPrice;
+    if (item is SpecialtyModel) return item.price ?? 0;
+    if (item is Specialties) return item.price ?? 0;
+    return 0;
   }
 }

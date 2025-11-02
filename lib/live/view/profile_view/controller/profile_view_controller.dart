@@ -516,17 +516,16 @@ class ProfileViewController extends ChangeNotifier {
             bool success = await deleteAccount();
 
             if (success) {
-              // Show success message first
-              GenericSnackBar().showCustomSnackBar(
-                  null, sheetContext, 'Account deleted successfully', true);
-
-              // Then navigate after a short delay
+              // Navigate to auth
+              Navigator.pushAndRemoveUntil(
+                sheetContext,
+                MaterialPageRoute(builder: (context) => PhoneAuthView()),
+                (route) => false,
+              );
+              // Show success message
               Future.delayed(Duration(milliseconds: 1500), () {
-                Navigator.pushAndRemoveUntil(
-                  sheetContext,
-                  MaterialPageRoute(builder: (context) => PhoneAuthView()),
-                  (route) => false,
-                );
+                GenericSnackBar().showCustomSnackBar(
+                    null, sheetContext, 'Account deleted successfully', true);
               });
             } else {
               GenericSnackBar().showCustomSnackBar(

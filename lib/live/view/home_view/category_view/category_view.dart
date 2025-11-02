@@ -99,7 +99,9 @@ class _CategoryViewState extends State<CategoryView> {
         ];
         var viewedCategory = serviceViewed == 'Laundry'
             ? laundrySlivers
-            : popularServicesSlivers;
+            : serviceViewed == 'Gas Refill'
+                ? laundrySlivers
+                : popularServicesSlivers;
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
@@ -116,7 +118,12 @@ class _CategoryViewState extends State<CategoryView> {
                         left: Dimensions.width15,
                         right: Dimensions.width15,
                         top: Dimensions.height45 * 2.9)
-                    : EdgeInsets.only(top: Dimensions.height45 * 2.6),
+                    : serviceViewed == 'Gas Refill'
+                        ? EdgeInsets.only(
+                            left: Dimensions.width15,
+                            right: Dimensions.width15,
+                            top: Dimensions.height45 * 2.9)
+                        : EdgeInsets.only(top: Dimensions.height45 * 2.6),
                 child: CustomScrollView(
                   slivers: viewedCategory,
                 ),

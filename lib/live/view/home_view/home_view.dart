@@ -28,27 +28,29 @@ class _HomeViewState extends State<HomeView> {
   CollectionReference _referenceUserInfo =
       FirebaseFirestore.instance.collection('plans');
   late Stream<QuerySnapshot> _streamUserInfo;
+
   @override
   void initState() {
     super.initState();
-    // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    //     systemNavigationBarColor: Colors.black,
-    //     systemNavigationBarIconBrightness: Brightness.light));
-
-    // Provider.of<ProfileViewController>(context, listen: false).getData();
-    //
-    // Provider.of<ProfileViewController>(context, listen: false).getAddresses();
     _streamUserInfo = _referenceUserInfo.snapshots();
+
+    // Apply system chrome settings immediately when HomeView loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _applySystemChromeSettings();
+    });
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   var navBarColor =
-  //       Provider.of<HomeViewController>(context).navigationBarColor;
-  //   SystemNavigation()
-  //       .applyCustomSystemChromeSettings(Colors.black, Brightness.dark);
-  //   super.didChangeDependencies();
-  // }
+  void _applySystemChromeSettings() {
+    SystemNavigation().applyCustomSystemChromeSettings(
+        Colors.black, Brightness.light, Colors.black, Brightness.light);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Apply system chrome settings whenever dependencies change
+    _applySystemChromeSettings();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +58,9 @@ class _HomeViewState extends State<HomeView> {
     final homeViewController =
         Provider.of<HomeViewController>(context, listen: false);
     final _isLockScreen = homeViewController.isLogOutLoading;
+
+    // Apply system chrome settings on every build to ensure consistency
+    _applySystemChromeSettings();
 
     if (user != null) {
       return StreamBuilder<QuerySnapshot>(
@@ -73,10 +78,7 @@ class _HomeViewState extends State<HomeView> {
           }
           if (snapshot.connectionState == ConnectionState.active) {
             QuerySnapshot querySnapshot = snapshot.data;
-            return MainScaffold(
-                // index: _selectedIndex,
-
-                );
+            return MainScaffold();
           }
 
           return Scaffold(
@@ -94,9 +96,7 @@ class _HomeViewState extends State<HomeView> {
         },
       );
     } else {
-      return MainScaffold(
-          //  index: _selectedIndex,
-          );
+      return MainScaffold();
     }
   }
 }

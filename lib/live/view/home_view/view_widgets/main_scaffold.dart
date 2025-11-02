@@ -49,7 +49,6 @@ class _MainScaffoldState extends State<MainScaffold> {
   List<Widget> _pages(BuildContext context, bool hasUser) {
     if (hasUser) {
       return [
-        // _buildNavigator(context, _navigatorKeys[0], SliverHomePage()),
         _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
         _buildNavigator(context, _navigatorKeys[1], OrderHistoryView()),
         _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
@@ -58,9 +57,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       ];
     } else {
       return [
-        // _buildNavigator(context, _navigatorKeys[0], SliverHomePage()),
         _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
-
         OrderHistoryView(),
         _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
         InboxView(),
@@ -69,28 +66,11 @@ class _MainScaffoldState extends State<MainScaffold> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    // Apply initial system chrome settings for the first tab
-    _applySystemChromeForTab(0);
-  }
-
-  void _applySystemChromeForTab(int tabIndex) {
-    if (tabIndex == 0) {
-      // First tab - keep original settings
-      SystemNavigation().applyCustomSystemChromeSettings(
-          Colors.white, Brightness.dark, Colors.white, Brightness.dark);
-    } else {
-      // Other tabs - use different settings
-      SystemNavigation().applyCustomSystemChromeSettings(
-          Colors.black, Brightness.light, Colors.black, Brightness.light);
-    }
-  }
-
-  // Simplified _buildNavigator without system chrome calls
   Widget _buildNavigator(
       BuildContext context, GlobalKey<NavigatorState> key, Widget child) {
+    SystemNavigation().applyCustomSystemChromeSettings(
+        Colors.black, Brightness.light, Colors.black, Brightness.light);
+
     return Navigator(
       key: key,
       onGenerateRoute: (routeSettings) {
@@ -101,19 +81,26 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 
-  Future<bool> _onWillPop() async {
-    final homeController =
-        Provider.of<HomeViewController>(listen: false, context);
-    final isFirstRouteInCurrentTab =
-        !await _navigatorKeys[homeController.currentIndex]
-            .currentState!
-            .maybePop();
-    if (isFirstRouteInCurrentTab) {
-      // If there's no route to pop, let the system handle back button (maybe exit the app)
-      return true;
+  void _handlePopInvoked(bool didPop) async {
+    if (!didPop) {
+      final homeController =
+          Provider.of<HomeViewController>(listen: false, context);
+
+      // Handle the async maybePop operation
+      final bool didPopRoute = await _navigatorKeys[homeController.currentIndex]
+          .currentState!
+          .maybePop();
+
+      final bool isFirstRouteInCurrentTab = !didPopRoute;
+
+      if (isFirstRouteInCurrentTab) {
+        // If there's no route to pop, let the system handle back button (maybe exit the app)
+        // The system will handle the back button automatically
+      } else {
+        SystemNavigation().applyCustomSystemChromeSettings(
+            Colors.black, Brightness.light, Colors.black, Brightness.light);
+      }
     }
-    // If current tab has routes, pop the route.
-    return false;
   }
 
   @override
@@ -121,118 +108,104 @@ class _MainScaffoldState extends State<MainScaffold> {
     final user = Provider.of<UserModel?>(context);
     final _hasUser = user != null;
     return Consumer<HomeViewController>(builder: (context, _controller, child) {
-      return WillPopScope(
-        onWillPop: _onWillPop,
+      return PopScope(
+        canPop: false, // We handle popping manually
+        onPopInvoked: _handlePopInvoked,
         child: Stack(
           children: [
-            PopScope(
-              canPop: false,
-              onPopInvoked: (didPop) {
-                if (!didPop) {
-                  final focus = FocusScope.of(context);
-                  if (!focus.hasPrimaryFocus && focus.focusedChild != null) {
-                    focus.unfocus();
-                  } else {
-                    Navigator.of(context).maybePop();
-                  }
-                }
-              },
-              child: Scaffold(
-                backgroundColor: Colors.transparent,
-                body: IndexedStack(
-                  index: _controller.currentIndex,
-                  children: _pages(context, _hasUser),
+            Scaffold(
+              backgroundColor: Colors.transparent,
+              body: IndexedStack(
+                index: _controller.currentIndex,
+                children: _pages(context, _hasUser),
+              ),
+              bottomNavigationBar: Container(
+                height: Dimensions.bottomHeightBar / 1.7,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 1.5,
+                      offset: Offset(0, -1), // Shadow at the top of bottom nav
+                    ),
+                  ],
+                  color: Colors.white,
                 ),
-                bottomNavigationBar: Container(
-                  height: Dimensions.bottomHeightBar / 1.7,
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 1.5,
-                        offset:
-                            Offset(0, -1), // Shadow at the top of bottom nav
-                      ),
-                    ],
-                    color: Colors.white,
-                  ),
-                  child: ClipRect(
-                    child: SafeArea(
-                      top: false,
-                      child: Container(
-                        height: kBottomNavigationBarHeight,
-                        child: BottomNavigationBar(
-                          unselectedFontSize: 11,
-                          selectedFontSize: 11,
-                          backgroundColor: Colors.white,
-                          selectedItemColor: LiveColors.primary,
-                          elevation: 0,
-                          type: BottomNavigationBarType.fixed,
-                          showSelectedLabels: false,
-                          showUnselectedLabels: false,
-                          selectedLabelStyle: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.six,
-                          ),
-                          unselectedLabelStyle: TextStyle(
-                            color: Colors.grey.shade500,
-                          ),
-                          iconSize: 24,
-                          currentIndex: _controller.currentIndex,
-                          onTap: _onBottomNavTapped,
-                          items: [
-                            BottomNavigationBarItem(
-                              icon: IconBuilder(
-                                selectedIndex: _controller.currentIndex,
-                                regularIconString: 'assets/icons/home.png',
-                                selectedIconString:
-                                    'assets/icons/home-selected.png',
-                                itemIndex: 0,
-                              ),
-                              label: 'Home',
-                            ),
-                            BottomNavigationBarItem(
-                              icon: IconBuilder(
-                                selectedIndex: _controller.currentIndex,
-                                regularIconString:
-                                    'assets/icons/order-history.png',
-                                selectedIconString:
-                                    'assets/icons/order-history-selected.png',
-                                itemIndex: 1,
-                              ),
-                              label: 'Orders',
-                            ),
-                            BottomNavigationBarItem(
-                              icon: SizedBox(
-                                height: 30,
-                                width: 30,
-                                child: BasketNavigationItem(),
-                              ),
-                              label: 'Basket',
-                            ),
-                            BottomNavigationBarItem(
-                              icon: IconBuilder(
-                                selectedIndex: _controller.currentIndex,
-                                regularIconString:
-                                    'assets/icons/bubble-chat.png',
-                                selectedIconString:
-                                    'assets/icons/bubble-chat-selected-modified.png',
-                                itemIndex: 3,
-                              ),
-                              label: 'Inbox',
-                            ),
-                            BottomNavigationBarItem(
-                              icon: IconBuilder(
-                                selectedIndex: _controller.currentIndex,
-                                regularIconString: 'assets/icons/user.png',
-                                selectedIconString:
-                                    'assets/icons/user-selected.png',
-                                itemIndex: 4,
-                              ),
-                              label: 'Profile',
-                            ),
-                          ],
+                child: ClipRect(
+                  child: SafeArea(
+                    top: false,
+                    child: Container(
+                      height: kBottomNavigationBarHeight,
+                      child: BottomNavigationBar(
+                        unselectedFontSize: 11,
+                        selectedFontSize: 11,
+                        backgroundColor: Colors.white,
+                        selectedItemColor: LiveColors.primary,
+                        elevation: 0,
+                        type: BottomNavigationBarType.fixed,
+                        showSelectedLabels: false,
+                        showUnselectedLabels: false,
+                        selectedLabelStyle: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.six,
                         ),
+                        unselectedLabelStyle: TextStyle(
+                          color: Colors.grey.shade500,
+                        ),
+                        iconSize: 24,
+                        currentIndex: _controller.currentIndex,
+                        onTap: _onBottomNavTapped,
+                        items: [
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString: 'assets/icons/home.png',
+                              selectedIconString:
+                                  'assets/icons/home-selected.png',
+                              itemIndex: 0,
+                            ),
+                            label: 'Home',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString:
+                                  'assets/icons/order-history.png',
+                              selectedIconString:
+                                  'assets/icons/order-history-selected.png',
+                              itemIndex: 1,
+                            ),
+                            label: 'Orders',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: BasketNavigationItem(),
+                            ),
+                            label: 'Basket',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString: 'assets/icons/bubble-chat.png',
+                              selectedIconString:
+                                  'assets/icons/bubble-chat-selected-modified.png',
+                              itemIndex: 3,
+                            ),
+                            label: 'Inbox',
+                          ),
+                          BottomNavigationBarItem(
+                            icon: IconBuilder(
+                              selectedIndex: _controller.currentIndex,
+                              regularIconString: 'assets/icons/user.png',
+                              selectedIconString:
+                                  'assets/icons/user-selected.png',
+                              itemIndex: 4,
+                            ),
+                            label: 'Profile',
+                          ),
+                        ],
                       ),
                     ),
                   ),

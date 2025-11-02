@@ -28,6 +28,7 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   final _formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -60,12 +61,29 @@ class _ProfileViewState extends State<ProfileView> {
     }
   }
 
+  void _applySystemChromeSettings() {
+    SystemNavigation().applyCustomSystemChromeSettings(
+        Colors.black, Brightness.light, Colors.black, Brightness.light);
+  }
+
+  void _handleBackNavigation() {
+    final controller =
+        Provider.of<ProfileViewController>(context, listen: false);
+    final hasMissingFields = controller.hasMissingFields;
+    final isNewUser = controller.isNewUser;
+
+    if (hasMissingFields || isNewUser) {
+      controller.showExitConfirmationDialog(context);
+    } else {
+      _applySystemChromeSettings();
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    //Set the system navigation bar background to white
     return Consumer<ProfileViewController>(
         builder: (context, controller, child) {
-      // Use controller getters directly instead of local variables
       final hasMissingFields = controller.hasMissingFields;
       final isNewUser = controller.isNewUser;
 
@@ -84,16 +102,7 @@ class _ProfileViewState extends State<ProfileView> {
             }
 
             // If keyboard is already dismissed, handle navigation
-            if (hasMissingFields || isNewUser) {
-              controller.showExitConfirmationDialog(context);
-              return;
-            }
-
-            Future.delayed(const Duration(milliseconds: 200), () {
-              SystemNavigation().applyCustomSystemChromeSettings(Colors.black,
-                  Brightness.light, Colors.black, Brightness.light);
-            });
-            Navigator.of(context).pop();
+            _handleBackNavigation();
           }
         },
         child: Stack(
@@ -120,18 +129,7 @@ class _ProfileViewState extends State<ProfileView> {
                                   'Please provide all the required fields.',
                                   false);
                             } else {
-                              Future.delayed(const Duration(milliseconds: 200),
-                                  () async {
-                                setState(() {
-                                  SystemNavigation()
-                                      .applyCustomSystemChromeSettings(
-                                          Colors.black,
-                                          Brightness.light,
-                                          Colors.black,
-                                          Brightness.light);
-                                });
-                              });
-                              Navigator.of(context).pop();
+                              _handleBackNavigation();
                             }
                           },
                           backgroundColor: Colors.white,

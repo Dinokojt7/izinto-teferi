@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:izinto/controllers/car_specialty_controller.dart';
 import 'package:izinto/controllers/car_wash_support_questions_controller.dart';
+import 'package:izinto/controllers/gas_refill_specialty_controller.dart';
+import 'package:izinto/controllers/carpet_care_specialty_controller.dart';
+import 'package:izinto/controllers/pet_care_specialty_controller.dart';
 import 'package:izinto/controllers/home_items_controller.dart';
 import 'package:izinto/controllers/laundry_support_questions_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
@@ -47,6 +50,10 @@ class _WrapperState extends State<Wrapper> {
     await Get.find<CartController>().getCartHistoryList();
     await Get.find<PopularSpecialtyController>().getPopularSpecialtyList();
     await Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList();
+    await Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList();
+    await Get.find<CarpetCareSpecialtyController>()
+        .getCarpetCareSpecialtyList();
+    await Get.find<PetCareSpecialtyController>().getPetCareSpecialtyList();
     await Get.find<CarSpecialtyController>().getCarSpecialtyList();
     await Get.find<TabsHeaderController>().getTabsHeaderList();
     await Get.find<LaundrySupportQuestionsController>()
@@ -72,7 +79,8 @@ class _WrapperState extends State<Wrapper> {
     var navBarColor =
         Provider.of<HomeViewController>(context).navigationBarColor;
     SystemNavigation().applyCustomSystemChromeSettings(navBarColor,
-        Brightness.dark, Colors.white.withOpacity(0.001), Brightness.dark);
+        Brightness.light, Colors.black.withOpacity(0.001), Brightness.light);
+
     super.didChangeDependencies();
   }
 

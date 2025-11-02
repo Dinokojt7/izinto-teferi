@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../../../widgets/bottom_delete_sheet.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
+import '../../auth_view/phone_auth_view.dart';
 import '../../checkout_view/checkout_page.dart';
 
 class HomeViewController extends ChangeNotifier {
@@ -158,29 +159,35 @@ class HomeViewController extends ChangeNotifier {
           onTap: () async {
             _isLogOutLoading = true;
             notifyListeners();
-            if (_isLogOutLoading) {
-              try {
-                var removeUserData =
-                    Provider.of<ProfileViewController>(context, listen: false)
-                        .removeUserData();
-                await removeUserData;
-                await _auth.signOut();
 
-                Future.delayed(const Duration(milliseconds: 50), () async {
-                  _isLogOutLoading = false;
-                  SystemNavigation().applyCustomSystemChromeSettings(
-                      Colors.white,
-                      Brightness.dark,
-                      Colors.white,
-                      Brightness.dark);
-                });
-              } on FirebaseAuthException catch (e) {
-                GenericSnackBar()
-                    .showCustomSnackBar(null, context, e.message!, true);
-                _isLogOutLoading = false;
-              }
+            try {
+              // Close the bottom sheet first
+              Navigator.of(context).pop();
+
+              // Remove user data and sign out
+              var removeUserData =
+                  Provider.of<ProfileViewController>(context, listen: false)
+                      .removeUserData();
+              await removeUserData;
+              await _auth.signOut();
+
+              // Navigate to PhoneAuthView and remove all routes
+              Future.delayed(const Duration(milliseconds: 300), () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => PhoneAuthView()),
+                  (route) => false,
+                ); // Apply system chrome settings
+                SystemNavigation().applyCustomSystemChromeSettings(Colors.white,
+                    Brightness.dark, Colors.white, Brightness.dark);
+              });
+            } on FirebaseAuthException catch (e) {
+              GenericSnackBar()
+                  .showCustomSnackBar(null, context, e.message!, true);
+            } finally {
+              _isLogOutLoading = false;
+              notifyListeners();
             }
-            notifyListeners();
           },
         );
       },

@@ -18,6 +18,8 @@ import 'package:izinto/helpers/data/repository/tabs_header_repo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/car_specialty_controller.dart';
 import '../controllers/car_wash_support_questions_controller.dart';
+import '../controllers/new_cart_controller.dart';
+import '../controllers/new_recommended_specialty_controller.dart';
 import '../controllers/popular_specialty_controller.dart';
 import '../controllers/tabs_header.dart';
 import '../services/phone_auth_methods.dart';
@@ -50,6 +52,11 @@ Future<void> init() async {
   Get.lazyPut(() => CarWashSupportQuestionsRepo(apiClient: Get.find()));
   Get.lazyPut(() => SubscriptionPlansRepo(apiClient: Get.find()));
   Get.lazyPut(() => HomeItemsRepo(apiClient: Get.find()));
+
+  //This is the new dependency repos
+  Get.lazyPut(() => NewCartController(cartRepo: Get.find()));
+  Get.lazyPut(() =>
+      NewRecommendedSpecialtyController(recommendedSpecialtyRepo: Get.find()));
 
   //controller
   Get.lazyPut(() => AuthController(authRepo: Get.find()));

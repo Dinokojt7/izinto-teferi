@@ -29,6 +29,7 @@ import '../controllers/cart_controller.dart';
 import '../controllers/laundry_specialty_controller.dart';
 import '../controllers/popular_specialty_controller.dart';
 import '../controllers/recommended_specialty_controller.dart';
+import '../helpers/data/repository/cart_repo.dart';
 import 'auxiliery_classes/live_progress_indicator.dart';
 import 'utilities/generic_system_navigation.dart';
 import '../services/phone_auth_methods.dart';
@@ -61,6 +62,8 @@ class _WrapperState extends State<Wrapper> {
     await Get.find<HomeItemsController>().getHomeItemsList();
     await Get.find<CarWashSupportQuestionsController>()
         .getCarWashSupportQuestionsList();
+    await Get.find<CartRepo>().migrateOldCartToNew();
+
     await Get.find<SubscriptionPlansController>().getSubscriptionPlansList();
     await Get.find<PhoneAuthMethods>();
 

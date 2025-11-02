@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/cart_model.dart';
+import '../../../models/new_cart_model.dart';
 import '../../../utils/app_constants.dart';
 
 class CartRepo {
@@ -85,5 +86,53 @@ class CartRepo {
     removeCart();
     cartHistory = [];
     sharedPreferences.remove(AppConstants.CART_HISTORY_LIST);
+  }
+
+  // Add to existing CartRepo class
+  Future<void> addToNewCartList(List<NewCartModel> cartList) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cartJsonList =
+        cartList.map((item) => json.encode(item.toJson())).toList();
+    prefs.setStringList(AppConstants.NEW_CART_LIST, cartJsonList);
+  }
+
+  Future<List<NewCartModel>> getNewCartList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cartList = prefs.getStringList(AppConstants.NEW_CART_LIST) ?? [];
+    return cartList
+        .map((item) => NewCartModel.fromJson(json.decode(item)))
+        .toList();
+  }
+
+// Migration function
+  Future<void> migrateOldCartToNew() async {
+    final prefs = await SharedPreferences.getInstance();
+    final useNewModels = prefs.getBool(AppConstants.USE_NEW_MODELS) ?? false;
+
+    if (!useNewModels) return; // Only migrate once
+
+    final oldCart = await getCartList();
+    final newCart = <NewCartModel>[];
+
+    for (var oldItem in oldCart) {
+      final newItem = NewCartModel(
+        id: oldItem.id,
+        name: oldItem.name,
+        price: oldItem.price,
+        time: oldItem.time,
+        img: oldItem.img,
+        type: oldItem.type,
+        material: oldItem.material,
+        quantity: oldItem.quantity,
+        isExist: oldItem.isExist,
+        provider: oldItem.provider,
+        specialty: oldItem.specialty,
+      );
+      newCart.add(newItem);
+    }
+
+    await addToNewCartList(newCart);
+    // Optionally clear old cart
+    // await prefs.remove(AppConstants.CART_LIST);
   }
 }

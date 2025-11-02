@@ -93,7 +93,7 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
           padding: EdgeInsets.only(left: Dimensions.width30),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.5),
-            color: LiveColors.accent.withOpacity(_isHovered ? 0.6 : 0.5),
+            color: Color(0xff66abf9),
             boxShadow: _isHovered
                 ? [
                     BoxShadow(
@@ -149,8 +149,8 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
                                       borderRadius: BorderRadius.circular(
                                           Dimensions.radius15),
                                       border: Border.all(
-                                          color: LiveColors.cartBlue, width: 1),
-                                      color: LiveColors.cartBlue
+                                          color: Colors.black54, width: 1),
+                                      color: Colors.black54
                                           .withOpacity(_isLoading ? 0.2 : 0.05),
                                       boxShadow: _isHovered
                                           ? [
@@ -172,8 +172,7 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
                                                 strokeWidth: 2,
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
-                                                            Color>(
-                                                        LiveColors.cartBlue),
+                                                        Color>(Colors.white),
                                               ),
                                             )
                                           : Row(
@@ -185,7 +184,7 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
                                                   size: Dimensions.font20 / 1.5,
                                                   family: 'Poppins',
                                                   weight: FontWeight.w500,
-                                                  color: LiveColors.cartBlue,
+                                                  color: Colors.white,
                                                 ),
                                                 SizedBox(
                                                     width:
@@ -232,7 +231,7 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: AssetImage(
-                        'assets/image/car-wash-category.png',
+                        'assets/image/autocare.png',
                       ),
                     ),
                     boxShadow: _isHovered

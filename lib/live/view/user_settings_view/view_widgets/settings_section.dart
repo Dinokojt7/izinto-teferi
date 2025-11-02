@@ -26,13 +26,15 @@ class _settingsSectionState extends State<settingsSection> {
       setState(() {
         _isTapped = true;
       });
-      widget.onTap;
+      widget.onTap(); // FIX: Added parentheses to actually call the function
 
       // Optional: Reset border visibility after a short delay
       Future.delayed(const Duration(milliseconds: 200), () {
-        setState(() {
-          _isTapped = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isTapped = false;
+          });
+        }
       });
     }
 

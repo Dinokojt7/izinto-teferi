@@ -17,10 +17,10 @@ class HomeScreenCategories extends StatelessWidget {
         delegate: SliverChildBuilderDelegate(
             (context, index) => SpecialtyWidget(
                   index: index,
-                  homeItemList: homeItems.homeItemsRepoList,
+                  homeItemList: [],
                   context: context,
                 ),
-            childCount: homeItems.homeItemsRepoList.length),
+            childCount: 6),
       );
     });
   }

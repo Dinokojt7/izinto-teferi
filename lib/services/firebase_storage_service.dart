@@ -50,7 +50,6 @@ class DatabaseService {
         id: doc['id'] ?? 0,
         introduction: doc['introduction'] ?? '',
         price: doc['price'] ?? 0,
-        createAt: doc['createAt'] ?? '',
         turnaroundTime: doc['turnaroundTime'] ?? '',
         type: doc['type'] ?? '',
         time: doc['time'] ?? '',

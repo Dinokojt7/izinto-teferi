@@ -5,8 +5,11 @@ import '../models/popular_specialty_model.dart';
 class HomeItemsController extends GetxController {
   final HomeItemsRepo homeItemsRepo;
   HomeItemsController({required this.homeItemsRepo});
-  List<dynamic> _homeItemsRepoList = [];
-  List<dynamic> get homeItemsRepoList => _homeItemsRepoList;
+
+  List<SpecialtyModel> _homeItemsList =
+      []; // This should be List<SpecialtyModel>
+  List<SpecialtyModel> get homeItemsList =>
+      _homeItemsList; // NOT homeItemsRepoList
 
   bool _isLoaded = false;
   bool get isLoaded => _isLoaded;
@@ -14,9 +17,8 @@ class HomeItemsController extends GetxController {
   Future<void> getHomeItemsList() async {
     Response response = await homeItemsRepo.getHomeItemsList();
     if (response.statusCode == 200) {
-      _homeItemsRepoList = [];
-      _homeItemsRepoList.addAll(Specialty.fromJson(response.body).specialties);
-
+      _homeItemsList = [];
+      _homeItemsList.addAll(Specialty.fromJson(response.body).specialties);
       _isLoaded = true;
       update();
     } else {

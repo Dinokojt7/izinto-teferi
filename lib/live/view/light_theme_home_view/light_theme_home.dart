@@ -4,6 +4,7 @@ import 'package:izinto/live/view/home_view/category_view/view_widgets/try_this_s
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/home_items_controller.dart';
+import '../../../models/popular_specialty_model.dart'; // ADD THIS IMPORT
 import '../../../utils/dimensions.dart';
 import '../../../widgets/texts/big_text.dart';
 import '../../../widgets/texts/small_text.dart';
@@ -66,7 +67,7 @@ class _LightThemeHomeState extends State<LightThemeHome> {
 
               // Services heading
               _buildHeading(),
-              // Services Grid
+              // Services Grid - FIXED: Use homeItemsList instead of homeItemsRepoList
               _buildServicesGrid(homeItems),
               SizedBox(height: Dimensions.height30),
 
@@ -206,7 +207,8 @@ class _LightThemeHomeState extends State<LightThemeHome> {
       );
 
   Widget _buildServicesGrid(HomeItemsController homeItemsController) {
-    final itemCount = homeItemsController.homeItemsRepoList.length;
+    // FIXED: Accept controller
+    final itemCount = homeItemsController.homeItemsList.length;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
@@ -215,15 +217,16 @@ class _LightThemeHomeState extends State<LightThemeHome> {
         shrinkWrap: true,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          crossAxisSpacing: Dimensions.width10 / 5,
-          mainAxisSpacing: Dimensions.height10,
+          crossAxisSpacing: Dimensions.width10 / 8,
+          mainAxisSpacing: Dimensions.height10 / 5,
           childAspectRatio: 0.9,
         ),
-        itemCount: 6,
+        itemCount: itemCount > 6 ? 6 : itemCount, // Use actual count with max 6
         itemBuilder: (context, index) {
           return SpecialtyWidget(
             index: index,
-            homeItemList: homeItemsController.homeItemsRepoList,
+            homeItemList:
+                homeItemsController.homeItemsList, // FIXED: Use homeItemsList
             context: context,
           );
         },

@@ -50,10 +50,10 @@ class _WrapperState extends State<Wrapper> {
     await Get.find<CartController>().getCartHistoryList();
     await Get.find<PopularSpecialtyController>().getPopularSpecialtyList();
     await Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList();
-    await Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList();
-    await Get.find<CarpetCareSpecialtyController>()
-        .getCarpetCareSpecialtyList();
-    await Get.find<PetCareSpecialtyController>().getPetCareSpecialtyList();
+    //  await Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList();
+    //  await Get.find<CarpetCareSpecialtyController>()
+    //       .getCarpetCareSpecialtyList();
+    //   await Get.find<PetCareSpecialtyController>().getPetCareSpecialtyList();
     await Get.find<CarSpecialtyController>().getCarSpecialtyList();
     await Get.find<TabsHeaderController>().getTabsHeaderList();
     await Get.find<LaundrySupportQuestionsController>()

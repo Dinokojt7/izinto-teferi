@@ -18,7 +18,6 @@ import '../../../widgets/text_widgets/small_black_text.dart';
 import '../controller/home_view_controller.dart';
 import '../view_specialty_info/view_specialty_info.dart';
 
-// In ServiceWidget, add bounds checking
 class ServiceWidget extends StatelessWidget {
   final int index;
   final List homeItemList;

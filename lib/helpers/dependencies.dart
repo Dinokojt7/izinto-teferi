@@ -24,11 +24,14 @@ import 'package:izinto/helpers/data/repository/tabs_header_repo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/car_specialty_controller.dart';
 import '../controllers/car_wash_support_questions_controller.dart';
+import '../controllers/favorite_controller.dart';
 import '../controllers/new_cart_controller.dart';
 import '../controllers/new_recommended_specialty_controller.dart';
 import '../controllers/popular_specialty_controller.dart';
 import '../controllers/recommendation_controller.dart';
+import '../controllers/size_selection_controller.dart';
 import '../controllers/tabs_header.dart';
+import '../controllers/temperature_controller.dart';
 import '../services/phone_auth_methods.dart';
 import '../utils/app_constants.dart';
 import 'data/repository/auth_repo.dart';
@@ -79,6 +82,9 @@ Future<void> init() async {
   Get.lazyPut(
       () => PopularSpecialtyController(popularSpecialtyRepo: Get.find()));
   Get.lazyPut(() => RecommendationController());
+  Get.lazyPut(() => FavoriteController());
+  Get.lazyPut(() => TemperatureController());
+  Get.lazyPut(() => SizeSelectionController());
 
   // Laundry Specialty Controller
   Get.lazyPut(() => LaundrySpecialtyController(

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/recommendation_controller.dart';
+import 'package:izinto/live/view/cart_view/view_widgets/recommended_service_widget.dart';
 import 'package:izinto/live/view/home_view/category_view/service_widget.dart';
 import 'package:izinto/live/widgets/generic_header_row.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
@@ -44,12 +45,6 @@ class AllRecommendationsPage extends StatelessWidget {
                   padding: EdgeInsets.only(left: 24.0, top: 25.0, right: 24.0),
                   child: Column(
                     children: [
-                      GenericHeaderRow(
-                        headingChild: HeadingStyleText(
-                          text: 'Based on your selections',
-                          weight: FontWeight.w600,
-                        ),
-                      ),
                       SizedBox(height: Dimensions.height20),
                       // In AllRecommendationsPage, add empty state handling
                       Expanded(
@@ -79,9 +74,10 @@ class AllRecommendationsPage extends StatelessWidget {
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 3,
-                                mainAxisSpacing: 20.0,
+                                mainAxisSpacing: 22.0,
                                 crossAxisSpacing: Dimensions.width15,
-                                childAspectRatio: 0.5,
+                                childAspectRatio:
+                                    0.4, // ✅ Increased from 0.5 to 0.6
                               ),
                               itemCount: recommendations.length,
                               itemBuilder: (context, index) {
@@ -89,7 +85,7 @@ class AllRecommendationsPage extends StatelessWidget {
                                 if (index >= recommendations.length) {
                                   return Container();
                                 }
-                                return ServiceWidget(
+                                return RecommendedServiceWidget(
                                   index: index,
                                   homeItemList: recommendations,
                                 );

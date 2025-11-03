@@ -27,6 +27,7 @@ import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 import '../controllers/cart_controller.dart';
 import '../controllers/laundry_specialty_controller.dart';
+import '../controllers/new_cart_controller.dart';
 import '../controllers/popular_specialty_controller.dart';
 import '../controllers/recommended_specialty_controller.dart';
 import '../helpers/data/repository/cart_repo.dart';
@@ -49,6 +50,7 @@ class _WrapperState extends State<Wrapper> {
     await Get.find<RecommendedSpecialtyController>()
         .getRecommendedSpecialtyList();
     await Get.find<CartController>().getCartHistoryList();
+    Get.find<NewCartController>().getCartData();
     await Get.find<PopularSpecialtyController>().getPopularSpecialtyList();
     await Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList();
     await Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList();

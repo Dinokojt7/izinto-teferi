@@ -29,6 +29,7 @@ class CartRepo {
   // NEW METHOD: For NewCartModel
   void addToNewCartList(List<NewCartModel> cartList) {
     sharedPreferences.remove(AppConstants.NEW_CART_LIST);
+    sharedPreferences.remove(AppConstants.CART_HISTORY_LIST);
     var time = DateTime.now().toString();
     final newCart = <String>[];
 

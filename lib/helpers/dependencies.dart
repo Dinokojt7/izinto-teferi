@@ -27,6 +27,7 @@ import '../controllers/car_wash_support_questions_controller.dart';
 import '../controllers/new_cart_controller.dart';
 import '../controllers/new_recommended_specialty_controller.dart';
 import '../controllers/popular_specialty_controller.dart';
+import '../controllers/recommendation_controller.dart';
 import '../controllers/tabs_header.dart';
 import '../services/phone_auth_methods.dart';
 import '../utils/app_constants.dart';
@@ -77,6 +78,7 @@ Future<void> init() async {
       RecommendedSpecialtyController(recommendedSpecialtyRepo: Get.find()));
   Get.lazyPut(
       () => PopularSpecialtyController(popularSpecialtyRepo: Get.find()));
+  Get.lazyPut(() => RecommendationController());
 
   // Laundry Specialty Controller
   Get.lazyPut(() => LaundrySpecialtyController(

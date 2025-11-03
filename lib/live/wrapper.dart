@@ -10,6 +10,7 @@ import 'package:izinto/controllers/carpet_care_specialty_controller.dart';
 import 'package:izinto/controllers/pet_care_specialty_controller.dart';
 import 'package:izinto/controllers/home_items_controller.dart';
 import 'package:izinto/controllers/laundry_support_questions_controller.dart';
+import 'package:izinto/controllers/recommendation_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
 import 'package:izinto/controllers/tabs_header.dart';
 import 'package:izinto/live/utilities/colors.dart';
@@ -50,7 +51,8 @@ class _WrapperState extends State<Wrapper> {
     await Get.find<RecommendedSpecialtyController>()
         .getRecommendedSpecialtyList();
     await Get.find<CartController>().getCartHistoryList();
-    Get.find<NewCartController>().getCartData();
+    await Get.find<NewCartController>().getCartData();
+    await Get.find<RecommendationController>();
     await Get.find<PopularSpecialtyController>().getPopularSpecialtyList();
     await Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList();
     await Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList();

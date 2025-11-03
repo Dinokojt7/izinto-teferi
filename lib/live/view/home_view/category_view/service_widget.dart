@@ -18,6 +18,7 @@ import '../../../widgets/text_widgets/small_black_text.dart';
 import '../controller/home_view_controller.dart';
 import '../view_specialty_info/view_specialty_info.dart';
 
+// In ServiceWidget, add bounds checking
 class ServiceWidget extends StatelessWidget {
   final int index;
   final List homeItemList;
@@ -29,6 +30,11 @@ class ServiceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Add bounds checking at the start
+    if (index >= homeItemList.length) {
+      return Container(); // Return empty container if index is out of bounds
+    }
+
     return GetBuilder<NewCartController>(builder: (_cartController) {
       return GestureDetector(
         onTap: () {
@@ -65,6 +71,11 @@ class ServiceWidget extends StatelessWidget {
 
   Widget buildSpecialtyWidget(
       NewCartController cartController, BuildContext viewContext) {
+    // ✅ Add bounds checking here too
+    if (index >= homeItemList.length) {
+      return Container();
+    }
+
     var item = homeItemList[index];
     var _quantity = cartController.getQuantity(item);
     var _isInCart = _quantity > 0;
@@ -77,6 +88,12 @@ class ServiceWidget extends StatelessWidget {
           child: Image(
             height: 60,
             image: AssetImage(_getImage(item)),
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 60,
+                child: Icon(Icons.error_outline, color: Colors.grey),
+              );
+            },
           ),
         ),
         Padding(

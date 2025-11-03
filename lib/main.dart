@@ -216,6 +216,11 @@ class MyApp extends StatelessWidget {
                                   ChangeNotifierProvider<CartViewController>(
                                     create: (_) => CartViewController(),
                                   ),
+                                  ChangeNotifierProvider<
+                                      CartRecommendedItemsController>(
+                                    create: (_) =>
+                                        CartRecommendedItemsController(),
+                                  ),
                                   ChangeNotifierProvider<CheckoutController>(
                                     create: (_) => CheckoutController(),
                                   ),

@@ -1,11 +1,16 @@
+// Updated CartRecommendedSection widget
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
 import '../../../../controllers/laundry_specialty_controller.dart';
+import '../../../../controllers/new_cart_controller.dart';
+import '../../../../controllers/recommendation_controller.dart';
 import '../../../../controllers/recommended_specialty_controller.dart';
+import '../../../../models/new_specialty_model.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../auxiliery_classes/cart_recommended_items_controller.dart';
+import '../../../utilities/generic_snackbar.dart';
 import '../../../widgets/buttons/blue_text_button.dart';
 import '../../../widgets/generic_header_row.dart';
 import '../../../widgets/hyperText_row.dart';
@@ -13,6 +18,8 @@ import '../../../widgets/hypertext_column.dart';
 import '../../../widgets/text_widgets/heading_style_text.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 import '../../home_view/category_view/view_widgets/add_to_basket.dart';
+import '../../home_view/controller/home_view_controller.dart';
+import '../all_recommendations_page.dart';
 
 class CartRecommendedSection extends StatefulWidget {
   const CartRecommendedSection({Key? key}) : super(key: key);
@@ -21,110 +28,138 @@ class CartRecommendedSection extends StatefulWidget {
   State<CartRecommendedSection> createState() => _CartRecommendedSectionState();
 }
 
+// In CartRecommendedSection, fix the _refreshRecommendations method and remove undefined specialtyController
 class _CartRecommendedSectionState extends State<CartRecommendedSection> {
+  final RecommendationController _recommendationController = Get.find();
+
   @override
-  Widget build(BuildContext context) {
-    return GetBuilder<RecommendedSpecialtyController>(
-        builder: (specialtyController) {
-      return Consumer<CartRecommendedItemsController>(
-          builder: (context, _cartRecommendedItemsController, child) {
-        final List recommendedItems =
-            _cartRecommendedItemsController.recommended;
-        return Padding(
-          padding: EdgeInsets.only(left: 16.0, top: 25.0, right: 16.0),
-          child: Column(
-            children: [
-              GenericHeaderRow(
-                headingChild: HeadingStyleText(
-                  text: 'Recommended for you \u{1F917}',
-                  weight: FontWeight.w600,
-                ),
-                actionButtonChild: BlueTextButton(
-                  text: 'See all',
-                  onTap: () {},
-                ),
-              ),
-              Container(
-                height: Dimensions.screenHeight / 2.8,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: recommendedItems.length,
-                  itemBuilder: (_, index) {
-                    final item = recommendedItems[index];
-                    return Padding(
-                      padding: EdgeInsets.only(
-                          right: Dimensions.width10 * 1.3,
-                          top: Dimensions.height15,
-                          bottom: Dimensions.height10 / 2),
-                      child: Container(
-                        width: Dimensions.screenWidth / 3.50,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.16),
-                              blurRadius: 0.5,
-                              offset: Offset(0, 0.8),
-                            ),
-                          ],
-                          border: Border.all(
-                            width: 0.5,
-                            color: Colors.black.withOpacity(0.04),
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(Dimensions.radius15),
-                          color: Colors.white,
-                        ),
-                        child: buildSpecialtyWidget(
-                            specialtyController,
-                            item['img'],
-                            item['price'].toString(),
-                            item['introduction'],
-                            item['type'],
-                            index,
-                            recommendedItems,
-                            context),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(
-                height: Dimensions.height15,
-              ),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 2.0),
-                    child: HyperTextColumn(
-                      preText: '*Prices include VAT.',
-                      firstLink: 'Delivery fee',
-                      middleText: 'not included. We accept these ',
-                      secondLink: 'means of payment',
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: Dimensions.height20,
-              ),
-            ],
-          ),
-        );
-      });
+  void initState() {
+    super.initState();
+    _refreshRecommendations();
+  }
+
+  void _refreshRecommendations() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cartRecommendedController =
+          Provider.of<CartRecommendedItemsController>(context, listen: false);
+      // Fixed: Use the correct method name
+      final recommendations = _recommendationController.getRecommendedItems();
+      cartRecommendedController.updateRecommendations(recommendations);
     });
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<RecommendationController>(
+      builder: (recommendationController) {
+        return Consumer<CartRecommendedItemsController>(
+          builder: (context, _cartRecommendedItemsController, child) {
+            final List<Map<String, dynamic>> recommendedItems =
+                _cartRecommendedItemsController.getRecommendedForUI();
+
+            if (recommendedItems.isEmpty) {
+              return SizedBox.shrink();
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(left: 16.0, top: 25.0, right: 16.0),
+              child: Column(
+                children: [
+                  GenericHeaderRow(
+                    headingChild: HeadingStyleText(
+                      text: 'Recommended for you \u{1F917}',
+                      weight: FontWeight.w600,
+                    ),
+                    actionButtonChild: BlueTextButton(
+                      text: 'See all',
+                      onTap: () {
+                        final homeViewController =
+                            Provider.of<HomeViewController>(context,
+                                listen: false);
+                        homeViewController.onIndependentPageNavigation(
+                            context, AllRecommendationsPage());
+                      },
+                    ),
+                  ),
+                  Container(
+                    height: Dimensions.screenHeight / 2.8,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: recommendedItems.length,
+                      itemBuilder: (_, index) {
+                        final item = recommendedItems[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                              right: Dimensions.width10 * 1.3,
+                              top: Dimensions.height15,
+                              bottom: Dimensions.height10 / 2),
+                          child: Container(
+                            width: Dimensions.screenWidth / 3.50,
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.16),
+                                  blurRadius: 0.5,
+                                  offset: Offset(0, 0.8),
+                                ),
+                              ],
+                              border: Border.all(
+                                width: 0.5,
+                                color: Colors.black.withOpacity(0.04),
+                              ),
+                              borderRadius:
+                                  BorderRadius.circular(Dimensions.radius15),
+                              color: Colors.white,
+                            ),
+                            // Fixed: Remove undefined specialtyController parameter
+                            child: buildSpecialtyWidget(
+                                item['img'],
+                                item['price'].toString(),
+                                item['introduction'],
+                                item['type'],
+                                index,
+                                recommendedItems,
+                                context,
+                                item['specialty']),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: Dimensions.height15),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 2.0),
+                        child: HyperTextColumn(
+                          preText: '*Prices include VAT.',
+                          firstLink: 'Delivery fee',
+                          middleText: 'not included. We accept these ',
+                          secondLink: 'means of payment',
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: Dimensions.height20),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Fixed: Remove specialtyController parameter
   Widget buildSpecialtyWidget(
-      var specialtyController,
       String image,
       String price,
       String name,
       String type,
       int index,
       List itemsList,
-      BuildContext context) {
-    var recommendedListItems =
-        Get.find<LaundrySpecialtyController>().laundrySpecialtyList;
+      BuildContext context,
+      NewSpecialtyModel specialty) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,6 +168,12 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
           child: Image(
             height: 60,
             image: AssetImage(image),
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 60,
+                child: Icon(Icons.image, color: Colors.grey),
+              );
+            },
           ),
         ),
         Padding(
@@ -165,9 +206,7 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
             ],
           ),
         ),
-        SizedBox(
-          height: Dimensions.height10,
-        ),
+        SizedBox(height: Dimensions.height10),
         Padding(
           padding:
               EdgeInsets.only(left: 6.0, top: Dimensions.height10, right: 6.0),
@@ -193,14 +232,21 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
                   bottom: 0.0,
                   child: GestureDetector(
                     onTap: () {
-                      specialtyController.setQuantity(true);
-                      specialtyController.addItem(
-                        recommendedListItems[index],
-                      );
+                      final cartController = Get.find<NewCartController>();
+
+                      cartController.addItem(specialty, 1);
+
+                      GenericSnackBar().showCustomSnackBar(null, context,
+                          '${specialty.name} added to cart! 🎉', false);
+
+                      final cartRecommendedController =
+                          Provider.of<CartRecommendedItemsController>(context,
+                              listen: false);
+                      cartRecommendedController.onRecommendedItemAdded();
                     },
                     child: AddToBasket(
-                      specialtyList: recommendedListItems,
-                      index: index,
+                      specialtyList: [specialty],
+                      index: 0,
                       viewContext: context,
                     ),
                   ),
@@ -209,9 +255,7 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
             ),
           ),
         ),
-        SizedBox(
-          height: Dimensions.height10 / 3,
-        ),
+        SizedBox(height: Dimensions.height10 / 3),
       ],
     );
   }

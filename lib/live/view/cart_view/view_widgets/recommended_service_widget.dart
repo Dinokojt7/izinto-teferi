@@ -36,6 +36,8 @@ class RecommendedServiceWidget extends StatelessWidget {
       return Container(); // Return empty container if index is out of bounds
     }
 
+    final item = homeItemList[index];
+
     return GetBuilder<NewCartController>(builder: (_cartController) {
       return GestureDetector(
         onTap: () {
@@ -43,8 +45,8 @@ class RecommendedServiceWidget extends StatelessWidget {
               .navigateToNestedWidget(
             context,
             ViewSpecialtyInfo(
-              index: index,
-              homeItemList: homeItemList,
+              item: item,
+              shouldReturnToBlack: false,
             ),
           );
         },

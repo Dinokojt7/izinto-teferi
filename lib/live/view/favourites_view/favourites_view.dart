@@ -220,6 +220,7 @@ class FavoritesView extends StatelessWidget {
               builder: (context) => ViewSpecialtyInfo(
                 index: 0,
                 homeItemList: [item],
+                shouldReturnToBlack: true,
               ),
             ),
           );

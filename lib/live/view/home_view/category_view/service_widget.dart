@@ -49,7 +49,10 @@ class _ServiceWidgetState extends State<ServiceWidget> {
           });
           Get.to(
             () => ViewSpecialtyInfo(
-                index: widget.index, homeItemList: widget.homeItemList),
+              index: widget.index,
+              homeItemList: widget.homeItemList,
+              shouldReturnToBlack: true,
+            ),
             transition: Transition.native,
             duration: Duration(milliseconds: 500),
           );

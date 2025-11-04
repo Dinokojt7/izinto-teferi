@@ -11,6 +11,7 @@ import '../../../../models/new_specialty_model.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../auxiliery_classes/cart_recommended_items_controller.dart';
 import '../../../utilities/generic_snackbar.dart';
+import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/buttons/blue_text_button.dart';
 import '../../../widgets/generic_header_row.dart';
 import '../../../widgets/hyperText_row.dart';
@@ -73,11 +74,18 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
                     actionButtonChild: BlueTextButton(
                       text: 'See all',
                       onTap: () {
-                        final homeViewController =
-                            Provider.of<HomeViewController>(context,
-                                listen: false);
-                        homeViewController.onIndependentPageNavigation(
-                            context, AllRecommendationsPage());
+                        setState(() {
+                          SystemNavigation().applyCustomSystemChromeSettings(
+                              Colors.white,
+                              Brightness.dark,
+                              Colors.white,
+                              Brightness.dark);
+                        });
+                        Get.to(
+                          () => AllRecommendationsPage(),
+                          transition: Transition.native,
+                          duration: Duration(milliseconds: 500),
+                        );
                       },
                     ),
                   ),

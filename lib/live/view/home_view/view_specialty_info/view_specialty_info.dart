@@ -25,33 +25,61 @@ import '../../../widgets/text_widgets/introduction_text.dart';
 import '../view_widgets/size_selection_modal.dart';
 
 class ViewSpecialtyInfo extends StatefulWidget {
-  final int index;
-  final List homeItemList;
-  const ViewSpecialtyInfo(
-      {Key? key, required this.index, required this.homeItemList})
-      : super(key: key);
+  final int? index; // Make index optional
+  final List? homeItemList; // Make homeItemList optional
+  final dynamic item; // Add optional item parameter
+  final bool shouldReturnToBlack;
+
+  const ViewSpecialtyInfo({
+    Key? key,
+    this.index, // Make optional
+    this.homeItemList, // Make optional
+    this.item, // New parameter
+    this.shouldReturnToBlack = true,
+  }) : super(key: key);
 
   @override
   State<ViewSpecialtyInfo> createState() => _ViewSpecialtyInfoState();
 }
 
-void _handleBackNavigation(BuildContext context) {
-  // Apply system settings BEFORE navigation
-  SystemNavigation().applyCustomSystemChromeSettings(
-    Colors.black,
-    Brightness.light,
-    Colors.black,
-    Brightness.light,
-  );
-
-  // Then perform the navigation
-  Navigator.of(context).pop();
-}
-
 class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
+  dynamic get item {
+    // Priority 1: Use directly passed item
+    if (widget.item != null) {
+      return widget.item;
+    }
+
+    // Priority 2: Use index-based lookup (backward compatibility)
+    if (widget.index != null &&
+        widget.homeItemList != null &&
+        widget.index! < widget.homeItemList!.length) {
+      return widget.homeItemList![widget.index!];
+    }
+
+    // Fallback: Handle error case
+    throw Exception('ViewSpecialtyInfo: Could not resolve item. '
+        'Either provide item directly or provide valid index and homeItemList.');
+  }
+
+  void _handleBackNavigation(BuildContext context) {
+    // Use the parameter to determine navigation color
+    final navColor = widget.shouldReturnToBlack ? Colors.black : Colors.white;
+    final brightness =
+        widget.shouldReturnToBlack ? Brightness.light : Brightness.dark;
+
+    SystemNavigation().applyCustomSystemChromeSettings(
+      navColor,
+      brightness,
+      navColor,
+      brightness,
+    );
+
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    var item = widget.homeItemList[widget.index];
+    // item is now resolved via the getter above
     final sizeController = Get.find<SizeSelectionController>();
     final shouldShowSizeSelector = sizeController.shouldShowSizeSelector(item);
 
@@ -59,20 +87,23 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       canPop: true,
       onPopInvoked: (didPop) {
         if (didPop) {
-          // Apply system settings after pop completed
+          // Use the same logic in onPopInvoked
+          final navColor =
+              widget.shouldReturnToBlack ? Colors.black : Colors.white;
+          final brightness =
+              widget.shouldReturnToBlack ? Brightness.light : Brightness.dark;
+
           SystemNavigation().applyCustomSystemChromeSettings(
-            Colors.black,
-            Brightness.light,
-            Colors.black,
-            Brightness.light,
+            navColor,
+            brightness,
+            navColor,
+            brightness,
           );
         }
       },
       child: Scaffold(
           backgroundColor: Colors.white.withOpacity(0.98),
-          body: GetBuilder<SizeSelectionController>(
-              // This ensures the favorite icon updates when size changes
-              builder: (sizeController) {
+          body: GetBuilder<SizeSelectionController>(builder: (sizeController) {
             return CustomScrollView(
               slivers: [
                 SliverAppBar(

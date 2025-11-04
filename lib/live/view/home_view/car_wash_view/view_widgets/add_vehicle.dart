@@ -6,6 +6,7 @@ import 'package:izinto/widgets/texts/small_text.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../controllers/cart_controller.dart';
+import '../../../../../controllers/new_cart_controller.dart';
 import '../../../../../models/popular_specialty_model.dart';
 import '../../../../../utils/dimensions.dart';
 import '../../../../../widgets/miscellaneous/app_icon.dart';
@@ -44,122 +45,144 @@ class _AddVehicleState extends State<AddVehicle> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CarWashController>(
-        builder: (context, _carWashController, child) {
-      return GetBuilder<CartController>(builder: (_cartController) {
-        var specialty = widget.specialtyList![widget.index!];
-        var _quantity = _cartController.getQuantity(specialty);
-        var widen = _quantity > 0;
-        return AnimatedContainer(
-          duration: Duration(milliseconds: 500),
-          width: _isTapped && _isReady ? 100 : 30,
-          height: 30,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Dimensions.radius15 / 1.1),
-            color: Colors.black,
-          ),
-          child: GestureDetector(
-            onTap: () {
+    return GetBuilder<CarWashController>(
+      builder: (carWashController) {
+        return GetBuilder<NewCartController>(builder: (_cartController) {
+          var specialty = widget.specialtyList![widget.index!];
+          var _quantity = _cartController.getQuantity(specialty);
+
+          // Use the new method to get quantity - this will auto-update when controller updates
+          final displayQuantity =
+              carWashController.getVehicleQuantity(widget.vehicleType!);
+          final isInCart = displayQuantity > 0;
+
+          // Reset state if item is no longer in cart
+          if (!isInCart && _isReady) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
               setState(() {
-                _isTapped = true;
-                Future.delayed(Duration(milliseconds: 500), () {
-                  setState(() {
-                    _isReady = true;
+                _isReady = false;
+                _isTapped = false;
+              });
+            });
+          }
+
+          return AnimatedContainer(
+            duration: Duration(milliseconds: 500),
+            width: _isTapped && _isReady ? 100 : 30,
+            height: 30,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(Dimensions.radius15 / 1.1),
+              color: Colors.black,
+            ),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _isTapped = true;
+                  Future.delayed(Duration(milliseconds: 500), () {
+                    setState(() {
+                      _isReady = true;
+                    });
                   });
                 });
-              });
-              //_cartController.addItem(specialty, 1);
-              _carWashController.addCar(
-                  widget.vehicleType!, widget.imageString!);
-            },
-            child: _isTapped && _isReady
-                ? AddVehicleControllers(
-                    onTap: () {
-                      _carWashController.removeItem(specialty);
-                      _cartController.getQuantity(specialty) == 0
-                          ? setState(() {
-                              _isReady = false;
-                              _isTapped = false;
-                              Future.delayed(Duration(milliseconds: 500), () {
-                                setState(() {
-                                  _isTapped = false;
-                                });
-                              });
-                            })
-                          : null;
-                    },
-                  )
-                : AppIcon(
-                    weight: 5,
-                    size: Dimensions.width30 * 1.1,
-                    iconSize: Dimensions.iconSize24 / 1.4,
-                    backgroundColor: Colors.transparent,
-                    iconColor: Colors.white,
-                    icon: widget.icon,
-                  ),
+                carWashController.addCar(
+                    widget.vehicleType!, widget.imageString!);
+              },
+              child: _isTapped && _isReady && isInCart
+                  ? AddVehicleControllers(
+                      onTap: () {
+                        if (displayQuantity == 1) {
+                          // Show remove confirmation dialog
+                          _showRemoveDialog(context, widget.vehicleType!,
+                              specialty, carWashController);
+                        } else {
+                          carWashController.removeItem(specialty);
+                        }
+                      },
+                      quantity: displayQuantity,
+                    )
+                  : AppIcon(
+                      weight: 5,
+                      size: Dimensions.width30 * 1.1,
+                      iconSize: Dimensions.iconSize24 / 1.4,
+                      backgroundColor: Colors.transparent,
+                      iconColor: Colors.white,
+                      icon: widget.icon,
+                    ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  void _showRemoveDialog(BuildContext context, String vehicleType,
+      dynamic specialty, CarWashController carWashController) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Remove Vehicle'),
+        content: Text('Remove $vehicleType from selection?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
           ),
-        );
-      });
-    });
+          TextButton(
+            onPressed: () {
+              // Remove item and reset state
+              carWashController.removeItem(specialty);
+              setState(() {
+                _isReady = false;
+                _isTapped = false;
+              });
+              Navigator.of(context).pop(); // Dismiss the dialog
+            },
+            child: Text('Remove', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 class AddVehicleControllers extends StatelessWidget {
   final VoidCallback onTap;
+  final int quantity;
+
   const AddVehicleControllers({
     super.key,
     required this.onTap,
+    required this.quantity,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CarWashController>(
-        builder: (context, _carWashController, child) {
-      final _itemIndex = _carWashController.selectVehicleIndex;
-      final _quantity = _carWashController.includedVehicles;
-      return GetBuilder<CartController>(builder: (_cartController) {
-        final includedVehicles = _carWashController.includedVehicles;
-        final _displayQuantity = _carWashController.updateQuantityDisplayed();
-        final quantity = includedVehicles.length > 0
-            ? includedVehicles[0]['selectionQuantity']
-            : 0;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: onTap,
-              child: AppIcon(
-                weight: 5,
-                size: Dimensions.width30 * 1.1,
-                iconSize: Dimensions.iconSize24 / 1.4,
-                backgroundColor: Colors.transparent,
-                iconColor: Colors.white,
-                icon: Icons.remove,
-              ),
-            ),
-            Text(
-              quantity.toString(),
-              maxLines: 2,
-              style: TextStyle(
-                height: 1.2,
-                overflow: TextOverflow.ellipsis,
-                fontSize: Dimensions.font16 / 1.2,
-                fontFamily: 'Poppins',
-                color: LiveColors.secondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            AppIcon(
-              weight: 5,
-              size: Dimensions.width30 * 1.1,
-              iconSize: Dimensions.iconSize24 / 1.4,
-              backgroundColor: Colors.transparent,
-              iconColor: Colors.white,
-              icon: Icons.add,
-            ),
-          ],
-        );
-      });
-    });
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 28,
+            height: 28,
+            child: Icon(Icons.remove, color: Colors.white, size: 16),
+          ),
+        ),
+        Text(
+          quantity.toString(),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Poppins',
+            fontSize: Dimensions.font16,
+          ),
+        ),
+        Container(
+          width: 28,
+          height: 28,
+          child: Icon(Icons.add, color: Colors.white, size: 16),
+        ),
+      ],
+    );
   }
 }

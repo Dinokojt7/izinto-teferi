@@ -220,7 +220,7 @@ class _LightThemeHomeState extends State<LightThemeHome> {
           mainAxisSpacing: Dimensions.height10,
           childAspectRatio: 0.9,
         ),
-        itemCount: itemCount > 6 ? 6 : itemCount,
+        itemCount: 6,
         itemBuilder: (context, index) {
           return SpecialtyWidget(
             index: index,

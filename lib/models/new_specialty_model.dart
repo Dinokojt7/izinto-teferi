@@ -52,7 +52,7 @@ class NewSpecialtyModel {
       this.originalId,
       this.isSizeVariant = false});
 
-  // ✅ Helper to get display name with size
+  //  Helper to get display name with size
   String get displayName {
     if (isSizeVariant == true &&
         selectedSize != null &&
@@ -62,7 +62,7 @@ class NewSpecialtyModel {
     return name ?? '';
   }
 
-  // ✅ Helper to check if this is the same base product
+  //  Helper to check if this is the same base product
   bool isSameBaseProduct(NewSpecialtyModel other) {
     if (isSizeVariant == true && other.isSizeVariant == true) {
       return originalId == other.originalId;
@@ -134,4 +134,45 @@ class NewSpecialtyModel {
 
   // Helper method to get first price
   int get firstPrice => price != null && price!.isNotEmpty ? price![0] : 0;
+
+//  Helper to create a favorite-compatible variant
+  NewSpecialtyModel createFavoriteVariant(String selectedSize) {
+    final priceForSize = _getPriceForSize(this, selectedSize);
+
+    return NewSpecialtyModel(
+      id: _generateSizeVariantId(id, selectedSize),
+      name: name,
+      introduction: introduction,
+      price: [priceForSize],
+      size: [selectedSize],
+      img: img,
+      details: details,
+      type: type,
+      material: material,
+      provider: provider,
+      time: time,
+      originalId: id,
+      selectedSize: selectedSize,
+      isSizeVariant: true,
+    );
+  }
+
+// Helper method to get price for size
+  static int _getPriceForSize(NewSpecialtyModel item, String size) {
+    if (item.size == null || item.price == null) {
+      return item.firstPrice;
+    }
+
+    final sizeIndex = item.size!.indexOf(size);
+    if (sizeIndex != -1 && sizeIndex < item.price!.length) {
+      return item.price![sizeIndex];
+    }
+
+    return item.firstPrice;
+  }
+
+  static int _generateSizeVariantId(int? originalId, String size) {
+    if (originalId == null) return size.hashCode.abs();
+    return (originalId * 1000) + (size.hashCode % 1000).abs();
+  }
 }

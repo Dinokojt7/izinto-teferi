@@ -37,108 +37,112 @@ class ViewSpecialtyInfo extends StatelessWidget {
     final shouldShowSizeSelector = sizeController.shouldShowSizeSelector(item);
 
     return Scaffold(
-      backgroundColor: Colors.white.withOpacity(0.98),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            automaticallyImplyLeading: false,
-            toolbarHeight: 50,
-            title: Padding(
-              padding: EdgeInsets.only(right: Dimensions.width10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  BackArrow(
-                    iconColor: Colors.black,
-                    onTap: () => Navigator.of(context).pop(),
-                  ),
-                  _buildFavoriteIcon(item),
-                ],
-              ),
-            ),
-            pinned: true,
-            backgroundColor: Colors.white.withOpacity(0.1),
-            expandedHeight: 300,
-            flexibleSpace: FlexibleSpaceBar(
-              background: _buildProductImage(item),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: Dimensions.width20,
-                right: Dimensions.width20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+        backgroundColor: Colors.white.withOpacity(0.98),
+        body: GetBuilder<SizeSelectionController>(
+            // This ensures the favorite icon updates when size changes
+            builder: (sizeController) {
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                toolbarHeight: 50,
+                title: Padding(
+                  padding: EdgeInsets.only(right: Dimensions.width10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            IntroductionText(text: item.name),
-                            SizedBox(height: 4),
-                            SmallText(
-                              height: 1.5,
-                              color: Colors.black,
-                              size: Dimensions.font16 / 1.1,
-                              text: item.type,
-                              maxLines: 1,
-                              overFlow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
+                      BackArrow(
+                        iconColor: Colors.black,
+                        onTap: () => Navigator.of(context).pop(),
                       ),
-                      if (!_shouldHideTemperature(item))
-                        _buildTemperatureToggle(item),
+                      _buildFavoriteIcon(item),
                     ],
                   ),
-                  SizedBox(height: Dimensions.height20),
-
-                  // Cart quantity display
-                  _buildCartQuantitySection(
-                      item, context, shouldShowSizeSelector),
-
-                  // Show size selector only for items that need it
-                  if (shouldShowSizeSelector) _buildSizeSelector(item),
-
-                  GenericHeaderRow(
-                    headingChild: IntroductionText(
-                        text:
-                            'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
-                    actionButtonChild: GetBuilder<NewCartController>(
-                      builder: (cartController) {
-                        final quantityInCart = cartController.getQuantity(item);
-                        return CartActionButton(
-                          isActive: true,
-                          description: quantityInCart > 0
-                              ? 'Update Cart ($quantityInCart)'
-                              : 'Add to basket',
-                          onTap: () => _addToCart(item, cartController, context,
-                              shouldShowSizeSelector),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(height: Dimensions.height20),
-
-                  Row(children: [
-                    IntroductionText(
-                        text: 'Introduction', textSize: Dimensions.font20),
-                  ]),
-                  SizedBox(height: Dimensions.height10 / 1.4),
-
-                  _buildExpandableText(item.introduction),
-                  SizedBox(height: Dimensions.height20),
-                ],
+                ),
+                pinned: true,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                expandedHeight: 300,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _buildProductImage(item),
+                ),
               ),
-            ),
-          )
-        ],
-      ),
-    );
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: Dimensions.width20,
+                    right: Dimensions.width20,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                IntroductionText(text: item.name),
+                                SizedBox(height: 4),
+                                SmallText(
+                                  height: 1.5,
+                                  color: Colors.black,
+                                  size: Dimensions.font16 / 1.1,
+                                  text: item.type,
+                                  maxLines: 1,
+                                  overFlow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (!_shouldHideTemperature(item))
+                            _buildTemperatureToggle(item),
+                        ],
+                      ),
+                      SizedBox(height: Dimensions.height20),
+
+                      // Cart quantity display
+                      _buildCartQuantitySection(
+                          item, context, shouldShowSizeSelector),
+
+                      // Show size selector only for items that need it
+                      if (shouldShowSizeSelector) _buildSizeSelector(item),
+
+                      GenericHeaderRow(
+                        headingChild: IntroductionText(
+                            text:
+                                'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
+                        actionButtonChild: GetBuilder<NewCartController>(
+                          builder: (cartController) {
+                            final quantityInCart =
+                                cartController.getQuantity(item);
+                            return CartActionButton(
+                              isActive: true,
+                              description: quantityInCart > 0
+                                  ? 'Update Cart ($quantityInCart)'
+                                  : 'Add to basket',
+                              onTap: () => _addToCart(item, cartController,
+                                  context, shouldShowSizeSelector),
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.height20),
+
+                      Row(children: [
+                        IntroductionText(
+                            text: 'Introduction', textSize: Dimensions.font20),
+                      ]),
+                      SizedBox(height: Dimensions.height10 / 1.4),
+
+                      _buildExpandableText(item.introduction),
+                      SizedBox(height: Dimensions.height20),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          );
+        }));
   }
 
   Widget _buildCartQuantitySection(
@@ -543,9 +547,39 @@ class ViewSpecialtyInfo extends StatelessWidget {
   Widget _buildFavoriteIcon(dynamic item) {
     return GetBuilder<FavoriteController>(
       builder: (favoriteController) {
-        final isFavorite = favoriteController.isFavorite(item.id);
+        final sizeController = Get.find<SizeSelectionController>();
+        final shouldShowSizeSelector =
+            sizeController.shouldShowSizeSelector(item);
+
+        bool isFavorite;
+
+        if (shouldShowSizeSelector && item is NewSpecialtyModel) {
+          // For size variant items, check if the CURRENTLY SELECTED size is favorite
+          final selectedSize = sizeController.getSelectedSize(item.id,
+              availableSizes: item.size);
+
+          if (selectedSize.isNotEmpty) {
+            // Check if this specific size variant is favorite
+            isFavorite =
+                favoriteController.isSizeVariantFavorite(item.id, selectedSize);
+          } else {
+            // No size selected, check if base product has any favorites
+            isFavorite = favoriteController.isBaseProductFavorite(item.id);
+          }
+        } else {
+          // For regular items
+          isFavorite = favoriteController.isFavorite(item);
+        }
+
         return GestureDetector(
-          onTap: () => favoriteController.toggleFavorite(item),
+          onTap: () {
+            if (shouldShowSizeSelector && item is NewSpecialtyModel) {
+              _handleSizeVariantFavorite(
+                  item, favoriteController, sizeController);
+            } else {
+              favoriteController.toggleFavorite(item);
+            }
+          },
           child: Icon(
             isFavorite ? MdiIcons.heart : MdiIcons.heartOutline,
             color: isFavorite ? Colors.red : Colors.black12.withOpacity(0.8),
@@ -554,6 +588,31 @@ class ViewSpecialtyInfo extends StatelessWidget {
         );
       },
     );
+  }
+
+// Helper method to handle size variant favorites
+  void _handleSizeVariantFavorite(
+    NewSpecialtyModel item,
+    FavoriteController favoriteController,
+    SizeSelectionController sizeController,
+  ) {
+    final selectedSize =
+        sizeController.getSelectedSize(item.id, availableSizes: item.size);
+
+    if (selectedSize.isEmpty) {
+      // Show dialog to select size first
+      Get.defaultDialog(
+        title: 'Select Size',
+        content: Text('Please select a size before adding to favorites.'),
+        textConfirm: 'OK',
+        onConfirm: () => Get.back(),
+      );
+      return;
+    }
+
+    // Create size variant for favorite
+    final favoriteVariant = item.createFavoriteVariant(selectedSize);
+    favoriteController.toggleFavorite(favoriteVariant);
   }
 
   Widget _buildTemperatureToggle(dynamic item) {

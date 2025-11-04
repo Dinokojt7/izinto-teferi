@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:izinto/live/view/favourites_view/favourites_view.dart';
+import 'package:izinto/live/view/favourites_view/favourites_view.dart';
 import 'package:izinto/live/view/inbox_view/inbox_view.dart';
 import 'package:izinto/live/view/light_theme_home_view/light_theme_home.dart';
 import 'package:provider/provider.dart';
@@ -52,7 +54,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
         _buildNavigator(context, _navigatorKeys[1], OrderHistoryView()),
         _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
-        _buildNavigator(context, _navigatorKeys[3], InboxView()),
+        _buildNavigator(context, _navigatorKeys[3], FavoritesView()),
         _buildNavigator(context, _navigatorKeys[4], UserSettingsView()),
       ];
     } else {
@@ -60,7 +62,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
         OrderHistoryView(),
         _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
-        InboxView(),
+        FavoritesView(),
         UserSettingsView(),
       ];
     }
@@ -188,12 +190,12 @@ class _MainScaffoldState extends State<MainScaffold> {
                           BottomNavigationBarItem(
                             icon: IconBuilder(
                               selectedIndex: _controller.currentIndex,
-                              regularIconString: 'assets/icons/bubble-chat.png',
+                              regularIconString: 'assets/icons/favorites.png',
                               selectedIconString:
-                                  'assets/icons/bubble-chat-selected-modified.png',
+                                  'assets/icons/user-selected.png',
                               itemIndex: 3,
                             ),
-                            label: 'Inbox',
+                            label: 'Favorites',
                           ),
                           BottomNavigationBarItem(
                             icon: IconBuilder(

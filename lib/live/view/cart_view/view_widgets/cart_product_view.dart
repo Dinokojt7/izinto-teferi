@@ -313,7 +313,7 @@ class CartProductView extends StatelessWidget {
   Widget _buildFavoriteIcon(dynamic specialty, BuildContext context) {
     return GetBuilder<FavoriteController>(
       builder: (favoriteController) {
-        final isFavorite = favoriteController.isFavorite(specialty.id);
+        final isFavorite = favoriteController.isFavorite(specialty);
         return GestureDetector(
           onTap: () {
             favoriteController.toggleFavorite(specialty);

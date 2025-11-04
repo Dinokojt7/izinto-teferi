@@ -190,9 +190,9 @@ class _MainScaffoldState extends State<MainScaffold> {
                           BottomNavigationBarItem(
                             icon: IconBuilder(
                               selectedIndex: _controller.currentIndex,
-                              regularIconString: 'assets/icons/favorites.png',
+                              regularIconString: 'assets/icons/favourites.png',
                               selectedIconString:
-                                  'assets/icons/user-selected.png',
+                                  'assets/icons/favourites-selected.png',
                               itemIndex: 3,
                             ),
                             label: 'Favorites',
@@ -241,21 +241,30 @@ class IconBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isSelected = _selectedIndex == _itemIndex;
+
     return Stack(
       children: [
+        // Regular icon - always normal size
         BottomIconBody(
           iconString: _regularIconString,
           index: _itemIndex,
         ),
-        _selectedIndex == _itemIndex
-            ? BottomIconBody(
-                iconString: _selectedIconString,
-                index: _itemIndex,
-              )
-            : Container(
-                width: 0,
-                height: 0,
-              ),
+
+        // Selected icon - apply padding only for item 3
+        if (isSelected)
+          _itemIndex == 3
+              ? Padding(
+                  padding: const EdgeInsets.all(1.0),
+                  child: BottomIconBody(
+                    iconString: _selectedIconString,
+                    index: _itemIndex,
+                  ),
+                )
+              : BottomIconBody(
+                  iconString: _selectedIconString,
+                  index: _itemIndex,
+                ),
       ],
     );
   }

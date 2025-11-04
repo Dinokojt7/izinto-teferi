@@ -44,7 +44,7 @@ class _LiveProgressIndicatorState extends State<LiveProgressIndicator>
         elevation: 0,
         backgroundColor: widget.hasOwnDialog!
             ? Colors.transparent
-            : Color(0xfffffff8).withOpacity(0.55),
+            : Color(0xff000008).withOpacity(0.55),
         insetPadding: EdgeInsets.all(0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.zero,
@@ -60,7 +60,7 @@ class _LiveProgressIndicatorState extends State<LiveProgressIndicator>
                   size: Size(widget.size, widget.size),
                   painter: _FadeTailProgressPainter(
                     progress: _controller.value,
-                    color: widget.color ?? Colors.black,
+                    color: widget.color ?? Colors.white,
                     strokeWidth: 6.0,
                   ),
                 );

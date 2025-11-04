@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:izinto/controllers/car_specialty_controller.dart';
 import 'package:izinto/controllers/car_wash_support_questions_controller.dart';
+import 'package:izinto/controllers/favorite_controller.dart';
 import 'package:izinto/controllers/gas_refill_specialty_controller.dart';
 import 'package:izinto/controllers/carpet_care_specialty_controller.dart';
 import 'package:izinto/controllers/pet_care_specialty_controller.dart';
 import 'package:izinto/controllers/home_items_controller.dart';
 import 'package:izinto/controllers/laundry_support_questions_controller.dart';
 import 'package:izinto/controllers/recommendation_controller.dart';
+import 'package:izinto/controllers/size_selection_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
 import 'package:izinto/controllers/tabs_header.dart';
+import 'package:izinto/controllers/temperature_controller.dart';
 import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/view/auth_view/phone_auth_view.dart';
 import 'package:izinto/live/view/cart_view/cart_view_page.dart';
@@ -52,6 +55,10 @@ class _WrapperState extends State<Wrapper> {
         .getRecommendedSpecialtyList();
     await Get.find<CartController>().getCartHistoryList();
     await Get.find<NewCartController>().getCartData();
+    await Get.find<TemperatureController>();
+    await Get.find<SizeSelectionController>();
+    await Get.find<FavoriteController>();
+
     await Get.find<RecommendationController>();
     await Get.find<PopularSpecialtyController>().getPopularSpecialtyList();
     await Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList();

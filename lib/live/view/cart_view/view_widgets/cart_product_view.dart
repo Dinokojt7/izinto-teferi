@@ -30,15 +30,18 @@ class CartProductView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = cartList[index];
-    final isGasRefill = item.type?.toLowerCase().contains('gas') ?? false;
+    final cartItem = cartList[index];
+    final specialty = _getSpecialty(cartItem);
+    final isGasRefill = specialty.type?.toLowerCase().contains('gas') ?? false;
     final isHomeCare =
-        item.material?.toLowerCase().contains('deep cleaning') ?? false;
-    final hasSize = item is NewCartModel &&
-        item.specialty is Map &&
-        (item.specialty['selectedSize'] != null &&
-            item.specialty['selectedSize'].isNotEmpty);
-    final selectedSize = hasSize ? item.specialty['selectedSize'] : null;
+        specialty.material?.toLowerCase().contains('deep cleaning') ?? false;
+    final hasSize = specialty is NewSpecialtyModel &&
+        specialty.selectedSize != null &&
+        specialty.selectedSize!.isNotEmpty;
+    final selectedSize = hasSize ? specialty.selectedSize : null;
+    final isSizeVariant =
+        specialty is NewSpecialtyModel && specialty.isSizeVariant == true;
+    final baseProductName = specialty.name ?? 'Unknown Item';
 
     return Padding(
       padding:
@@ -51,12 +54,12 @@ class CartProductView extends StatelessWidget {
         child: Row(
           children: [
             // Temperature icon with conditional styling
-            _buildTemperatureIcon(item, isGasRefill, isHomeCare, context),
+            _buildTemperatureIcon(specialty, isGasRefill, isHomeCare, context),
 
             // Image with error handling
             Container(
               padding: EdgeInsets.only(left: 8, right: 12),
-              child: _buildProductImage(item),
+              child: _buildProductImage(specialty),
             ),
 
             Expanded(
@@ -68,12 +71,12 @@ class CartProductView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SmallBlackText(
-                        text: 'R${item.price!.toString()},00*',
+                        text: 'R${cartItem.price!.toString()},00*',
                         size: Dimensions.font20 / 1.1,
                         font: 'Poppins',
                         fontWeight: FontWeight.w600,
                       ),
-                      _buildFavoriteIcon(item, context),
+                      _buildFavoriteIcon(specialty, context),
                     ],
                   ),
 
@@ -86,21 +89,23 @@ class CartProductView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SmallText(
-                              height: 1.5,
-                              color: Colors.black,
-                              size: Dimensions.font16 / 1.3,
-                              fontWeight: FontWeight.w500,
-                              text: _getDisplayName(item, selectedSize),
+                            Text(
+                              baseProductName,
+                              style: TextStyle(
+                                fontSize: Dimensions.font16 / 1.3,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Poppins',
+                                color: Colors.black,
+                              ),
                               maxLines: 1,
-                              overFlow: TextOverflow.ellipsis,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            // Show size badge if available
-                            if (hasSize && selectedSize != null)
+                            // Show size badge if this is a size variant
+                            if (isSizeVariant && selectedSize != null)
                               Container(
                                 margin: EdgeInsets.only(top: 2),
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                    horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color:
                                       LiveColors.standardBlue.withOpacity(0.1),
@@ -109,9 +114,9 @@ class CartProductView extends StatelessWidget {
                                 child: Text(
                                   selectedSize,
                                   style: TextStyle(
-                                    fontSize: Dimensions.font16 / 1.2,
+                                    fontSize: Dimensions.font16 / 1.1,
                                     color: LiveColors.standardBlue,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -131,7 +136,7 @@ class CartProductView extends StatelessWidget {
                           height: 1.5,
                           color: Colors.black,
                           size: Dimensions.font16 / 1.5,
-                          text: item.type ?? '',
+                          text: specialty.type ?? '',
                           maxLines: 1,
                           overFlow: TextOverflow.ellipsis,
                         ),
@@ -147,7 +152,8 @@ class CartProductView extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          _showProductDetails(context, item);
+                          _showProductDetails(
+                              context, specialty, cartItem.price!);
                         },
                         child: SmallBlackText(
                           text: 'More info',
@@ -159,11 +165,14 @@ class CartProductView extends StatelessWidget {
                           maxLines: 1,
                         ),
                       ),
+// In CartProductView, update the CartProductActions usage:
                       CartProductActions(
-                        quantity: item.quantity,
+                        quantity: cartItem.quantity!,
                         index: index,
-                        productName: item.name,
+                        productName: specialty.name ?? 'Item',
                         viewContext: context,
+                        specialty:
+                            specialty, // Pass the extracted specialty, not the cartItem
                       ),
                     ],
                   )
@@ -176,8 +185,46 @@ class CartProductView extends StatelessWidget {
     );
   }
 
-  Widget _buildTemperatureIcon(
-      dynamic item, bool isGasRefill, bool isHomeCare, BuildContext context) {
+  // Helper method to extract specialty from cart item
+// Helper method to extract specialty from cart item
+  dynamic _getSpecialty(NewCartModel cartItem) {
+    if (cartItem.specialty is NewSpecialtyModel) {
+      return cartItem.specialty;
+    } else if (cartItem.specialty is Map) {
+      // Convert map back to NewSpecialtyModel
+      final map = cartItem.specialty as Map;
+      return NewSpecialtyModel(
+        id: map['id'],
+        name: map['name'],
+        introduction: map['introduction'],
+        price: map['price'] != null ? List<int>.from(map['price']) : null,
+        size: map['size'] != null ? List<String>.from(map['size']) : null,
+        img: map['img'],
+        details: map['details'],
+        type: map['type'],
+        material: map['material'],
+        provider: map['provider'],
+        time: map['time'],
+        originalId: map['originalId'],
+        selectedSize: map['selectedSize'],
+        isSizeVariant: map['isSizeVariant'] ?? false,
+      );
+    } else {
+      // Fallback: create a basic specialty from cart item data
+      return NewSpecialtyModel(
+        id: cartItem.id,
+        name: cartItem.name,
+        price: [cartItem.price ?? 0],
+        img: cartItem.img,
+        type: cartItem.type,
+        material: cartItem.material,
+        provider: cartItem.provider,
+      );
+    }
+  }
+
+  Widget _buildTemperatureIcon(dynamic specialty, bool isGasRefill,
+      bool isHomeCare, BuildContext context) {
     if (isGasRefill || isHomeCare) {
       // Dimmed/grayed out for gas refill and home care
       return AppIcon(
@@ -190,10 +237,10 @@ class CartProductView extends StatelessWidget {
       // Toggleable for laundry and pet care
       return GetBuilder<TemperatureController>(
         builder: (tempController) {
-          final isHeated = tempController.isItemHeated(item.id);
+          final isHeated = tempController.isItemHeated(specialty.id);
           return GestureDetector(
             onTap: () {
-              tempController.toggleTemperature(item.id);
+              tempController.toggleTemperature(specialty.id);
               GenericSnackBar().showCustomSnackBar(
                   null,
                   context,
@@ -216,8 +263,8 @@ class CartProductView extends StatelessWidget {
     }
   }
 
-  Widget _buildProductImage(dynamic item) {
-    String imagePath = item.img ?? 'assets/image/placeholder.png';
+  Widget _buildProductImage(dynamic specialty) {
+    String imagePath = specialty.img ?? 'assets/image/placeholder.png';
 
     return Container(
       width: 70,
@@ -263,13 +310,13 @@ class CartProductView extends StatelessWidget {
     );
   }
 
-  Widget _buildFavoriteIcon(dynamic item, BuildContext context) {
+  Widget _buildFavoriteIcon(dynamic specialty, BuildContext context) {
     return GetBuilder<FavoriteController>(
       builder: (favoriteController) {
-        final isFavorite = favoriteController.isFavorite(item.id);
+        final isFavorite = favoriteController.isFavorite(specialty.id);
         return GestureDetector(
           onTap: () {
-            favoriteController.toggleFavorite(item);
+            favoriteController.toggleFavorite(specialty);
             GenericSnackBar().showCustomSnackBar(
                 null,
                 context,
@@ -295,8 +342,8 @@ class CartProductView extends StatelessWidget {
     );
   }
 
-  String _getDisplayName(dynamic item, String? selectedSize) {
-    String baseName = item.name ?? 'Unknown Item';
+  String _getDisplayName(dynamic specialty, String? selectedSize) {
+    String baseName = specialty.name ?? 'Unknown Item';
 
     // If item has a selected size, append it to the name
     if (selectedSize != null && selectedSize.isNotEmpty) {
@@ -306,7 +353,7 @@ class CartProductView extends StatelessWidget {
     return baseName;
   }
 
-  void _showProductDetails(BuildContext context, dynamic item) {
+  void _showProductDetails(BuildContext context, dynamic specialty, int price) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -336,18 +383,14 @@ class CartProductView extends StatelessWidget {
             SizedBox(height: Dimensions.height20),
             Row(
               children: [
-                _buildProductImage(item),
+                _buildProductImage(specialty),
                 SizedBox(width: Dimensions.width15),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getDisplayName(
-                            item,
-                            item.specialty is Map
-                                ? item.specialty['selectedSize']
-                                : null),
+                        _getDisplayName(specialty, specialty.selectedSize),
                         style: TextStyle(
                           fontSize: Dimensions.font16 * 1.1,
                           fontWeight: FontWeight.w600,
@@ -358,7 +401,7 @@ class CartProductView extends StatelessWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        item.type ?? '',
+                        specialty.type ?? '',
                         style: TextStyle(
                           fontSize: Dimensions.font16 / 1.1,
                           color: Colors.grey[600],
@@ -367,7 +410,7 @@ class CartProductView extends StatelessWidget {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'R${item.price},00',
+                        'R$price,00',
                         style: TextStyle(
                           fontSize: Dimensions.font16,
                           fontWeight: FontWeight.w700,
@@ -381,11 +424,11 @@ class CartProductView extends StatelessWidget {
               ],
             ),
             SizedBox(height: Dimensions.height20),
-            if (item.specialty is Map && item.specialty['introduction'] != null)
+            if (specialty.introduction != null)
               Expanded(
                 child: SingleChildScrollView(
                   child: Text(
-                    item.specialty['introduction'],
+                    specialty.introduction!,
                     style: TextStyle(
                       fontSize: Dimensions.font16 / 1.1,
                       height: 1.5,

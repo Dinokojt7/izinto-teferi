@@ -17,6 +17,8 @@ class CartProductActions extends StatelessWidget {
   final bool? hasReachedLimit;
   final bool? isRemoved;
   final BuildContext viewContext;
+  final dynamic specialty; // Change from cartItem to specialty
+
   const CartProductActions({
     super.key,
     this.hasReachedLimit = false,
@@ -25,6 +27,7 @@ class CartProductActions extends StatelessWidget {
     required this.index,
     required this.productName,
     required this.viewContext,
+    required this.specialty, // Now accepts specialty directly
   });
 
   @override
@@ -33,7 +36,6 @@ class CartProductActions extends StatelessWidget {
       final cartActionsController =
           Provider.of<CartActionsController>(context, listen: false);
 
-      final List _cartList = _cartController.getItems;
       return Container(
         width: 90,
         decoration: BoxDecoration(
@@ -46,16 +48,17 @@ class CartProductActions extends StatelessWidget {
             // Remove item from cart
             GestureDetector(
               onTap: () async {
-                if (_cartList[index].quantity == 1) {
+                if (quantity == 1) {
                   cartActionsController.clearCartData(
                       context,
-                      'Remove ${productName} from cart?',
+                      'Remove $productName from cart?',
                       'Remove',
                       false,
                       index,
-                      _cartList[index].specialty!);
+                      specialty); // Pass specialty directly
                 } else {
-                  _cartController.addItem(_cartList[index].specialty!, -1);
+                  _cartController.addItem(
+                      specialty, -1); // Pass specialty directly
                 }
               },
               child: ActionButton(
@@ -76,7 +79,8 @@ class CartProductActions extends StatelessWidget {
             // Add item to cart
             GestureDetector(
                 onTap: () {
-                  _cartController.addItem(_cartList[index].specialty!, 1);
+                  _cartController.addItem(
+                      specialty, 1); // Pass specialty directly
                 },
                 child: ActionButton(icon: Icons.add)),
           ],
@@ -101,21 +105,4 @@ class ActionButton extends StatelessWidget {
       icon: icon,
     );
   }
-}
-
-Widget _cartActionBuild(IconData icon) {
-  return Container(
-    width: Dimensions.width30 * 1.1,
-    height: Dimensions.width30 * 1.1,
-    decoration: BoxDecoration(
-        // border: boxBorder,
-        borderRadius: BorderRadius.circular(Dimensions.width30 * 1.1 / 2),
-        color: Colors.black),
-    child: Icon(
-      icon,
-      weight: 5,
-      color: Colors.white,
-      size: Dimensions.iconSize24 * 1.4,
-    ),
-  );
 }

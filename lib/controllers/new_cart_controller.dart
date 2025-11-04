@@ -16,8 +16,9 @@ class NewCartController extends GetxController {
   List<NewCartModel> storageItems = [];
 
   void addItem(dynamic specialty, int quantity) {
+    // ✅ This now works because each size variant has a unique ID
     var totalQuantity = 0;
-    final specialtyId = specialty.id!;
+    final specialtyId = specialty.id!; // This is now unique per size
 
     if (_items.containsKey(specialtyId)) {
       _items.update(specialtyId, (value) {
@@ -74,6 +75,30 @@ class NewCartController extends GetxController {
   int getQuantity(dynamic specialty) {
     if (specialty?.id == null) return 0;
     return _items[specialty.id]?.quantity ?? 0;
+  }
+
+  // ✅ Helper to get total quantity for a base product (all sizes)
+  int getBaseProductQuantity(int? originalId) {
+    if (originalId == null) return 0;
+
+    var total = 0;
+    _items.forEach((key, cartItem) {
+      final specialty = cartItem.specialty;
+      if (specialty is Map && specialty['originalId'] == originalId) {
+        total += cartItem.quantity ?? 0;
+      }
+    });
+    return total;
+  }
+
+  // ✅ Helper to get all size variants of a base product
+  List<NewCartModel> getSizeVariants(int? originalId) {
+    if (originalId == null) return [];
+
+    return _items.values.where((cartItem) {
+      final specialty = cartItem.specialty;
+      return specialty is Map && specialty['originalId'] == originalId;
+    }).toList();
   }
 
   int get totalItems {

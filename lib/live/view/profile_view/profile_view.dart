@@ -84,11 +84,8 @@ class _ProfileViewState extends State<ProfileView> {
   Widget build(BuildContext context) {
     return Consumer<ProfileViewController>(
         builder: (context, controller, child) {
-      final hasMissingFields = controller.hasMissingFields;
-      final isNewUser = controller.isNewUser;
-
       return PopScope(
-        canPop: false,
+        canPop: false, // We handle popping manually due to complex checks
         onPopInvoked: (didPop) {
           if (!didPop) {
             final focus = FocusScope.of(context);
@@ -101,8 +98,11 @@ class _ProfileViewState extends State<ProfileView> {
               return;
             }
 
-            // If keyboard is already dismissed, handle navigation
+            // If keyboard is already dismissed, handle navigation with system settings
             _handleBackNavigation();
+          } else {
+            // This runs after pop has completed (though with canPop: false, this won't trigger naturally)
+            _applySystemChromeSettings();
           }
         },
         child: Stack(
@@ -129,7 +129,7 @@ class _ProfileViewState extends State<ProfileView> {
                                   'Please provide all the required fields.',
                                   false);
                             } else {
-                              _handleBackNavigation();
+                              _handleBackNavigation(); // Uses the same method that applies system settings
                             }
                           },
                           backgroundColor: Colors.white,

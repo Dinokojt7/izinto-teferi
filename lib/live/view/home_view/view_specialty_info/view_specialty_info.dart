@@ -16,6 +16,7 @@ import '../../../../widgets/texts/expandable_text.dart';
 import '../../../../widgets/texts/small_text.dart';
 import '../../../utilities/colors.dart';
 import '../../../utilities/generic_snackbar.dart';
+import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/buttons/cart_action_button.dart';
 import '../../../widgets/expandable_text_widget.dart';
 import '../../../widgets/generic_header_row.dart';
@@ -23,7 +24,7 @@ import '../../../widgets/icons/back_arrow.dart';
 import '../../../widgets/text_widgets/introduction_text.dart';
 import '../view_widgets/size_selection_modal.dart';
 
-class ViewSpecialtyInfo extends StatelessWidget {
+class ViewSpecialtyInfo extends StatefulWidget {
   final int index;
   final List homeItemList;
   const ViewSpecialtyInfo(
@@ -31,118 +32,153 @@ class ViewSpecialtyInfo extends StatelessWidget {
       : super(key: key);
 
   @override
+  State<ViewSpecialtyInfo> createState() => _ViewSpecialtyInfoState();
+}
+
+void _handleBackNavigation(BuildContext context) {
+  // Apply system settings BEFORE navigation
+  SystemNavigation().applyCustomSystemChromeSettings(
+    Colors.black,
+    Brightness.light,
+    Colors.black,
+    Brightness.light,
+  );
+
+  // Then perform the navigation
+  Navigator.of(context).pop();
+}
+
+class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
+  @override
   Widget build(BuildContext context) {
-    var item = homeItemList[index];
+    var item = widget.homeItemList[widget.index];
     final sizeController = Get.find<SizeSelectionController>();
     final shouldShowSizeSelector = sizeController.shouldShowSizeSelector(item);
 
-    return Scaffold(
-        backgroundColor: Colors.white.withOpacity(0.98),
-        body: GetBuilder<SizeSelectionController>(
-            // This ensures the favorite icon updates when size changes
-            builder: (sizeController) {
-          return CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                toolbarHeight: 50,
-                title: Padding(
-                  padding: EdgeInsets.only(right: Dimensions.width10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      BackArrow(
-                        iconColor: Colors.black,
-                        onTap: () => Navigator.of(context).pop(),
-                      ),
-                      _buildFavoriteIcon(item),
-                    ],
-                  ),
-                ),
-                pinned: true,
-                backgroundColor: Colors.white.withOpacity(0.1),
-                expandedHeight: 300,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: _buildProductImage(item),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: Dimensions.width20,
-                    right: Dimensions.width20,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                IntroductionText(text: item.name),
-                                SizedBox(height: 4),
-                                SmallText(
-                                  height: 1.5,
-                                  color: Colors.black,
-                                  size: Dimensions.font16 / 1.1,
-                                  text: item.type,
-                                  maxLines: 1,
-                                  overFlow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (!_shouldHideTemperature(item))
-                            _buildTemperatureToggle(item),
-                        ],
-                      ),
-                      SizedBox(height: Dimensions.height20),
-
-                      // Cart quantity display
-                      _buildCartQuantitySection(
-                          item, context, shouldShowSizeSelector),
-
-                      // Show size selector only for items that need it
-                      if (shouldShowSizeSelector) _buildSizeSelector(item),
-
-                      GenericHeaderRow(
-                        headingChild: IntroductionText(
-                            text:
-                                'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
-                        actionButtonChild: GetBuilder<NewCartController>(
-                          builder: (cartController) {
-                            final quantityInCart =
-                                cartController.getQuantity(item);
-                            return CartActionButton(
-                              isActive: true,
-                              description: quantityInCart > 0
-                                  ? 'Update Cart ($quantityInCart)'
-                                  : 'Add to basket',
-                              onTap: () => _addToCart(item, cartController,
-                                  context, shouldShowSizeSelector),
-                            );
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          // Apply system settings after pop completed
+          SystemNavigation().applyCustomSystemChromeSettings(
+            Colors.black,
+            Brightness.light,
+            Colors.black,
+            Brightness.light,
+          );
+        }
+      },
+      child: Scaffold(
+          backgroundColor: Colors.white.withOpacity(0.98),
+          body: GetBuilder<SizeSelectionController>(
+              // This ensures the favorite icon updates when size changes
+              builder: (sizeController) {
+            return CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  toolbarHeight: 50,
+                  title: Padding(
+                    padding: EdgeInsets.only(right: Dimensions.width10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        BackArrow(
+                          iconColor: Colors.black,
+                          onTap: () {
+                            _handleBackNavigation(context);
                           },
                         ),
-                      ),
-                      SizedBox(height: Dimensions.height20),
-
-                      Row(children: [
-                        IntroductionText(
-                            text: 'Introduction', textSize: Dimensions.font20),
-                      ]),
-                      SizedBox(height: Dimensions.height10 / 1.4),
-
-                      _buildExpandableText(item.introduction),
-                      SizedBox(height: Dimensions.height20),
-                    ],
+                        _buildFavoriteIcon(item),
+                      ],
+                    ),
+                  ),
+                  pinned: true,
+                  backgroundColor: Colors.white.withOpacity(0.1),
+                  expandedHeight: 300,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: _buildProductImage(item),
                   ),
                 ),
-              )
-            ],
-          );
-        }));
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: Dimensions.width20,
+                      right: Dimensions.width20,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  IntroductionText(text: item.name),
+                                  SizedBox(height: 4),
+                                  SmallText(
+                                    height: 1.5,
+                                    color: Colors.black,
+                                    size: Dimensions.font16 / 1.1,
+                                    text: item.type,
+                                    maxLines: 1,
+                                    overFlow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (!_shouldHideTemperature(item))
+                              _buildTemperatureToggle(item),
+                          ],
+                        ),
+                        SizedBox(height: Dimensions.height20),
+
+                        // Cart quantity display
+                        _buildCartQuantitySection(
+                            item, context, shouldShowSizeSelector),
+
+                        // Show size selector only for items that need it
+                        if (shouldShowSizeSelector) _buildSizeSelector(item),
+
+                        GenericHeaderRow(
+                          headingChild: IntroductionText(
+                              text:
+                                  'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
+                          actionButtonChild: GetBuilder<NewCartController>(
+                            builder: (cartController) {
+                              final quantityInCart =
+                                  cartController.getQuantity(item);
+                              return CartActionButton(
+                                isActive: true,
+                                description: quantityInCart > 0
+                                    ? 'Update Cart ($quantityInCart)'
+                                    : 'Add to basket',
+                                onTap: () => _addToCart(item, cartController,
+                                    context, shouldShowSizeSelector),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(height: Dimensions.height20),
+
+                        Row(children: [
+                          IntroductionText(
+                              text: 'Introduction',
+                              textSize: Dimensions.font20),
+                        ]),
+                        SizedBox(height: Dimensions.height10 / 1.4),
+
+                        _buildExpandableText(item.introduction),
+                        SizedBox(height: Dimensions.height20),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            );
+          })),
+    );
   }
 
   Widget _buildCartQuantitySection(

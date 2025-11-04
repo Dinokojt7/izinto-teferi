@@ -14,11 +14,12 @@ import '../../../../models/popular_specialty_model.dart';
 import '../../../../models/recommended_specialty_model.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../../widgets/miscellaneous/app_icon.dart';
+import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 import '../controller/home_view_controller.dart';
 import '../view_specialty_info/view_specialty_info.dart';
 
-class ServiceWidget extends StatelessWidget {
+class ServiceWidget extends StatefulWidget {
   final int index;
   final List homeItemList;
   const ServiceWidget({
@@ -28,22 +29,29 @@ class ServiceWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<ServiceWidget> createState() => _ServiceWidgetState();
+}
+
+class _ServiceWidgetState extends State<ServiceWidget> {
+  @override
   Widget build(BuildContext context) {
     // ✅ Add bounds checking at the start
-    if (index >= homeItemList.length) {
+    if (widget.index >= widget.homeItemList.length) {
       return Container(); // Return empty container if index is out of bounds
     }
 
     return GetBuilder<NewCartController>(builder: (_cartController) {
       return GestureDetector(
         onTap: () {
-          Provider.of<HomeViewController>(context, listen: false)
-              .navigateToNestedWidget(
-            context,
-            ViewSpecialtyInfo(
-              index: index,
-              homeItemList: homeItemList,
-            ),
+          setState(() {
+            SystemNavigation().applyCustomSystemChromeSettings(
+                Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+          });
+          Get.to(
+            () => ViewSpecialtyInfo(
+                index: widget.index, homeItemList: widget.homeItemList),
+            transition: Transition.native,
+            duration: Duration(milliseconds: 500),
           );
         },
         child: Container(
@@ -71,11 +79,11 @@ class ServiceWidget extends StatelessWidget {
   Widget buildSpecialtyWidget(
       NewCartController cartController, BuildContext viewContext) {
     // ✅ Add bounds checking here too
-    if (index >= homeItemList.length) {
+    if (widget.index >= widget.homeItemList.length) {
       return Container();
     }
 
-    var item = homeItemList[index];
+    var item = widget.homeItemList[widget.index];
     var _quantity = cartController.getQuantity(item);
     var _isInCart = _quantity > 0;
 
@@ -152,8 +160,8 @@ class ServiceWidget extends StatelessWidget {
                       cartController.addItem(item, 1);
                     },
                     child: AddToBasket(
-                      specialtyList: homeItemList,
-                      index: index,
+                      specialtyList: widget.homeItemList,
+                      index: widget.index,
                       viewContext: viewContext,
                     ),
                   ),

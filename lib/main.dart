@@ -12,6 +12,7 @@ import 'package:izinto/controllers/car_specialty_controller.dart';
 import 'package:izinto/controllers/cart_controller.dart';
 import 'package:izinto/controllers/checkout_controller.dart';
 import 'package:izinto/controllers/laundry_specialty_controller.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/controllers/popular_specialty_controller.dart';
 import 'package:izinto/controllers/recommended_specialty_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
@@ -37,7 +38,6 @@ import 'package:izinto/live/wrapper.dart';
 import 'package:izinto/pages/options/profile_settings.dart';
 import 'package:izinto/pages/splash/splash_screen.dart';
 import 'package:izinto/routes/route_helper.dart';
-import 'package:izinto/scratch.dart';
 import 'package:izinto/services/dependency_injection.dart';
 import 'package:izinto/services/firebase_auth_methods.dart';
 import 'package:izinto/services/location/location_model.dart';
@@ -178,89 +178,99 @@ class MyApp extends StatelessWidget {
                 return GetBuilder<LaundrySupportQuestionsController>(
                     builder: (_) {
                   return GetBuilder<HomeItemsController>(builder: (_) {
-                    return GetBuilder<CarWashSupportQuestionsController>(
-                        builder: (_) {
-                      return GetBuilder<PhoneAuthMethods>(builder: (_) {
-                        return StreamProvider<UserModel?>.value(
-                            value: FirebaseAuthMethods().user,
-                            initialData: UserModel(uid: ''),
-                            builder: (context, snapshot) {
-                              return MultiProvider(
-                                providers: [
-                                  StreamProvider<UserModel?>.value(
-                                    value: FirebaseAuthMethods().user,
-                                    initialData: UserModel(uid: ''),
-                                  ),
-                                  ChangeNotifierProvider<
-                                      PhoneAuthViewController>(
-                                    create: (_) => PhoneAuthViewController(),
-                                  ),
-                                  ChangeNotifierProvider<ProfileViewController>(
-                                    create: (_) => ProfileViewController(),
-                                  ),
-                                  ChangeNotifierProvider<
-                                      MainAddressViewController>(
-                                    create: (_) => MainAddressViewController(),
-                                  ),
-                                  ChangeNotifierProvider<
-                                      CategoryViewController>(
-                                    create: (_) => CategoryViewController(),
-                                  ),
-                                  ChangeNotifierProvider<RiderTipController>(
-                                    create: (_) => RiderTipController(),
-                                  ),
-                                  ChangeNotifierProvider<
-                                      CheckoutViewController>(
-                                    create: (_) => CheckoutViewController(),
-                                  ),
-                                  ChangeNotifierProvider<CartViewController>(
-                                    create: (_) => CartViewController(),
-                                  ),
-                                  ChangeNotifierProvider<
-                                      CartRecommendedItemsController>(
-                                    create: (_) =>
-                                        CartRecommendedItemsController(),
-                                  ),
-                                  ChangeNotifierProvider<CheckoutController>(
-                                    create: (_) => CheckoutController(),
-                                  ),
-                                  ChangeNotifierProvider<UserDataController>(
-                                    create: (_) => UserDataController(),
-                                  ),
-                                  ChangeNotifierProvider<HomeViewController>(
-                                    create: (_) => HomeViewController(),
-                                  ),
-                                  ChangeNotifierProvider<
-                                      CartRecommendedItemsController>(
-                                    create: (_) =>
-                                        CartRecommendedItemsController(),
-                                  ),
-                                  ChangeNotifierProvider<CartActionsController>(
-                                    create: (_) => CartActionsController(),
-                                  ),
-                                  ChangeNotifierProvider<
-                                      UserSettingsController>(
-                                    create: (_) => UserSettingsController(),
-                                  ),
-                                  ChangeNotifierProvider<CarWashController>(
-                                    create: (_) => CarWashController(),
-                                  ),
-                                ],
-                                child: GetMaterialApp(
-                                  debugShowCheckedModeBanner: false,
-                                  title: 'Izinto',
-                                  home: Wrapper(),
-                                  theme: ThemeData(
-                                    colorScheme:
-                                        ColorScheme.fromSwatch().copyWith(
-                                      primary: LiveColors.primary,
-                                      secondary: const Color(0Xff353839),
+                    return GetBuilder<CarWashController>(builder: (_) {
+                      return GetBuilder<CarWashSupportQuestionsController>(
+                          builder: (_) {
+                        return GetBuilder<NewCartController>(builder: (_) {
+                          return GetBuilder<PhoneAuthMethods>(builder: (_) {
+                            return StreamProvider<UserModel?>.value(
+                                value: FirebaseAuthMethods().user,
+                                initialData: UserModel(uid: ''),
+                                builder: (context, snapshot) {
+                                  return MultiProvider(
+                                    providers: [
+                                      StreamProvider<UserModel?>.value(
+                                        value: FirebaseAuthMethods().user,
+                                        initialData: UserModel(uid: ''),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          PhoneAuthViewController>(
+                                        create: (_) =>
+                                            PhoneAuthViewController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          ProfileViewController>(
+                                        create: (_) => ProfileViewController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          MainAddressViewController>(
+                                        create: (_) =>
+                                            MainAddressViewController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          CategoryViewController>(
+                                        create: (_) => CategoryViewController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          RiderTipController>(
+                                        create: (_) => RiderTipController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          CheckoutViewController>(
+                                        create: (_) => CheckoutViewController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          CartViewController>(
+                                        create: (_) => CartViewController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          CartRecommendedItemsController>(
+                                        create: (_) =>
+                                            CartRecommendedItemsController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          CheckoutController>(
+                                        create: (_) => CheckoutController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          UserDataController>(
+                                        create: (_) => UserDataController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          HomeViewController>(
+                                        create: (_) => HomeViewController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          CartRecommendedItemsController>(
+                                        create: (_) =>
+                                            CartRecommendedItemsController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          CartActionsController>(
+                                        create: (_) => CartActionsController(),
+                                      ),
+                                      ChangeNotifierProvider<
+                                          UserSettingsController>(
+                                        create: (_) => UserSettingsController(),
+                                      ),
+                                    ],
+                                    child: GetMaterialApp(
+                                      debugShowCheckedModeBanner: false,
+                                      title: 'Izinto',
+                                      home: Wrapper(),
+                                      theme: ThemeData(
+                                        colorScheme:
+                                            ColorScheme.fromSwatch().copyWith(
+                                          primary: LiveColors.primary,
+                                          secondary: const Color(0Xff353839),
+                                        ),
+                                      ),
+                                      getPages: RouteHelper.routes,
                                     ),
-                                  ),
-                                  getPages: RouteHelper.routes,
-                                ),
-                              );
-                            });
+                                  );
+                                });
+                          });
+                        });
                       });
                     });
                   });

@@ -1,36 +1,35 @@
-import 'package:flutter/material.dart';
+// lib/controllers/car_wash_controller.dart
+import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:izinto/controllers/cart_controller.dart';
-import 'package:izinto/models/popular_specialty_model.dart';
-
-import '../../../../../controllers/car_specialty_controller.dart';
-import '../../../../../models/cart_model.dart';
-import '../../../../utilities/generic_snackbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import '../../../../../controllers/new_cart_controller.dart';
+import '../../../../../models/new_specialty_model.dart';
 import '../view_widgets/show_wash_type_details.dart';
 
-class CarWashController extends ChangeNotifier {
-  final _cartController = Get.find<CartController>();
+class CarWashController extends GetxController {
+  final NewCartController _cartController = Get.find<NewCartController>();
+
   int _selectVehicleIndex = 0;
   int get selectVehicleIndex => _selectVehicleIndex;
-  int _selectedVehicleId = 0;
-  int get selectedVehicleId => _selectedVehicleId;
-  String _selectionPrice = '';
-  String get selectionPrice => _selectionPrice;
+
   int _washTypeIndex = 0;
   int get washTypeIndex => _washTypeIndex;
-  int _totalCharges = 0;
-  int get totalCharges => _totalCharges;
 
   String _washType = '';
   String get washType => _washType;
+
   String _description = '';
   String get description => _description;
-  String _selectedPrice = '';
-  String get selectedPrice => _selectedPrice;
-  final List carWashSpecialties =
-      Get.find<CarSpecialtyController>().carSpecialtyList;
 
+  // Define price selection matrix
+  final List<List<int>> _priceSelection = [
+    [150, 150, 180, 220, 260, 280, 350],
+    [170, 170, 190, 230, 280, 300, 380],
+    [190, 190, 290, 360, 400, 450, 500],
+  ];
+
+  // Define wash types
   final List<Map<String, dynamic>> washTypes = [
     {
       'washType': 'Standard Interior Wash',
@@ -39,21 +38,21 @@ class CarWashController extends ChangeNotifier {
         {
           'text': 'Vacuuming',
           'image': 'assets/image/vacuuming.png',
-          'color': Colors.deepPurpleAccent.withOpacity(0.2)
+          'color': 0xFFEDE7F6 // Colors.deepPurpleAccent.withOpacity(0.2)
         },
         {
           'text': 'DashBoard clean',
           'image': 'assets/image/dashboard-clean.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
         {
           'text': 'Seats clean',
           'image': 'assets/image/seat-clean.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
       ],
       'excluded': []
-    }, //example of Standard Interior wash details
+    },
     {
       'washType': 'Standard Exterior Wash',
       'description': 'Outside wash only, includes tyre shine.',
@@ -61,16 +60,16 @@ class CarWashController extends ChangeNotifier {
         {
           'text': 'Full Body Wash',
           'image': 'assets/image/full-body-wash.png',
-          'color': Colors.orange.withOpacity(0.2)
+          'color': 0xFFFFF3E0 // Colors.orange.withOpacity(0.2)
         },
         {
           'text': 'Tyre Polish',
           'image': 'assets/image/tyre-shine.png',
-          'color': Colors.blueGrey.withOpacity(0.2)
+          'color': 0xFFECEFF1 // Colors.blueGrey.withOpacity(0.2)
         },
       ],
       'excluded': []
-    }, //example of Standard Exterior Wash details
+    },
     {
       'washType': 'Standard Exterior Wash and Polish',
       'description': 'Outside wash only, includes tyre shine and body polish.',
@@ -78,21 +77,21 @@ class CarWashController extends ChangeNotifier {
         {
           'text': 'Body Polish',
           'image': 'assets/image/body-polish.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
         {
           'text': 'Full Body Wash',
           'image': 'assets/image/full-body-wash.png',
-          'color': Colors.orange.withOpacity(0.2)
+          'color': 0xFFFFF3E0 // Colors.orange.withOpacity(0.2)
         },
         {
           'text': 'Tyre Polish',
           'image': 'assets/image/tyre-shine.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
       ],
       'excluded': []
-    }, //example of Standard Exterior and Wash Polish details
+    },
     {
       'washType': 'Standard Full Wash',
       'description': 'Full car wash including vacuuming and tyre shine.',
@@ -100,31 +99,31 @@ class CarWashController extends ChangeNotifier {
         {
           'text': 'Tyre Shine',
           'image': 'assets/image/tyre-shine.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
         {
           'text': 'Full Body Wash',
           'image': 'assets/image/full-body-wash.png',
-          'color': Colors.orange.withOpacity(0.2)
+          'color': 0xFFFFF3E0 // Colors.orange.withOpacity(0.2)
         },
         {
           'text': 'Vacuuming',
           'image': 'assets/image/vacuuming.png',
-          'color': Colors.blueGrey.withOpacity(0.2)
+          'color': 0xFFECEFF1 // Colors.blueGrey.withOpacity(0.2)
         },
         {
           'text': 'DashBoard clean',
           'image': 'assets/image/dashboard-clean.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
         {
           'text': 'Seats clean',
           'image': 'assets/image/seat-clean.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
       ],
       'excluded': []
-    }, //example of Standard Full Wash details
+    },
     {
       'washType': 'Standard Wash and Full Body Polish',
       'description':
@@ -133,36 +132,36 @@ class CarWashController extends ChangeNotifier {
         {
           'text': 'Body Polish',
           'image': 'assets/image/body-polish.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
         {
           'text': 'Full Body Wash',
           'image': 'assets/image/full-body-wash.png',
-          'color': Colors.orange.withOpacity(0.2)
+          'color': 0xFFFFF3E0 // Colors.orange.withOpacity(0.2)
         },
         {
           'text': 'Vacuuming',
           'image': 'assets/image/vacuuming.png',
-          'color': Colors.blueGrey.withOpacity(0.2)
+          'color': 0xFFECEFF1 // Colors.blueGrey.withOpacity(0.2)
         },
         {
           'text': 'DashBoard clean',
           'image': 'assets/image/dashboard-clean.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
         {
           'text': 'Seats clean',
           'image': 'assets/image/seat-clean.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
         {
           'text': 'Tyre Shine',
           'image': 'assets/image/tyre-shine.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
       ],
       'excluded': []
-    }, //example of Standard Wash and Full Body Polish details
+    },
     {
       'washType': 'Premium Full Wash',
       'description':
@@ -171,36 +170,36 @@ class CarWashController extends ChangeNotifier {
         {
           'text': 'Premium Perfumes',
           'image': 'assets/image/perfume.png',
-          'color': Colors.brown.shade100
+          'color': 0xFFEFEBE9 // Colors.brown.shade100
         },
         {
           'text': 'Full Body Wash',
           'image': 'assets/image/full-body-wash.png',
-          'color': Colors.orange.withOpacity(0.2)
+          'color': 0xFFFFF3E0 // Colors.orange.withOpacity(0.2)
         },
         {
           'text': 'Vacuuming',
           'image': 'assets/image/vacuuming.png',
-          'color': Colors.blueGrey.withOpacity(0.2)
+          'color': 0xFFECEFF1 // Colors.blueGrey.withOpacity(0.2)
         },
         {
           'text': 'DashBoard clean',
           'image': 'assets/image/dashboard-clean.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
         {
           'text': 'Seats clean',
           'image': 'assets/image/seat-clean.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
         {
           'text': 'Tyre Shine',
           'image': 'assets/image/tyre-shine.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
       ],
       'excluded': []
-    }, //example of Premium Full Wash details
+    },
     {
       'washType': 'Premium Full Wash and Full Body Polish',
       'description':
@@ -209,192 +208,360 @@ class CarWashController extends ChangeNotifier {
         {
           'text': 'Body Polish',
           'image': 'assets/image/body-polish.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
         {
           'text': 'Premium Perfumes',
           'image': 'assets/image/perfume.png',
-          'color': Colors.brown.shade100
+          'color': 0xFFEFEBE9 // Colors.brown.shade100
         },
         {
           'text': 'Full Body Wash',
           'image': 'assets/image/full-body-wash.png',
-          'color': Colors.orange.withOpacity(0.2)
+          'color': 0xFFFFF3E0 // Colors.orange.withOpacity(0.2)
         },
         {
           'text': 'Vacuuming',
           'image': 'assets/image/vacuuming.png',
-          'color': Colors.blueGrey.withOpacity(0.2)
+          'color': 0xFFECEFF1 // Colors.blueGrey.withOpacity(0.2)
         },
         {
           'text': 'DashBoard clean',
           'image': 'assets/image/dashboard-clean.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
         {
           'text': 'Seats clean',
           'image': 'assets/image/seat-clean.png',
-          'color': Colors.green.shade100
+          'color': 0xFFE8F5E8 // Colors.green.shade100
         },
         {
           'text': 'Tyre Shine',
           'image': 'assets/image/tyre-shine.png',
-          'color': Colors.redAccent.withOpacity(0.2)
+          'color': 0xFFFFEBEE // Colors.redAccent.withOpacity(0.2)
         },
       ],
       'excluded': []
-    }, //example of Premium Full Wash and Full Body Polish details
+    },
   ];
 
-  List<List<int>> _priceSelection = [
-    [150, 150, 180, 220, 260, 280, 350],
-    [170, 170, 190, 230, 280, 300, 380],
-    [190, 190, 290, 360, 400, 450, 500],
+  // Mock car wash specialties - replace with your actual data source
+  final List<NewSpecialtyModel> carWashSpecialties = [
+    NewSpecialtyModel(
+      id: 401,
+      name: 'Small Car',
+      introduction: 'Hatchback, Sedan, Compact',
+      img: 'assets/image/small-car.png',
+      price: [150],
+    ),
+    NewSpecialtyModel(
+      id: 402,
+      name: 'Medium SUV',
+      introduction: 'SUV, Crossover, Family Vehicle',
+      img: 'assets/image/medium-suv.png',
+      price: [170],
+    ),
+    NewSpecialtyModel(
+      id: 403,
+      name: 'Large Vehicle',
+      introduction: 'Truck, Van, Luxury Vehicle',
+      img: 'assets/image/large-vehicle.png',
+      price: [190],
+    ),
   ];
+
+  // Cart integration for car wash items
+  final RxList<Map<String, dynamic>> _carWashCartItems =
+      <Map<String, dynamic>>[].obs;
+  List<Map<String, dynamic>> get carWashCartItems => _carWashCartItems;
+
+  int get totalCarWashItems {
+    return _carWashCartItems.fold(
+        0, (int sum, item) => sum + (item['quantity'] as int? ?? 0));
+  }
+
+  int get totalCarWashAmount {
+    return _carWashCartItems.fold(0, (int sum, item) {
+      final price = item['price'] as int? ?? 0;
+      final quantity = item['quantity'] as int? ?? 0;
+      return sum + (price * quantity);
+    });
+  }
 
   void selectVehicleType(int index) {
     _selectVehicleIndex = index;
-
-    calculateCharges();
-    notifyListeners();
-  }
-
-  int _showingQuantity = 0;
-  int get showingQuantity => _showingQuantity;
-
-  int? updateQuantityDisplayed() {
-    final _cartList = _cartController.getItems;
-    for (var i = 0; i < _cartList.length; i++) {
-      if (_cartList[i].id == 401 && _selectVehicleIndex == 0) {
-        return _cartList[i].quantity;
-      } else {
-        if (_cartList[i].id == 402 && _selectVehicleIndex == 1) {
-          return _cartList[i].quantity;
-        } else {
-          if (_cartList[i].id == 403 && _selectVehicleIndex == 2) {
-            return _cartList[i].quantity;
-          }
-        }
-      }
-    }
-    return 0;
+    update();
   }
 
   Future<void> selectWashType(int index) async {
-    _washTypeIndex = await index;
+    _washTypeIndex = index;
     _washType = washTypes[_washTypeIndex]['washType'];
     _description = washTypes[_washTypeIndex]['description'];
-    // _selectedPrice =
-    //     _priceSelection[_selectVehicleIndex][_washTypeIndex].toString();
-    _selectedPrice = calculateCharges().toString();
-    notifyListeners();
+    update();
   }
 
   int calculateCharges() {
-    _totalCharges = _priceSelection[_selectVehicleIndex][_washTypeIndex];
-
-    notifyListeners();
-    return _totalCharges;
+    return _priceSelection[_selectVehicleIndex][_washTypeIndex];
   }
 
-  void showDetails(
-    context,
-  ) {
+  // Enhanced cart methods
+  void addCarWashToCart() {
+    final vehicle = carWashSpecialties[_selectVehicleIndex];
+    final washTypeData = washTypes[_washTypeIndex];
+    final price = calculateCharges();
+
+    // Create unique car wash cart item
+    final carWashItem = {
+      'id': _generateCarWashId(vehicle.id!, _washTypeIndex),
+      'name': '${vehicle.name} - ${washTypeData['washType']}',
+      'price': price,
+      'vehicleType': vehicle.name,
+      'washType': washTypeData['washType'],
+      'description': washTypeData['description'],
+      'included': washTypeData['included'],
+      'quantity': 1,
+      'image': vehicle.img,
+      'type': 'car_wash',
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+
+    // Check if item already exists in cart
+    final existingIndex =
+        _carWashCartItems.indexWhere((item) => item['id'] == carWashItem['id']);
+
+    if (existingIndex >= 0) {
+      // Update quantity
+      _carWashCartItems[existingIndex]['quantity'] =
+          (_carWashCartItems[existingIndex]['quantity'] as int) + 1;
+    } else {
+      // Add new item
+      _carWashCartItems.add(carWashItem);
+    }
+
+    // Also add to main cart controller
+    _addToMainCart(carWashItem);
+
+    update();
+    _saveCarWashCart();
+  }
+
+  void updateCarWashQuantity(int itemId, int quantity) {
+    final itemIndex =
+        _carWashCartItems.indexWhere((item) => item['id'] == itemId);
+
+    if (itemIndex >= 0) {
+      if (quantity <= 0) {
+        final item = _carWashCartItems[itemIndex]; // Get the item first
+        _carWashCartItems.removeAt(itemIndex);
+        _removeFromMainCart(item); // Pass the item Map
+      } else {
+        _carWashCartItems[itemIndex]['quantity'] = quantity;
+        _updateMainCart(itemId, quantity);
+      }
+
+      update();
+      _saveCarWashCart();
+    }
+  }
+
+  void removeCarWashItem(int itemId) {
+    final item = _carWashCartItems.firstWhere((item) => item['id'] == itemId);
+
+    // Remove from main cart first with the item data
+    _removeFromMainCart(item);
+
+    // Then remove from local list
+    _carWashCartItems.removeWhere((item) => item['id'] == itemId);
+
+    update();
+    _saveCarWashCart();
+  }
+
+  void _removeFromMainCart(Map<String, dynamic> item) {
+    final specialty = _createCarWashSpecialtyModel(item);
+    final quantity = _cartController.getQuantity(specialty);
+
+    if (quantity > 0) {
+      _cartController.addItem(specialty, -quantity);
+    }
+  }
+
+  void clearCarWashCart() {
+    // Remove all car wash items from main cart
+    for (final item in _carWashCartItems) {
+      _removeFromMainCart(item); // Pass the item Map, not item['id']
+    }
+
+    _carWashCartItems.clear();
+    update();
+    _saveCarWashCart();
+  }
+
+  // Integration with main cart controller
+  void _addToMainCart(Map<String, dynamic> carWashItem) {
+    final specialty = _createCarWashSpecialtyModel(carWashItem);
+    _cartController.addItem(specialty, 1);
+  }
+
+  void _updateMainCart(int itemId, int quantity) {
+    final item = _carWashCartItems.firstWhere((item) => item['id'] == itemId);
+    final specialty = _createCarWashSpecialtyModel(item);
+
+    // Calculate difference and update main cart
+    final currentQuantity = _cartController.getQuantity(specialty);
+    final difference = quantity - currentQuantity;
+
+    if (difference != 0) {
+      _cartController.addItem(specialty, difference);
+    }
+  }
+
+  // Persistence
+  void _saveCarWashCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('car_wash_cart', json.encode(_carWashCartItems));
+  }
+
+  void loadCarWashCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cartData = prefs.getString('car_wash_cart');
+
+    if (cartData != null) {
+      try {
+        final List<dynamic> decoded = json.decode(cartData);
+        _carWashCartItems.assignAll(decoded.cast<Map<String, dynamic>>());
+        update();
+      } catch (e) {
+        print('Error loading car wash cart: $e');
+      }
+    }
+  }
+
+  /// Included vehicles for display in the UI
+  final List<Map<String, dynamic>> _includedVehicles = [];
+  List<Map<String, dynamic>> get includedVehicles => _includedVehicles;
+
+  /// Add a car to the included vehicles list
+  void addCar(String vehicleType, String imageString) {
+    final vehicle = carWashSpecialties[_selectVehicleIndex];
+    final washTypeData = washTypes[_washTypeIndex];
+    final price = calculateCharges();
+
+    var existingItem = _includedVehicles.firstWhereOrNull((e) =>
+        e['vehicleType'] == vehicleType &&
+        e['washType'] == washTypeData['washType']);
+
+    if (existingItem != null) {
+      existingItem['selectionQuantity'] =
+          (existingItem['selectionQuantity'] as int) + 1;
+    } else {
+      _includedVehicles.add({
+        'selectionQuantity': 1,
+        'bill': price,
+        'vehicleType': vehicleType,
+        'imageString': imageString,
+        'selectedWash': washTypeData,
+        'vehicleId': vehicle.id,
+        'washTypeIndex': _washTypeIndex,
+      });
+    }
+    print('Included vehicles: ${_includedVehicles}');
+    update();
+  }
+
+  /// Remove item from included vehicles
+  void removeItem(dynamic specialty) {
+    // Find and remove the vehicle from included vehicles
+    final vehicleName = specialty.name;
+    final itemIndex = _includedVehicles
+        .indexWhere((item) => item['vehicleType'] == vehicleName);
+
+    if (itemIndex >= 0) {
+      final currentQuantity =
+          _includedVehicles[itemIndex]['selectionQuantity'] as int;
+      if (currentQuantity > 1) {
+        _includedVehicles[itemIndex]['selectionQuantity'] = currentQuantity - 1;
+      } else {
+        _includedVehicles.removeAt(itemIndex);
+      }
+      update(); // This triggers UI refresh
+    }
+  }
+
+  /// Update quantity displayed in the UI
+  int updateQuantityDisplayed() {
+    final vehicle = carWashSpecialties[_selectVehicleIndex];
+    final item = _includedVehicles
+        .firstWhereOrNull((e) => e['vehicleType'] == vehicle.name);
+
+    return item != null ? (item['selectionQuantity'] as int) : 0;
+  }
+
+  /// Clear all included vehicles
+  void clearIncludedVehicles() {
+    _includedVehicles.clear();
+    update();
+  }
+
+  /// Get total quantity of all included vehicles
+  int get totalIncludedVehicles {
+    return _includedVehicles.fold(
+        0, (int sum, item) => sum + (item['selectionQuantity'] as int? ?? 0));
+  }
+
+  /// Check if a specific vehicle is included
+  bool isVehicleIncluded(String vehicleType) {
+    return _includedVehicles.any((item) => item['vehicleType'] == vehicleType);
+  }
+
+  /// Get quantity for a specific vehicle
+  int getVehicleQuantity(String vehicleType) {
+    final item = _includedVehicles
+        .firstWhereOrNull((item) => item['vehicleType'] == vehicleType);
+    return item != null ? (item['selectionQuantity'] as int) : 0;
+  }
+
+  // Helper methods
+  int _generateCarWashId(int vehicleId, int washTypeIndex) {
+    return (vehicleId * 1000) + washTypeIndex;
+  }
+
+  dynamic _createCarWashSpecialtyModel(Map<String, dynamic> item) {
+    return NewSpecialtyModel(
+      id: item['id'] as int,
+      name: item['name'] as String,
+      price: [item['price'] as int],
+      img: item['image'] as String,
+      type: 'Car Wash',
+      introduction: item['description'] as String,
+    );
+  }
+
+  void showDetails(BuildContext context) {
     showModalBottomSheet(
       elevation: 0.0,
       backgroundColor: Colors.transparent,
       context: context,
       builder: (BuildContext context) {
         return ShowWashTypeDetails(
-            headerText: _washType,
-            price: _selectedPrice,
-            description: _description,
-            action: 'Select',
-            isMiniaturized: false,
-            isCartView: false,
-            onTap: () async {
-              // _isLogOutLoading = true;
-              // notifyListeners();
-              if (true) {
-                try {
-                  Navigator.of(context).pop();
-                  // await _auth.signOut();
-                  // var removeUserData =
-                  // Provider.of<ProfileViewController>(context, listen: false)
-                  //     .removeUserData();
-                  // Future.delayed(const Duration(milliseconds: 50), () async {
-                  //   SystemNavigation().applyCustomSystemChromeSettings(
-                  //       Colors.white,
-                  //       Brightness.dark,
-                  //       Colors.white,
-                  //       Brightness.dark);
-                  // });
-                  // await removeUserData;
-                } catch (e) {
-                  GenericSnackBar().showCustomSnackBar(
-                      null, context, 'Something went wrong', false);
-                  // _isLogOutLoading = false;
-                }
-              }
-              notifyListeners();
-            });
+          headerText: _washType,
+          price: calculateCharges().toString(),
+          description: _description,
+          action: 'Add to Cart',
+          isMiniaturized: false,
+          isCartView: false,
+          onTap: () {
+            addCarWashToCart();
+            Navigator.of(context).pop();
+          },
+        );
       },
     );
   }
 
-  ///Add vehicle in the included vehicles container ///
-  List<Map<String, dynamic>> _includedVehicles = [];
-  List<Map<String, dynamic>> get includedVehicles => _includedVehicles;
-  void addVehicles() {
-    final _cartController = Get.find<CartController>();
-    final _cartList = _cartController.getItems;
-    for (var i = 0; i < _cartList.length; i++) {
-      switch (_cartList[i].id) {
-        case 401:
-        case 402:
-        case 403:
-          _includedVehicles.add(
-              {'img': _cartList[i].img, 'quantity': _cartList[i].quantity});
-          notifyListeners();
-      }
-    }
-    notifyListeners();
-  }
-
-  bool get isCarAdded => _includedVehicles.length > 0;
-
-  void addCar(String vehicleType, String imageString) {
-    var existingItem = _includedVehicles
-        .firstWhereOrNull((e) => e['vehicleType'] == vehicleType);
-
-    if (existingItem != null) {
-      existingItem['selectionQuantity'] += 1;
-      notifyListeners();
-    } else {
-      _includedVehicles.add({
-        'selectionQuantity': 1,
-        'bill': _selectedPrice,
-        'vehicleType': vehicleType,
-        'imageString': imageString,
-        'selectedWash': washTypes[_washTypeIndex]
-      });
-      print('Here is the object ${_includedVehicles}');
-      notifyListeners();
-    }
-  }
-
-  void addMoreCars() {
-    _selectVehicleIndex = 0;
-    notifyListeners();
-    _washTypeIndex = 0;
-    notifyListeners();
-  }
-
-  void removeItem(SpecialtyModel specialty) {
-    _cartController.addItem(specialty, -1);
-  }
-
-  void clearItems() {
-    _includedVehicles.clear();
+  @override
+  void onInit() {
+    super.onInit();
+    loadCarWashCart();
   }
 }

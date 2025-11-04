@@ -32,6 +32,7 @@ import '../controllers/recommendation_controller.dart';
 import '../controllers/size_selection_controller.dart';
 import '../controllers/tabs_header.dart';
 import '../controllers/temperature_controller.dart';
+import '../live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
 import '../services/phone_auth_methods.dart';
 import '../utils/app_constants.dart';
 import 'data/repository/auth_repo.dart';
@@ -69,6 +70,8 @@ Future<void> init() async {
   Get.lazyPut(() => CarWashSupportQuestionsRepo(apiClient: Get.find()));
   Get.lazyPut(() => SubscriptionPlansRepo(apiClient: Get.find()));
   Get.lazyPut(() => HomeItemsRepo(apiClient: Get.find()));
+
+  Get.lazyPut(() => CarWashController());
 
   //This is the new dependency repos
   Get.lazyPut(() => NewCartController(cartRepo: Get.find()));

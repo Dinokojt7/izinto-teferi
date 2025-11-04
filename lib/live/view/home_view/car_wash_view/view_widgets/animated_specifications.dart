@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:provider/provider.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/specification_column.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
@@ -16,22 +17,22 @@ class _AnimatedSpecificationsState extends State<AnimatedSpecifications>
   void initState() {
     super.initState();
     _controller = AnimationController(
+      duration: Duration(milliseconds: 500),
       vsync: this,
-    );
+    )..forward();
   }
 
   @override
   void dispose() {
-    _controller.dispose(); // Dispose of the animation controller
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CarWashController>(
-      builder: (context, carWashController, child) {
-        // Get the currently selected wash type's included items
-        final List<Map<String, dynamic>> includedItems = carWashController
+    return GetBuilder<CarWashController>(
+      builder: (carWashController) {
+        final includedItems = carWashController
             .washTypes[carWashController.washTypeIndex]['included'];
 
         return Padding(
@@ -41,16 +42,13 @@ class _AnimatedSpecificationsState extends State<AnimatedSpecifications>
               AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
-                  var listLength =
+                  final listLength =
                       includedItems.length < 4 ? includedItems.length : 3;
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: List.generate(listLength, (index) {
                       final spec = includedItems[index];
-                      final delayFactor =
-                          index * 0.2; // Stagger delay for each item
 
-                      // Delay the animation for each item
                       return Transform.translate(
                         offset:
                             Offset(_controller.value * (index - 0) * 100, 0),
@@ -60,7 +58,8 @@ class _AnimatedSpecificationsState extends State<AnimatedSpecifications>
                           child: SpecificationColumn(
                             text: spec['text'],
                             image: spec['image'],
-                            backgroundColor: spec['color'],
+                            backgroundColor: Color(
+                                spec['color']), // FIX: Convert int to Color
                           ),
                         ),
                       );

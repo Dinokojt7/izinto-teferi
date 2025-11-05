@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import '../../../../../utils/dimensions.dart';
 import '../../../../utilities/colors.dart';
 import '../../../../widgets/buttons/cart_action_button.dart';
 import '../../../../widgets/generic_header_row.dart';
 
 class SpecialtyBottomCheckoutNav extends StatelessWidget {
+  final int totalAmount;
+  final VoidCallback onCheckout;
+  final bool isActive;
+
   const SpecialtyBottomCheckoutNav({
     super.key,
+    required this.totalAmount,
+    required this.onCheckout,
+    required this.isActive,
   });
 
   @override
@@ -40,11 +47,9 @@ class SpecialtyBottomCheckoutNav extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(
-              height: Dimensions.height10 / 2,
-            ),
+            SizedBox(height: Dimensions.height10 / 2),
             Text(
-              'R210,00*',
+              'R$totalAmount,00*',
               maxLines: 2,
               style: TextStyle(
                 height: 1.2,
@@ -58,10 +63,11 @@ class SpecialtyBottomCheckoutNav extends StatelessWidget {
           ],
         ),
         actionButtonChild: CartActionButton(
-          backgroundColor: LiveColors.accent.withOpacity(0.2),
-          isActive: true,
+          backgroundColor:
+              isActive ? LiveColors.accent.withOpacity(0.2) : Colors.grey,
+          isActive: isActive,
           description: 'Checkout',
-          onTap: () {},
+          onTap: onCheckout,
         ),
       ),
     );

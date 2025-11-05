@@ -538,17 +538,6 @@ class CarWashController extends GetxController {
     return (vehicleId * 1000) + washTypeIndex;
   }
 
-  dynamic _createCarWashSpecialtyModel(Map<String, dynamic> item) {
-    return NewSpecialtyModel(
-      id: item['id'] as int,
-      name: item['name'] as String,
-      price: [item['price'] as int],
-      img: item['image'] as String,
-      type: 'Car Wash',
-      introduction: item['description'] as String,
-    );
-  }
-
   void showDetails(BuildContext context) {
     showModalBottomSheet(
       elevation: 0.0,
@@ -583,15 +572,7 @@ class CarWashController extends GetxController {
         0, (int sum, item) => sum + (item['quantity'] as int? ?? 0));
   }
 
-  int get totalCarWashAmount {
-    syncWithMainCart(); // Sync before calculating
-    return _carWashCartItems.fold(0, (int sum, item) {
-      final price = item['price'] as int? ?? 0;
-      final quantity = item['quantity'] as int? ?? 0;
-      return sum + (price * quantity);
-    });
-  }
-
+// Replace the syncWithMainCart method with this corrected version:
   void syncWithMainCart() {
     final mainCartItems = _cartController.getItems;
 
@@ -605,19 +586,98 @@ class CarWashController extends GetxController {
     _carWashCartItems
         .removeWhere((item) => !carWashItemIdsInMainCart.contains(item['id']));
 
-    // Update quantities to match main cart
+    // Update quantities to match main cart and ensure all data is present
     for (final mainCartItem
         in mainCartItems.where((item) => item.type == 'Car Wash')) {
       final carWashItemIndex =
           _carWashCartItems.indexWhere((item) => item['id'] == mainCartItem.id);
 
       if (carWashItemIndex >= 0) {
+        // Update quantity and ensure all fields are present
         _carWashCartItems[carWashItemIndex]['quantity'] = mainCartItem.quantity;
+        _carWashCartItems[carWashItemIndex]['name'] = mainCartItem.name;
+        // Fix: Handle price properly - it might be a List<int> or single int
+        final price = mainCartItem.price is List
+            ? (mainCartItem.price as List).first
+            : mainCartItem.price;
+        _carWashCartItems[carWashItemIndex]['price'] = price ?? 0;
+      } else {
+        // Add missing item back (shouldn't happen but for safety)
+        final vehicleId = mainCartItem.id! ~/ 1000;
+        final washTypeIndex = mainCartItem.id! % 1000;
+        final vehicle = carWashSpecialties.firstWhere((v) => v.id == vehicleId);
+        final washType = washTypes[washTypeIndex];
+
+        // Fix: Handle price properly
+        final price = mainCartItem.price is List
+            ? (mainCartItem.price as List).first
+            : mainCartItem.price;
+
+        _carWashCartItems.add({
+          'id': mainCartItem.id,
+          'name': mainCartItem.name,
+          'price': price ?? 0,
+          'vehicleType': vehicle.name,
+          'washType': washType['washType'],
+          'description': washType['description'],
+          'quantity': mainCartItem.quantity,
+          'image': vehicle.img,
+          'type': 'car_wash',
+        });
       }
     }
 
-    // REMOVE THIS: update(); // This causes the rebuild during build phase
-    _saveCarWashCart();
+    _saveCarWashCart(); // Ensure persistence
+  }
+
+// Also update the _createCarWashSpecialtyModel method to handle price properly:
+  dynamic _createCarWashSpecialtyModel(Map<String, dynamic> item) {
+    // Fix: Handle price properly - ensure it's a List<int>
+    final price = item['price'] is int ? [item['price'] as int] : [0];
+
+    return NewSpecialtyModel(
+      id: item['id'] as int,
+      name: item['name'] as String,
+      price: price,
+      img: item['image'] as String,
+      type: 'Car Wash',
+      introduction: item['description'] as String,
+    );
+  }
+
+// Update the getter for cart details to ensure proper data:
+  List<Map<String, dynamic>> get carWashCartDetails {
+    syncWithMainCart();
+
+    // Ensure all items have the required fields
+    return _carWashCartItems.map((item) {
+      return {
+        'id': item['id'] ?? 0,
+        'name': item['name'] ?? 'Car Wash Service',
+        'price': item['price'] ?? 0,
+        'vehicleType': item['vehicleType'] ?? 'Vehicle',
+        'washType': item['washType'] ?? 'Wash Type',
+        'description': item['description'] ?? '',
+        'quantity': item['quantity'] ?? 0,
+        'image': item['image'] ?? 'assets/image/car_placeholder.png',
+        'type': item['type'] ?? 'car_wash',
+      };
+    }).toList();
+  }
+
+// Update the totalCarWashAmount getter to handle price properly:
+  int get totalCarWashAmount {
+    syncWithMainCart();
+    return _carWashCartItems.fold(0, (int sum, item) {
+      final price = item['price'] is int ? item['price'] as int : 0;
+      final quantity = item['quantity'] as int? ?? 0;
+      return sum + (price * quantity);
+    });
+  }
+
+  int get carWashItemsCount {
+    syncWithMainCart();
+    return totalCarWashItems;
   }
 
   @override

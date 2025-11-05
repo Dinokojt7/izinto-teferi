@@ -26,6 +26,7 @@ class _CarWashViewState extends State<CarWashView> {
   final Set<int> _failedImageIndices = <int>{};
   bool _isLoading = false;
   bool _isAddingToCart = false;
+  bool _showVehicleType = false;
 
   @override
   void initState() {
@@ -375,7 +376,7 @@ class _CarWashViewState extends State<CarWashView> {
               // Increased height SliverAppBar (45%)
               SliverAppBar(
                 automaticallyImplyLeading: false,
-                toolbarHeight: Dimensions.height45,
+                toolbarHeight: Dimensions.height30,
                 title: Padding(
                   padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
                   child: Row(
@@ -398,7 +399,7 @@ class _CarWashViewState extends State<CarWashView> {
                 backgroundColor: LiveColors.accent.withOpacity(0.3),
                 elevation: 0,
                 pinned: true,
-                expandedHeight: Dimensions.screenHeight * 0.45,
+                expandedHeight: Dimensions.screenHeight * 0.35,
                 flexibleSpace: FlexibleSpaceBar(
                   background: _buildTopSection(carWashController),
                 ),
@@ -580,56 +581,206 @@ class _CarWashViewState extends State<CarWashView> {
 
           SizedBox(height: Dimensions.height10),
 
-          // Vehicle Name Container
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: Dimensions.width30),
-            padding: EdgeInsets.symmetric(
-              horizontal: Dimensions.width20,
-              vertical: Dimensions.height10,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(Dimensions.radius20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
+          // Vehicle Info Container - Always shows both name and type
+          _isLoading
+              ? _buildVehicleInfoShimmer()
+              : Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(
+                      maxWidth:
+                          Dimensions.screenWidth * 0.9, // Prevent overflow
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius:
+                          BorderRadius.circular(Dimensions.radius20 * 3),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 3,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: IntrinsicWidth(
+                      // Makes container fit content width
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Vehicle Name Section - Blue background
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Dimensions.width20,
+                              vertical: Dimensions.height10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: LiveColors.accent,
+                              borderRadius: BorderRadius.only(
+                                topLeft:
+                                    Radius.circular(Dimensions.radius20 * 3),
+                                bottomLeft:
+                                    Radius.circular(Dimensions.radius20 * 3),
+                              ),
+                            ),
+                            child: HeadingStyleText(
+                              text: selectedVehicle.name!,
+                              size: Dimensions.font16 / 1.1,
+                              family: 'Poppins',
+                              weight: FontWeight.w500,
+                              color: Colors.black54,
+                            ),
+                          ),
+
+                          // Vehicle Type Section - Lighter blue background
+                          Flexible(
+                            // Prevents overflow
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: Dimensions.width15,
+                                vertical: Dimensions.height10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: LiveColors.accent.withOpacity(0.15),
+                                borderRadius: BorderRadius.only(
+                                  topRight:
+                                      Radius.circular(Dimensions.radius20 * 3),
+                                  bottomRight:
+                                      Radius.circular(Dimensions.radius20 * 3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    height: Dimensions.height20,
+                                    width: 1,
+                                    color: LiveColors.accent.withOpacity(0.5),
+                                  ),
+                                  SizedBox(width: Dimensions.width10),
+                                  Flexible(
+                                    // Prevents text overflow
+                                    child: SmallText(
+                                      text: selectedVehicle.introduction!,
+                                      color: Colors.black87,
+                                      size: Dimensions.font16 / 1.2,
+                                      fontWeight: FontWeight.w500,
+                                      maxLines: 1,
+                                      softWrap: true,
+                                      overFlow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ],
-            ),
-            child: Center(
-              child: HeadingStyleText(
-                text: selectedVehicle.name!,
-                size: Dimensions.font16 * 1.1,
-                family: 'Poppins',
-                weight: FontWeight.w600,
-              ),
-            ),
-          ),
 
           SizedBox(height: Dimensions.height10),
-
-          // Vehicle Type Container
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: Dimensions.width30 * 2),
-            padding: EdgeInsets.symmetric(
-              horizontal: Dimensions.width15,
-              vertical: Dimensions.height10 / 2,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(Dimensions.radius15),
-            ),
-            child: Center(
-              child: SmallText(
-                text: selectedVehicle.introduction!,
-                color: Colors.black,
-                size: Dimensions.font16 / 1.1,
-              ),
-            ),
-          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildVehicleInfoShimmer() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Container(
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints(
+          maxWidth: Dimensions.screenWidth * 0.9,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(Dimensions.radius20 * 3),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 3,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: IntrinsicWidth(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Shimmer for vehicle name section
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Dimensions.width20,
+                  vertical: Dimensions.height10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(Dimensions.radius20 * 3),
+                    bottomLeft: Radius.circular(Dimensions.radius20 * 3),
+                  ),
+                ),
+                child: Container(
+                  width: Dimensions.width30 *
+                      3, // Adjust based on typical name length
+                  height: Dimensions.font16,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius:
+                        BorderRadius.circular(Dimensions.radius20 / 2),
+                  ),
+                ),
+              ),
+
+              // Shimmer for vehicle type section
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Dimensions.width15,
+                  vertical: Dimensions.height10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(Dimensions.radius20 * 3),
+                    bottomRight: Radius.circular(Dimensions.radius20 * 3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: Dimensions.height20,
+                      width: 1,
+                      color: Colors.grey.shade400,
+                    ),
+                    SizedBox(width: Dimensions.width10),
+                    Container(
+                      width: Dimensions.width30 *
+                          4, // Adjust based on typical type length
+                      height: Dimensions.font16,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade400,
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius20 / 2),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -661,7 +812,7 @@ class _CarWashViewState extends State<CarWashView> {
 
     return Image.asset(
       imagePath,
-      height: Dimensions.screenHeight * 0.12,
+      height: Dimensions.screenHeight * 0.3,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
         if (!_failedImageIndices.contains(index)) {

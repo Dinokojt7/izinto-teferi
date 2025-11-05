@@ -11,15 +11,19 @@ class CarWashController extends GetxController {
   final NewCartController _cartController = Get.find<NewCartController>();
 
   int _selectVehicleIndex = 0;
+
   int get selectVehicleIndex => _selectVehicleIndex;
 
   int _washTypeIndex = 0;
+
   int get washTypeIndex => _washTypeIndex;
 
   String _washType = '';
+
   String get washType => _washType;
 
   String _description = '';
+
   String get description => _description;
 
   // Define price selection matrix
@@ -273,20 +277,27 @@ class CarWashController extends GetxController {
   // Cart integration for car wash items
   final RxList<Map<String, dynamic>> _carWashCartItems =
       <Map<String, dynamic>>[].obs;
-  List<Map<String, dynamic>> get carWashCartItems => _carWashCartItems;
 
-  int get totalCarWashItems {
-    return _carWashCartItems.fold(
-        0, (int sum, item) => sum + (item['quantity'] as int? ?? 0));
-  }
-
-  int get totalCarWashAmount {
-    return _carWashCartItems.fold(0, (int sum, item) {
-      final price = item['price'] as int? ?? 0;
-      final quantity = item['quantity'] as int? ?? 0;
-      return sum + (price * quantity);
-    });
-  }
+  // // Override getters to always return synced data
+  // List<Map<String, dynamic>> get carWashCartItems {
+  //   syncWithMainCart(); // Sync before returning data
+  //   return _carWashCartItems;
+  // }
+  //
+  // int get totalCarWashItems {
+  //   syncWithMainCart(); // Sync before calculating
+  //   return _carWashCartItems.fold(
+  //       0, (int sum, item) => sum + (item['quantity'] as int? ?? 0));
+  // }
+  //
+  // int get totalCarWashAmount {
+  //   syncWithMainCart(); // Sync before calculating
+  //   return _carWashCartItems.fold(0, (int sum, item) {
+  //     final price = item['price'] as int? ?? 0;
+  //     final quantity = item['quantity'] as int? ?? 0;
+  //     return sum + (price * quantity);
+  //   });
+  // }
 
   void selectVehicleType(int index) {
     _selectVehicleIndex = index;
@@ -439,6 +450,7 @@ class CarWashController extends GetxController {
 
   /// Included vehicles for display in the UI
   final List<Map<String, dynamic>> _includedVehicles = [];
+
   List<Map<String, dynamic>> get includedVehicles => _includedVehicles;
 
   /// Add a car to the included vehicles list
@@ -559,9 +571,62 @@ class CarWashController extends GetxController {
     );
   }
 
+  // Remove update() calls from getters and sync method
+  List<Map<String, dynamic>> get carWashCartItems {
+    syncWithMainCart(); // Sync before returning data
+    return _carWashCartItems;
+  }
+
+  int get totalCarWashItems {
+    syncWithMainCart(); // Sync before calculating
+    return _carWashCartItems.fold(
+        0, (int sum, item) => sum + (item['quantity'] as int? ?? 0));
+  }
+
+  int get totalCarWashAmount {
+    syncWithMainCart(); // Sync before calculating
+    return _carWashCartItems.fold(0, (int sum, item) {
+      final price = item['price'] as int? ?? 0;
+      final quantity = item['quantity'] as int? ?? 0;
+      return sum + (price * quantity);
+    });
+  }
+
+  void syncWithMainCart() {
+    final mainCartItems = _cartController.getItems;
+
+    // Create a list of car wash item IDs from main cart
+    final carWashItemIdsInMainCart = mainCartItems
+        .where((item) => item.type == 'Car Wash')
+        .map((item) => item.id)
+        .toSet();
+
+    // Remove items from carWashCartItems that are no longer in main cart
+    _carWashCartItems
+        .removeWhere((item) => !carWashItemIdsInMainCart.contains(item['id']));
+
+    // Update quantities to match main cart
+    for (final mainCartItem
+        in mainCartItems.where((item) => item.type == 'Car Wash')) {
+      final carWashItemIndex =
+          _carWashCartItems.indexWhere((item) => item['id'] == mainCartItem.id);
+
+      if (carWashItemIndex >= 0) {
+        _carWashCartItems[carWashItemIndex]['quantity'] = mainCartItem.quantity;
+      }
+    }
+
+    // REMOVE THIS: update(); // This causes the rebuild during build phase
+    _saveCarWashCart();
+  }
+
   @override
   void onInit() {
     super.onInit();
     loadCarWashCart();
+    // Use WidgetsBinding to sync after the build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      syncWithMainCart();
+    });
   }
 }

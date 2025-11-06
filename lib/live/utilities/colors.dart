@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class LiveColors {
   //Main UI colors
   static final Color accent = const Color(0xFFcfc5a5);
-  //static final Color secondary = const Color(0xFFcfc5a5);
+  static final Color lavender = const Color(0xFFe6e6fa);
   static final Color secondary = const Color(0xFFfbf1d1);
   static final Color primary = const Color(0xFF121212);
   static final Color whiteTextColor = const Color(0xFFf7f6f4);

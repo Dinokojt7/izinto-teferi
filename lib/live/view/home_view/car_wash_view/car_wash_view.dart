@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_add_to_cart.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_bottom_sheet.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/specialty_bottom_checkout_nav.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
@@ -14,6 +15,8 @@ import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import '../../../../models/new_specialty_model.dart';
 import '../../../../widgets/texts/small_text.dart';
 import '../../../widgets/top_nortch.dart';
+import '../../address_view/controller/address_dropdown_controller.dart';
+import '../../profile_view/controller/profile_view_controller.dart';
 import '../controller/home_view_controller.dart';
 
 class CarWashView extends StatefulWidget {
@@ -28,7 +31,8 @@ class _CarWashViewState extends State<CarWashView> {
   final Set<int> _failedImageIndices = <int>{};
   bool _isLoading = false;
   bool _isAddingToCart = false;
-  bool _showVehicleType = false;
+  bool _showTooltip = false;
+  bool _isTapped = false;
 
   @override
   void initState() {
@@ -39,6 +43,40 @@ class _CarWashViewState extends State<CarWashView> {
       controller.loadCarWashCart();
       controller.syncWithMainCart();
     });
+  }
+
+  String _getLeftIntroductionParts(String introduction) {
+    final parts = introduction.split(',').map((part) => part.trim()).toList();
+    final half = (parts.length / 2).ceil();
+    return parts.sublist(0, half).join(', ');
+  }
+
+  String _getRightIntroductionParts(String introduction) {
+    final parts = introduction.split(',').map((part) => part.trim()).toList();
+    final half = (parts.length / 2).ceil();
+    return parts.sublist(half).join(', ');
+  }
+
+  double _calculateLeftMargin(String introduction, index) {
+    final leftText = _getLeftIntroductionParts(introduction);
+    final textLength = leftText.length;
+
+    // More text = more margin needed
+    if (index == 0) return Dimensions.screenWidth * 0.57;
+    if (index == 1) return Dimensions.screenWidth * 0.58;
+    if (index == 2) return Dimensions.screenWidth * 0.54;
+    return Dimensions.screenWidth * 0.8;
+  }
+
+  double _calculateRightMargin(String introduction, index) {
+    final rightText = _getRightIntroductionParts(introduction);
+    final textLength = rightText.length;
+
+    // More text = more margin needed
+    if (index == 0) return Dimensions.screenWidth * 0.48;
+    if (index == 1) return Dimensions.screenWidth * 0.58;
+    if (index == 2) return Dimensions.screenWidth * 0.60;
+    return Dimensions.screenWidth * 0.4;
   }
 
   @override
@@ -649,6 +687,25 @@ class _CarWashViewState extends State<CarWashView> {
   Widget build(BuildContext context) {
     return GetBuilder<CarWashController>(
       builder: (carWashController) {
+        final addressViewController =
+            Provider.of<MainAddressViewController>(context, listen: false);
+
+        ///Here's a list of addresses from the controller
+        final _profileController =
+            Provider.of<ProfileViewController>(context, listen: false);
+        final List<dynamic> _addresses = _profileController.savedAddresses;
+
+        ///Here's the selection of currently active address///
+        var selectedAddresses =
+            _addresses.where((address) => address['selected'] == true).toList();
+
+        var street = '';
+        var suburb = '';
+        // Iterate over the filtered addresses and use their values
+        for (var address in selectedAddresses) {
+          street = address['street'];
+          suburb = address['suburb'];
+        }
         final selectedVehicleIndex = carWashController.selectVehicleIndex;
         final selectedWashTypeIndex = carWashController.washTypeIndex;
         final price = carWashController.calculateCharges();
@@ -666,25 +723,7 @@ class _CarWashViewState extends State<CarWashView> {
               SliverAppBar(
                 automaticallyImplyLeading: false,
                 toolbarHeight: Dimensions.height30,
-                title: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      BackArrow(
-                        iconColor: Colors.black,
-                        onTap: () => Navigator.of(context).pop(),
-                      ),
-                      HeadingStyleText(
-                        text: 'Car Wash',
-                        size: Dimensions.font20,
-                        family: 'Poppins',
-                        weight: FontWeight.w600,
-                      ),
-                      Container(width: Dimensions.width30),
-                    ],
-                  ),
-                ),
+                title: buildAppBar(context, street, suburb),
                 backgroundColor: LiveColors.accent.withOpacity(0.3),
                 elevation: 0,
                 pinned: true,
@@ -726,6 +765,61 @@ class _CarWashViewState extends State<CarWashView> {
               _buildBottomNavBar(carWashController, hasCartItems),
         );
       },
+    );
+  }
+
+  Padding buildAppBar(BuildContext context, String street, String suburb) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: Dimensions.width10 / 2, vertical: Dimensions.height30),
+      child: Column(
+        children: [
+          SizedBox(height: Dimensions.height20 / 3),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              BackArrow(
+                iconColor: Colors.black,
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              Row(
+                children: [
+                  Icon(
+                    size: Dimensions.iconSize24 / 1.1,
+                    Icons.location_on_rounded,
+                    color: LiveColors.accent.withOpacity(0.7),
+                  ),
+                  SizedBox(
+                    width: Dimensions.width20 / 4,
+                  ),
+                  HeadingStyleText(
+                    text: street,
+                    size: Dimensions.font20 / 1.5,
+                    family: 'Poppins',
+                    weight: FontWeight.w600,
+                  ),
+                  SizedBox(
+                    width: Dimensions.width10,
+                  ),
+                  HeadingStyleText(
+                      text: suburb,
+                      size: Dimensions.font20 / 1.5,
+                      family: 'Poppins',
+                      weight: FontWeight.w300,
+                      color: Colors.black),
+                ],
+              ),
+              Icon(
+                MdiIcons.clockEditOutline,
+                color: Colors.black12.withOpacity(0.8),
+                size: 26,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -857,11 +951,11 @@ class _CarWashViewState extends State<CarWashView> {
       ),
       child: Column(
         children: [
-          SizedBox(height: Dimensions.height45),
+          SizedBox(height: Dimensions.height45 * 1.4),
 
           // Big Main Car Image
           Container(
-            height: Dimensions.screenHeight * 0.18,
+            height: Dimensions.screenHeight * 0.22,
             alignment: Alignment.center,
             child: _isLoading
                 ? _buildImageShimmer()
@@ -870,110 +964,172 @@ class _CarWashViewState extends State<CarWashView> {
 
           SizedBox(height: Dimensions.height10),
 
-          // Vehicle Info Container - Always shows both name and type
+          // Vehicle Info with Tooltip
           _isLoading
               ? _buildVehicleInfoShimmer()
               : Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Container(
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(
-                      maxWidth:
-                          Dimensions.screenWidth * 0.9, // Prevent overflow
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(Dimensions.radius20 * 3),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 3,
-                          offset: Offset(0, 2),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Left Tooltip - First half of introduction parts
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        margin: EdgeInsets.only(
+                          right: _showTooltip
+                              ? _calculateLeftMargin(
+                                  selectedVehicle.introduction!, selectedIndex)
+                              : 0,
                         ),
-                      ],
-                    ),
-                    child: IntrinsicWidth(
-                      // Makes container fit content width
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Vehicle Name Section - Blue background
-                          Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Dimensions.width20,
+                          vertical: Dimensions.height10 / 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(Dimensions.radius20 * 3),
+                            bottomLeft:
+                                Radius.circular(Dimensions.radius20 * 3),
+                          ),
+                          border: Border.all(
+                            color: LiveColors.accent.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: SmallText(
+                          text: _showTooltip
+                              ? _getLeftIntroductionParts(
+                                  selectedVehicle.introduction!)
+                              : '',
+                          color: Colors.black87,
+                          size: Dimensions.font16 / 1.4,
+                          fontWeight: FontWeight.w500,
+                          maxLines: 1,
+                          softWrap: false,
+                          overFlow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      // Right Tooltip - Second half of introduction parts
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        margin: EdgeInsets.only(
+                          left: _showTooltip
+                              ? _calculateRightMargin(
+                                  selectedVehicle.introduction!, selectedIndex)
+                              : 0,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Dimensions.width20,
+                          vertical: Dimensions.height10 / 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(Dimensions.radius20 * 3),
+                            bottomRight:
+                                Radius.circular(Dimensions.radius20 * 3),
+                          ),
+                          border: Border.all(
+                            color: LiveColors.accent.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: SmallText(
+                          text: _showTooltip
+                              ? _getRightIntroductionParts(
+                                  selectedVehicle.introduction!)
+                              : '',
+                          color: Colors.black87,
+                          size: Dimensions.font16 / 1.4,
+                          fontWeight: FontWeight.w500,
+                          maxLines: 1,
+                          softWrap: false,
+                          overFlow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      // Main Name Container with tap behavior
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        margin: EdgeInsets.symmetric(
+                          horizontal: _showTooltip
+                              ? Dimensions.screenWidth * 0.3
+                              : Dimensions.width10,
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _showTooltip = !_showTooltip;
+                            });
+                          },
+                          onTapDown: (_) {
+                            setState(() {
+                              _isTapped = true;
+                            });
+                          },
+                          onTapCancel: () {
+                            setState(() {
+                              _isTapped = false;
+                            });
+                          },
+                          onTapUp: (_) {
+                            setState(() {
+                              _isTapped = false;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 100),
                             padding: EdgeInsets.symmetric(
                               horizontal: Dimensions.width20,
                               vertical: Dimensions.height10,
                             ),
                             decoration: BoxDecoration(
-                              color: LiveColors.accent,
-                              borderRadius: BorderRadius.only(
-                                topLeft:
-                                    Radius.circular(Dimensions.radius20 * 3),
-                                bottomLeft:
-                                    Radius.circular(Dimensions.radius20 * 3),
-                              ),
+                              color: _isTapped
+                                  ? LiveColors.lavender.withOpacity(0.8)
+                                  : LiveColors.lavender,
+                              borderRadius: BorderRadius.circular(
+                                  Dimensions.radius20 * 3),
+                              boxShadow: _isTapped
+                                  ? []
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 3,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
                             ),
                             child: HeadingStyleText(
                               text: selectedVehicle.name!,
-                              size: Dimensions.font16 / 1.1,
+                              size: Dimensions.font20 / 1.4,
                               family: 'Poppins',
-                              weight: FontWeight.w500,
-                              color: Colors.black54,
+                              weight: FontWeight.w400,
+                              color: Colors.black,
                             ),
                           ),
-
-                          // Vehicle Type Section - Lighter blue background
-                          Flexible(
-                            // Prevents overflow
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: Dimensions.width15,
-                                vertical: Dimensions.height10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: LiveColors.accent.withOpacity(0.15),
-                                borderRadius: BorderRadius.only(
-                                  topRight:
-                                      Radius.circular(Dimensions.radius20 * 3),
-                                  bottomRight:
-                                      Radius.circular(Dimensions.radius20 * 3),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    height: Dimensions.height20,
-                                    width: 1,
-                                    color: LiveColors.accent.withOpacity(0.5),
-                                  ),
-                                  SizedBox(width: Dimensions.width10),
-                                  Flexible(
-                                    // Prevents text overflow
-                                    child: SmallText(
-                                      text: selectedVehicle.introduction!,
-                                      color: Colors.black87,
-                                      size: Dimensions.font16 / 1.2,
-                                      fontWeight: FontWeight.w500,
-                                      maxLines: 1,
-                                      softWrap: true,
-                                      overFlow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-
           SizedBox(height: Dimensions.height10),
         ],
       ),
@@ -982,94 +1138,24 @@ class _CarWashViewState extends State<CarWashView> {
 
   Widget _buildVehicleInfoShimmer() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Container(
-        padding: EdgeInsets.zero,
-        constraints: BoxConstraints(
-          maxWidth: Dimensions.screenWidth * 0.9,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(Dimensions.radius20 * 3),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 3,
-              offset: Offset(0, 2),
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Center name shimmer
+          Container(
+            margin:
+                EdgeInsets.symmetric(horizontal: Dimensions.screenWidth * 0.25),
+            padding: EdgeInsets.symmetric(
+              horizontal: Dimensions.width20,
+              vertical: Dimensions.height10,
             ),
-          ],
-        ),
-        child: IntrinsicWidth(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Shimmer for vehicle name section
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: Dimensions.width20,
-                  vertical: Dimensions.height10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(Dimensions.radius20 * 3),
-                    bottomLeft: Radius.circular(Dimensions.radius20 * 3),
-                  ),
-                ),
-                child: Container(
-                  width: Dimensions.width30 *
-                      3, // Adjust based on typical name length
-                  height: Dimensions.font16,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius:
-                        BorderRadius.circular(Dimensions.radius20 / 2),
-                  ),
-                ),
-              ),
-
-              // Shimmer for vehicle type section
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: Dimensions.width15,
-                  vertical: Dimensions.height10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(Dimensions.radius20 * 3),
-                    bottomRight: Radius.circular(Dimensions.radius20 * 3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      height: Dimensions.height20,
-                      width: 1,
-                      color: Colors.grey.shade400,
-                    ),
-                    SizedBox(width: Dimensions.width10),
-                    Container(
-                      width: Dimensions.width30 *
-                          4, // Adjust based on typical type length
-                      height: Dimensions.font16,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade400,
-                        borderRadius:
-                            BorderRadius.circular(Dimensions.radius20 / 2),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(Dimensions.radius20 * 3),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -1337,7 +1423,12 @@ class _CarWashViewState extends State<CarWashView> {
                 final isSelected = index == selectedIndex;
 
                 return GestureDetector(
-                  onTap: () => controller.selectWashType(index),
+                  onTap: () {
+                    controller.selectWashType(index);
+                    setState(() {
+                      _isTapped = false;
+                    });
+                  },
                   child: Container(
                     width: Dimensions.screenWidth * 0.7,
                     margin: EdgeInsets.only(right: Dimensions.width15),

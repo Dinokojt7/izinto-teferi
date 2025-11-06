@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:izinto/live/auxiliery_classes/live_progress_indicator.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_add_to_cart.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_bottom_sheet.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/specialty_bottom_checkout_nav.dart';
@@ -14,6 +15,7 @@ import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 
 import '../../../../models/new_specialty_model.dart';
 import '../../../../widgets/texts/small_text.dart';
+import '../../../widgets/generic_header_row.dart';
 import '../../../widgets/top_nortch.dart';
 import '../../address_view/controller/address_dropdown_controller.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
@@ -37,6 +39,8 @@ class _CarWashViewState extends State<CarWashView> {
   @override
   void initState() {
     super.initState();
+    _showTooltip = false;
+    _isTapped = false;
     // Ensure cart is loaded when view starts
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final controller = Get.find<CarWashController>();
@@ -411,8 +415,6 @@ class _CarWashViewState extends State<CarWashView> {
                         ),
                       ),
                     ),
-
-                    // Quantity Controls - FIXED: Using proper constraints
                     Container(
                       constraints: BoxConstraints(
                         maxWidth: Dimensions.height45 * 1.4, // Fixed max width
@@ -451,7 +453,6 @@ class _CarWashViewState extends State<CarWashView> {
                             ),
                           ),
 
-                          // Quantity - FIXED: Constrained text
                           Container(
                             constraints: BoxConstraints(
                               minWidth: 20, // Ensure minimum width
@@ -714,55 +715,61 @@ class _CarWashViewState extends State<CarWashView> {
         final hasSelection =
             selectedVehicleIndex != -1 && selectedWashTypeIndex != -1;
 
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              // Increased height SliverAppBar (45%)
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                toolbarHeight: Dimensions.height30,
-                title: buildAppBar(context, street, suburb),
-                backgroundColor: LiveColors.accent.withOpacity(0.3),
-                elevation: 0,
-                pinned: true,
-                expandedHeight: Dimensions.screenHeight * 0.35,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: _buildTopSection(carWashController),
-                ),
-              ),
-
-              // Vehicle Selection Bridge positioned at middle
-              SliverToBoxAdapter(
-                child: Container(
-                  height: Dimensions.screenHeight * 0.4,
-                  child: Column(
-                    children: [
-                      SizedBox(height: Dimensions.screenHeight * 0.05),
-                      _buildVehicleSelectionConsole(carWashController),
-                      Expanded(
-                        child: _buildWashTypeSelection(carWashController),
-                      ),
-                    ],
+        return Stack(
+          children: [
+            Scaffold(
+              backgroundColor: Colors.white,
+              body: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  // Increased height SliverAppBar (45%)
+                  SliverAppBar(
+                    automaticallyImplyLeading: false,
+                    toolbarHeight: Dimensions.height30,
+                    title: buildAppBar(context, street, suburb),
+                    backgroundColor: LiveColors.accent.withOpacity(0.3),
+                    elevation: 0,
+                    pinned: true,
+                    expandedHeight: Dimensions.screenHeight * 0.35,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: _buildTopSection(carWashController),
+                    ),
                   ),
-                ),
-              ),
 
-              // Add to Cart Section - Sticks to bottom
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  children: [
-                    Expanded(child: SizedBox()),
-                    _buildAddToCartSection(carWashController, hasSelection),
-                  ],
-                ),
+                  // Vehicle Selection Bridge positioned at middle
+                  SliverToBoxAdapter(
+                    child: Container(
+                      height: Dimensions.screenHeight * 0.43,
+                      color: Colors.grey.shade50,
+                      child: Column(
+                        children: [
+                          SizedBox(height: Dimensions.screenHeight * 0.02),
+                          _buildVehicleSelectionConsole(carWashController),
+                          Expanded(
+                              child:
+                                  _buildWashTypeSelection(carWashController)),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Add to Cart Section - Sticks to bottom
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Column(
+                      children: [
+                        Expanded(child: SizedBox()),
+                        _buildAddToCartSection(carWashController, hasSelection),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          bottomNavigationBar:
-              _buildBottomNavBar(carWashController, hasCartItems),
+              bottomNavigationBar:
+                  _buildBottomNavBar(carWashController, hasCartItems),
+            ),
+            _isLoading ? LiveProgressIndicator() : Container()
+          ],
         );
       },
     );
@@ -837,33 +844,6 @@ class _CarWashViewState extends State<CarWashView> {
           horizontal: Dimensions.width20, vertical: Dimensions.height20 / 1.1),
       child: Row(
         children: [
-          // Cart Items Count Button - Always visible if there are items
-          if (controller.totalCarWashItems > 0)
-            GestureDetector(
-              onTap: () => _showCartDetailsDialog(controller),
-              child: Container(
-                width: Dimensions.height45,
-                height: Dimensions.height45,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${controller.totalCarWashItems}',
-                    style: TextStyle(
-                      fontSize: Dimensions.font16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          if (controller.totalCarWashItems > 0)
-            SizedBox(width: Dimensions.width10),
-
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -905,7 +885,7 @@ class _CarWashViewState extends State<CarWashView> {
             decoration: BoxDecoration(
               color: hasCartItems
                   ? LiveColors.accent.withOpacity(0.2)
-                  : Colors.grey,
+                  : Colors.grey.shade800,
               borderRadius: BorderRadius.circular(Dimensions.radius15),
             ),
             child: TextButton(
@@ -922,7 +902,7 @@ class _CarWashViewState extends State<CarWashView> {
                 'Checkout',
                 style: TextStyle(
                   fontSize: Dimensions.font16,
-                  color: Colors.white,
+                  color: hasCartItems ? Colors.white : Colors.white10,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -944,8 +924,8 @@ class _CarWashViewState extends State<CarWashView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            LiveColors.accent.withOpacity(0.3),
-            LiveColors.accent.withOpacity(0.1),
+            LiveColors.whiteTextColor.withOpacity(0.3),
+            LiveColors.whiteTextColor.withOpacity(0.1),
           ],
         ),
       ),
@@ -1102,9 +1082,7 @@ class _CarWashViewState extends State<CarWashView> {
                               vertical: Dimensions.height10,
                             ),
                             decoration: BoxDecoration(
-                              color: _isTapped
-                                  ? LiveColors.lavender.withOpacity(0.8)
-                                  : LiveColors.lavender,
+                              color: _isTapped ? Colors.white : Colors.white,
                               borderRadius: BorderRadius.circular(
                                   Dimensions.radius20 * 3),
                               boxShadow: _isTapped
@@ -1237,42 +1215,49 @@ class _CarWashViewState extends State<CarWashView> {
     final squareSize = Dimensions.screenWidth / 5;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
+      margin: EdgeInsets.symmetric(horizontal: Dimensions.width20),
       child: Column(
         children: [
           // "Select Vehicle" Label - Own Row aligned left
           Container(
             width: double.infinity,
-            padding: EdgeInsets.only(bottom: Dimensions.height15),
-            child: Text(
-              'Select Vehicle',
-              style: TextStyle(
-                fontSize: Dimensions.font16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            padding: EdgeInsets.only(bottom: Dimensions.height10),
+            child: GenericHeaderRow(
+              headingChild: HeadingStyleText(
+                text: 'Select Vehicle',
+                size: Dimensions.font16 / 1.2,
+                weight: FontWeight.w600,
               ),
-              textAlign: TextAlign.left,
             ),
           ),
 
           // Console and Price Row - Full width, flat layout
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Vehicle Selection Squares
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(carTypeList.length, (index) {
-                    final vehicle = carTypeList[index];
-                    final isSelected = index == selectedIndex;
-                    final isFailed = _failedImageIndices.contains(index);
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(carTypeList.length, (index) {
+                  final vehicle = carTypeList[index];
+                  final isSelected = index == selectedIndex;
+                  final isFailed = _failedImageIndices.contains(index);
 
-                    return GestureDetector(
-                      onTap: () => _changeVehicleWithLoader(index, controller),
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isTapped = false;
+                          _showTooltip = false;
+                        });
+                        _changeVehicleWithLoader(index, controller);
+                      },
                       child: AnimatedContainer(
                         duration: Duration(milliseconds: 300),
-                        width: squareSize,
-                        height: squareSize, // Square aspect ratio
+                        width: squareSize / 1.2,
+                        height: squareSize / 1.2, // Square aspect ratio
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius:
@@ -1281,7 +1266,7 @@ class _CarWashViewState extends State<CarWashView> {
                             color: isSelected
                                 ? LiveColors.accent
                                 : Colors.grey.shade300,
-                            width: isSelected ? 2 : 1,
+                            width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -1330,57 +1315,28 @@ class _CarWashViewState extends State<CarWashView> {
                               Positioned(
                                 top: Dimensions.height10 / 2,
                                 right: Dimensions.height10 / 2,
-                                child: Container(
-                                  width: Dimensions.iconSize16,
-                                  height: Dimensions.iconSize16,
-                                  decoration: BoxDecoration(
-                                    color: LiveColors.accent,
-                                    shape: BoxShape.circle,
-                                  ),
+                                child: Icon(
+                                  Icons.check,
+                                  color: Colors.black45,
+                                  size: Dimensions.iconSize24 / 1.4,
                                 ),
                               ),
                           ],
                         ),
                       ),
-                    );
-                  }),
-                ),
+                    ),
+                  );
+                }),
               ),
 
               // Spacer between console and price
-              SizedBox(width: Dimensions.width15),
 
               // Price Display - Black container
-              Container(
-                width: squareSize,
-                height: squareSize,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius:
-                      BorderRadius.circular(Dimensions.radius15 / 1.1),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'R$price',
-                        style: TextStyle(
-                          fontSize: Dimensions.font16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: Dimensions.height10 / 4),
-                      Text(
-                        'Total',
-                        style: TextStyle(
-                          fontSize: Dimensions.font16 / 1.1,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
+              GenericHeaderRow(
+                headingChild: HeadingStyleText(
+                  text: 'R$price.00*',
+                  size: Dimensions.font16,
+                  weight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1396,17 +1352,16 @@ class _CarWashViewState extends State<CarWashView> {
 
     return Container(
       padding: EdgeInsets.only(
-        top: Dimensions.height20,
+        top: Dimensions.height30 / 1.2,
         left: Dimensions.width20,
-        right: Dimensions.width20,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Select Wash Type',
+            'Select Wash',
             style: TextStyle(
-              fontSize: Dimensions.font16,
+              fontSize: Dimensions.font16 / 1.2,
               fontWeight: FontWeight.w600,
               fontFamily: 'Poppins',
             ),
@@ -1421,124 +1376,183 @@ class _CarWashViewState extends State<CarWashView> {
               itemBuilder: (context, index) {
                 final washType = washTypes[index];
                 final isSelected = index == selectedIndex;
+                final washTypeName =
+                    _removeWashFromString(washType['washType']);
 
-                return GestureDetector(
-                  onTap: () {
-                    controller.selectWashType(index);
-                    setState(() {
-                      _isTapped = false;
-                    });
-                  },
-                  child: Container(
-                    width: Dimensions.screenWidth * 0.7,
-                    margin: EdgeInsets.only(right: Dimensions.width15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(Dimensions.radius15),
-                      border: Border.all(
-                        color: isSelected
-                            ? LiveColors.accent
-                            : Colors.grey.shade300,
-                        width: isSelected ? 2 : 1,
+                return Stack(
+                  children: [
+                    // Main Container
+                    Container(
+                      width: Dimensions.screenWidth * 0.8,
+                      height: Dimensions.screenHeight / 5.7,
+                      margin: EdgeInsets.only(
+                        top: Dimensions.height20 *
+                            1.2, // Space for the name label
+                        right: Dimensions.width15,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius15),
+                        border: Border.all(
+                          color: isSelected
+                              ? LiveColors.accent
+                              : Colors.grey.shade300,
+                          width: 1,
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(Dimensions.width15),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Header with selection indicator
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  washType['washType'],
-                                  style: TextStyle(
-                                    fontSize: Dimensions.font16,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (isSelected)
-                                Icon(
-                                  Icons.check_circle,
-                                  color: LiveColors.accent,
-                                  size: Dimensions.iconSize24 / 1.1,
-                                ),
-                            ],
-                          ),
-                          SizedBox(height: Dimensions.height10),
-
-                          // Horizontal Included Features
-                          Container(
-                            height: Dimensions.height30,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: (washType['included'] as List)
-                                  .map<Widget>((feature) {
-                                return Container(
-                                  margin: EdgeInsets.only(
-                                      right: Dimensions.width10),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: Dimensions.width10,
-                                    vertical: Dimensions.height10 / 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Color(feature['color'])
-                                        .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(
-                                        Dimensions.radius15 / 0.9),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Image.asset(
-                                        feature['image'],
-                                        width: Dimensions.iconSize16,
-                                        height: Dimensions.iconSize16,
-                                      ),
-                                      SizedBox(width: Dimensions.width10 / 2),
-                                      Text(
-                                        feature['text'],
-                                        style: TextStyle(
-                                          fontSize: Dimensions.font16 / 1.1,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-
-                          // Description
-                          SizedBox(height: Dimensions.height10),
-                          Expanded(
-                            child: Text(
-                              washType['description'],
-                              style: TextStyle(
-                                fontSize: Dimensions.font16 / 1.1,
-                                color: Colors.grey.shade600,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
                           ),
                         ],
                       ),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            left: Dimensions.width15,
+                            top: Dimensions.height30,
+                            right: Dimensions.width15,
+                            bottom: Dimensions.height15),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Middle Section - Features list
+                            Container(
+                              height: Dimensions.screenWidth / 6,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: (washType['included'] as List)
+                                    .map<Widget>((feature) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      _showFeatureTooltip(
+                                          context, feature['text']);
+                                    },
+                                    child: Container(
+                                      width: Dimensions.screenWidth / 6,
+                                      margin: EdgeInsets.only(
+                                          right: Dimensions.width10),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: Colors.grey.shade300,
+                                          width: 1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                            Dimensions.radius15 / 2),
+                                      ),
+                                      child: Center(
+                                        child: Image.asset(
+                                          feature['image'],
+                                          width: Dimensions.iconSize24 * 2,
+                                          height: Dimensions.iconSize24 * 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+
+                            SizedBox(height: Dimensions.height10),
+
+                            // Bottom Section - Description text
+                            GestureDetector(
+                              onTap: () {
+                                _showDescriptionTooltip(
+                                    context, washType['description']);
+                              },
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: SmallText(
+                                      text: washType['description'],
+                                      color: Colors.black87,
+                                      size: Dimensions.font16 / 1.4,
+                                      fontWeight: FontWeight.w500,
+                                      maxLines: 1,
+                                      softWrap: false,
+                                      overFlow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+
+                    // Name Container - Positioned at top border
+// Name Container - Positioned at top border
+                    Positioned(
+                      top: 4,
+                      left: Dimensions.width20 * 2,
+                      right: Dimensions.width20 * 2,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isTapped = false;
+                            _showTooltip = false;
+                          });
+                          controller.selectWashType(index);
+                        },
+                        onTapDown: (_) {
+                          setState(() {
+                            _isTapped = true;
+                          });
+                        },
+                        onTapCancel: () {
+                          setState(() {
+                            _isTapped = false;
+                          });
+                        },
+                        onTapUp: (_) {
+                          setState(() {
+                            _isTapped = false;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: Duration(milliseconds: 200),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Dimensions.width20,
+                            vertical: Dimensions.height10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.black : Colors.white,
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radius20 * 3),
+                            border: Border.all(
+                              color: isSelected
+                                  ? LiveColors.accent
+                                  : Colors.grey.shade300,
+                              width: isSelected ? 0 : 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 3,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: HeadingStyleText(
+                            text: washTypeName,
+                            size: Dimensions.font20 / 1.4,
+                            family: 'Poppins',
+                            weight: FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors
+                                    .black, // Text color changes with container
+                            align: TextAlign.center,
+                            maxLines: 2,
+                            overFlow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -1546,6 +1560,110 @@ class _CarWashViewState extends State<CarWashView> {
         ],
       ),
     );
+  }
+
+// Keep the same tooltip methods with consistent styling
+  void _showFeatureTooltip(BuildContext context, String featureText) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: Dimensions.screenHeight * 0.3,
+        left: Dimensions.screenWidth * 0.1,
+        right: Dimensions.screenWidth * 0.1,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: Dimensions.width20,
+                vertical: Dimensions.height10,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(Dimensions.radius20 * 3),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SmallText(
+                text: featureText,
+                color: Colors.black87,
+                size: Dimensions.font16 / 1.4,
+                fontWeight: FontWeight.w500,
+                maxLines: 1,
+                softWrap: false,
+                overFlow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Auto-remove after 3 seconds with fade
+    Future.delayed(Duration(seconds: 3), () {
+      overlayEntry.remove();
+    });
+  }
+
+  void _showDescriptionTooltip(BuildContext context, String description) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: Dimensions.screenHeight * 0.25,
+        left: Dimensions.screenWidth * 0.1,
+        right: Dimensions.screenWidth * 0.1,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: Dimensions.width20,
+                vertical: Dimensions.height10,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(Dimensions.radius20 * 3),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SmallText(
+                text: description,
+                color: Colors.black87,
+                size: Dimensions.font16 / 1.4,
+                fontWeight: FontWeight.w500,
+                maxLines: 2,
+                softWrap: false,
+                overFlow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Auto-remove after 3 seconds with fade
+    Future.delayed(Duration(seconds: 3), () {
+      overlayEntry.remove();
+    });
+  }
+
+// Helper method to remove "Wash" from the string
+  String _removeWashFromString(String washType) {
+    return washType.replaceAll(' Wash', '').replaceAll('wash', '').trim();
   }
 
   Widget _buildCartSummary(CarWashController controller) {
@@ -1601,25 +1719,15 @@ class _CarWashViewState extends State<CarWashView> {
   Widget _buildAddToCartSection(
       CarWashController controller, bool hasSelection) {
     return Container(
-      margin: EdgeInsets.only(bottom: Dimensions.bottomHeightBar / 1.3),
+      margin: EdgeInsets.only(bottom: Dimensions.bottomHeightBar / 15),
       padding: EdgeInsets.symmetric(
         horizontal: Dimensions.width20,
-        vertical: Dimensions.height15,
       ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Dimensions.radius20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(),
       child: CarWashAddToCart(
+        itemCount: '${controller.totalCarWashItems}',
         onAddToCart: () => _addToCartWithLoader(controller),
-        onClearSelection: () => _showClearAllConfirmationDialog(controller),
+        onClearSelection: () => _showCartDetailsDialog(controller),
         hasSelection: hasSelection && controller.totalCarWashItems > 0,
         isActive: hasSelection,
         isLoading: _isAddingToCart,

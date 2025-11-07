@@ -4,6 +4,7 @@ import 'package:izinto/live/auxiliery_classes/live_progress_indicator.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_add_to_cart.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_bottom_sheet.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/specialty_bottom_checkout_nav.dart';
+import 'package:izinto/live/widgets/buttons/blue_text_button.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
@@ -819,7 +820,7 @@ class _CarWashViewState extends State<CarWashView> {
                 ],
               ),
               Icon(
-                MdiIcons.clockEditOutline,
+                MdiIcons.magnify,
                 color: Colors.black12.withOpacity(0.8),
                 size: 26,
               ),

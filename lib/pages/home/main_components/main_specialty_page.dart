@@ -343,8 +343,7 @@ class _MainSpecialtyPageState extends State<MainSpecialtyPage>
     await Get.find<PopularSpecialtyController>().getPopularSpecialtyList();
     await Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList();
     await Get.find<CarSpecialtyController>().getCarSpecialtyList();
-    await Get.find<LaundrySupportQuestionsController>()
-        .getLaundrySupportQuestionsList();
+
     await Get.find<CarWashSupportQuestionsController>()
         .getCarWashSupportQuestionsList();
     await Get.find<SubscriptionPlansController>().getSubscriptionPlansList();

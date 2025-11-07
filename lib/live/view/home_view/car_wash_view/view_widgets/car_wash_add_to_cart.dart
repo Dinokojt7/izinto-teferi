@@ -24,7 +24,7 @@ class CarWashAddToCart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: Dimensions.height45 * 1.2,
+      height: Dimensions.height45 * 1.05,
       child: Row(
         children: [
           GestureDetector(
@@ -34,14 +34,8 @@ class CarWashAddToCart extends StatelessWidget {
               margin: EdgeInsets.all(2),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(Dimensions.radius15),
-                color: isActive && !isLoading ? Colors.black : Colors.black,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                color: LiveColors.accent,
+                border: Border.all(color: Colors.grey.shade400, width: 2),
               ),
               child: Center(
                 child: isLoading
@@ -59,7 +53,7 @@ class CarWashAddToCart extends StatelessWidget {
                         size: Dimensions.font20 / 1.5,
                         family: 'Poppins',
                         weight: FontWeight.w600,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
               ),
             ),
@@ -76,8 +70,8 @@ class CarWashAddToCart extends StatelessWidget {
                   topRight: Radius.circular(Dimensions.radius20 * 3),
                   bottomRight: Radius.circular(Dimensions.radius20 * 3),
                 ),
-                border: Border.all(color: Colors.black12, width: 2),
-                color: Colors.black,
+                border: Border.all(color: Colors.grey.shade400, width: 2),
+                color: LiveColors.accent,
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),

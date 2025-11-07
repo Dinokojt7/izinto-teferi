@@ -69,7 +69,7 @@ class _WrapperState extends State<Wrapper> {
     await Get.find<CarSpecialtyController>().getCarSpecialtyList();
     await Get.find<TabsHeaderController>().getTabsHeaderList();
     await Get.find<LaundrySupportQuestionsController>()
-        .getLaundrySupportQuestionsList();
+        .getLaundrySupportQuestions();
     await Get.find<HomeItemsController>().getHomeItemsList();
     await Get.find<CarWashSupportQuestionsController>()
         .getCarWashSupportQuestionsList();

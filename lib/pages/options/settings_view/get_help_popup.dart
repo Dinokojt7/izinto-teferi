@@ -214,27 +214,7 @@ class _GetHelpPopUpState extends State<GetHelpPopUp> {
                                               CarWashSupportQuestionsController>(
                                             builder: (carWashQuestions) {
                                               return laundry
-                                                  ? ListView.builder(
-                                                      shrinkWrap: true,
-                                                      physics:
-                                                          const NeverScrollableScrollPhysics(),
-                                                      itemCount: questions
-                                                          .laundrySupportQuestionsList
-                                                          .length,
-                                                      itemBuilder:
-                                                          (context, index) {
-                                                        return FAQ(
-                                                          question: questions
-                                                              .laundrySupportQuestionsList[
-                                                                  index]
-                                                              .title!,
-                                                          answer: questions
-                                                              .laundrySupportQuestionsList[
-                                                                  index]
-                                                              .text!,
-                                                        );
-                                                      },
-                                                    )
+                                                  ? Container()
                                                   : ListView.builder(
                                                       shrinkWrap: true,
                                                       physics:

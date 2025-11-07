@@ -17,8 +17,8 @@ class CarWashSupportQuestionsController extends GetxController {
         await carWashSupportQuestionsRepo.getCarWashSupportQuestionsList();
     if (response.statusCode == 200) {
       _carWashSupportQuestionsList = [];
-      _carWashSupportQuestionsList
-          .addAll(Questions.fromJson(response.body).specialties);
+      // _carWashSupportQuestionsList
+      //     .addAll(Questions.fromJson(response.body).specialties);
 
       _isLoaded = true;
       update();

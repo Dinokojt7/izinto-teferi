@@ -1,29 +1,55 @@
+// laundry_support_questions_controller.dart
 import 'package:get/get.dart';
+
 import '../helpers/data/repository/laundry_support_repo.dart';
 import '../models/support_questions_model.dart';
 
 class LaundrySupportQuestionsController extends GetxController {
   final LaundrySupportQuestionsRepo laundrySupportQuestionsRepo;
+
   LaundrySupportQuestionsController(
       {required this.laundrySupportQuestionsRepo});
-  List<dynamic> _laundrySupportQuestionsList = [];
-  List<dynamic> get laundrySupportQuestionsList => _laundrySupportQuestionsList;
+
+  List<ServiceCategory> _laundrySupportCategories = [];
+  List<ServiceCategory> get laundrySupportCategories =>
+      _laundrySupportCategories;
 
   bool _isLoaded = false;
   bool get isLoaded => _isLoaded;
 
-  Future<void> getLaundrySupportQuestionsList() async {
-    Response response =
-        await laundrySupportQuestionsRepo.getLaundrySupportQuestionsList();
-    if (response.statusCode == 200) {
-      _laundrySupportQuestionsList = [];
-      _laundrySupportQuestionsList
-          .addAll(Questions.fromJson(response.body).specialties);
+  String _errorMessage = '';
+  String get errorMessage => _errorMessage;
 
-      _isLoaded = true;
+  Future<void> getLaundrySupportQuestions() async {
+    try {
+      _isLoaded = false;
+      _errorMessage = '';
       update();
-    } else {
-      print('missing support questions ${response.statusCode}');
+
+      Response response =
+          await laundrySupportQuestionsRepo.getLaundrySupportQuestionsList();
+
+      if (response.statusCode == 200) {
+        final data = response.body;
+        final questions = Questions.fromJson(data);
+        _laundrySupportCategories = questions.categories;
+        _isLoaded = true;
+      } else {
+        _errorMessage = 'Failed to load questions: ${response.statusText}';
+        _isLoaded = true;
+      }
+    } catch (error) {
+      print('Error fetching laundry questions: $error');
+      _errorMessage = 'An error occurred while loading questions';
+      _isLoaded = true;
+    } finally {
+      update();
     }
+  }
+
+  @override
+  void onInit() {
+    getLaundrySupportQuestions();
+    super.onInit();
   }
 }

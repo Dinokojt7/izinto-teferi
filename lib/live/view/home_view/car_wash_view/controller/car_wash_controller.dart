@@ -262,14 +262,14 @@ class CarWashController extends GetxController {
       id: 402,
       name: 'Medium SUV',
       introduction: 'SUV, Crossover, Family Vehicle',
-      img: 'assets/image/medium-suv.png',
+      img: 'assets/image/medium-car.png',
       price: [170],
     ),
     NewSpecialtyModel(
       id: 403,
       name: 'Large Vehicle',
       introduction: 'Truck, Van, Luxury Vehicle',
-      img: 'assets/image/large-vehicle.png',
+      img: 'assets/image/large-car.png',
       price: [190],
     ),
   ];

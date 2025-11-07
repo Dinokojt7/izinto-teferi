@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/live/view/frequently_asked_questions/frequently_asked_questions.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_heading.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_section.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../utils/dimensions.dart';
+import '../../../utilities/generic_system_navigation.dart';
 import '../../home_view/controller/home_view_controller.dart';
 import '../opening_hours.dart';
 
-class CustomerServiceTiles extends StatelessWidget {
+class CustomerServiceTiles extends StatefulWidget {
   const CustomerServiceTiles({Key? key}) : super(key: key);
 
+  @override
+  State<CustomerServiceTiles> createState() => _CustomerServiceTilesState();
+}
+
+class _CustomerServiceTilesState extends State<CustomerServiceTiles> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -40,8 +49,20 @@ class CustomerServiceTiles extends StatelessWidget {
               settingsSection(
                 subHeading: 'FAQ',
                 onTap: () {
-                  Provider.of<HomeViewController>(context, listen: false)
-                      .navigateToNestedWidget(context, OpeningHours());
+                  Get.to(
+                    () => FrequentlyAskedQuestions(),
+                    transition: Transition.native,
+                    duration: Duration(milliseconds: 500),
+                  );
+                  Future.delayed(const Duration(milliseconds: 510), () async {
+                    setState(() {
+                      SystemNavigation().applyCustomSystemChromeSettings(
+                          Colors.white,
+                          Brightness.dark,
+                          Colors.white,
+                          Brightness.dark);
+                    });
+                  });
                 },
               ),
               SizedBox(

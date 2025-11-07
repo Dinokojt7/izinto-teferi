@@ -1,15 +1,41 @@
+// questions_model.dart
 class Questions {
-  late List<QuestionsModel> _specialties;
-  List<QuestionsModel> get specialties => _specialties;
-  Questions({required specialties}) {
-    this._specialties = specialties;
+  late List<ServiceCategory> _categories;
+  List<ServiceCategory> get categories => _categories;
+
+  Questions({required categories}) {
+    this._categories = categories;
   }
+
   Questions.fromJson(Map<String, dynamic> json) {
     if (json['Specialties'] != null) {
-      _specialties = <QuestionsModel>[];
+      _categories = <ServiceCategory>[];
       json['Specialties'].forEach((v) {
-        _specialties.add(QuestionsModel.fromJson(v));
+        _categories.add(ServiceCategory.fromJson(v));
       });
+    }
+  }
+}
+
+class ServiceCategory {
+  String? categoryName;
+  List<QuestionsModel>? questions;
+
+  ServiceCategory({
+    this.categoryName,
+    this.questions,
+  });
+
+  ServiceCategory.fromJson(Map<String, dynamic> json) {
+    // Get the first key as category name and its value as questions list
+    if (json.isNotEmpty) {
+      categoryName = json.keys.first;
+      if (json[categoryName!] != null) {
+        questions = <QuestionsModel>[];
+        json[categoryName!].forEach((v) {
+          questions!.add(QuestionsModel.fromJson(v));
+        });
+      }
     }
   }
 }

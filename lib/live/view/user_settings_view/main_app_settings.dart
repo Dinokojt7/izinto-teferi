@@ -56,6 +56,13 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Your addresses',
                   onTap: () {
+                    setState(() {
+                      SystemNavigation().applyCustomSystemChromeSettings(
+                          Colors.white,
+                          Brightness.dark,
+                          Colors.white,
+                          Brightness.dark);
+                    });
                     Get.to(
                       () => SavedAddresses(),
                       transition: Transition.rightToLeftWithFade,
@@ -69,20 +76,18 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Edit profile',
                   onTap: () {
+                    setState(() {
+                      SystemNavigation().applyCustomSystemChromeSettings(
+                          Colors.white,
+                          Brightness.dark,
+                          Colors.white,
+                          Brightness.dark);
+                    });
                     Get.to(
                       () => ProfileView(),
                       transition: Transition.native,
                       duration: Duration(milliseconds: 500),
                     );
-                    Future.delayed(const Duration(milliseconds: 510), () async {
-                      setState(() {
-                        SystemNavigation().applyCustomSystemChromeSettings(
-                            Colors.white,
-                            Brightness.dark,
-                            Colors.white,
-                            Brightness.dark);
-                      });
-                    });
                   },
                 ),
               ],
@@ -155,6 +160,13 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Privacy policy',
                   onTap: () {
+                    setState(() {
+                      SystemNavigation().applyCustomSystemChromeSettings(
+                          Colors.white,
+                          Brightness.dark,
+                          Colors.white,
+                          Brightness.dark);
+                    });
                     Get.to(
                       () => LegalDocumentScreen(
                         documentType: 'privacy-policy',
@@ -167,15 +179,6 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                       transition: Transition.native,
                       duration: Duration(milliseconds: 500),
                     );
-                    Future.delayed(const Duration(milliseconds: 510), () async {
-                      setState(() {
-                        SystemNavigation().applyCustomSystemChromeSettings(
-                            Colors.white,
-                            Brightness.dark,
-                            Colors.white,
-                            Brightness.dark);
-                      });
-                    });
                   },
                 ),
                 SizedBox(
@@ -184,27 +187,25 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Terms & conditions',
                   onTap: () {
+                    setState(() {
+                      SystemNavigation().applyCustomSystemChromeSettings(
+                          Colors.white,
+                          Brightness.dark,
+                          Colors.white,
+                          Brightness.dark);
+                    });
                     Get.to(
                       () => LegalDocumentScreen(
-                        documentType: 'terms-of-use',
-                        screenTitle: 'Terms & Conditions',
                         description:
                             'Please read these terms carefully before using our services',
+                        documentType: 'terms-of-use',
+                        screenTitle: 'Terms & Conditions',
                         primaryColor: LiveColors.cartBlue,
                         lastUpdated: 'December 2024',
                       ),
                       transition: Transition.native,
                       duration: Duration(milliseconds: 500),
                     );
-                    Future.delayed(const Duration(milliseconds: 510), () async {
-                      setState(() {
-                        SystemNavigation().applyCustomSystemChromeSettings(
-                            Colors.white,
-                            Brightness.dark,
-                            Colors.white,
-                            Brightness.dark);
-                      });
-                    });
                   },
                 ),
                 SizedBox(
@@ -213,6 +214,14 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Imprint',
                   onTap: () {
+                    setState(() {
+                      SystemNavigation().applyCustomSystemChromeSettings(
+                          Colors.white,
+                          Brightness.dark,
+                          Colors.white,
+                          Brightness.dark);
+                    });
+
                     Get.to(
                       () => LegalDocumentScreen(
                         documentType: 'imprint',
@@ -224,15 +233,6 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                       transition: Transition.native,
                       duration: Duration(milliseconds: 500),
                     );
-                    Future.delayed(const Duration(milliseconds: 510), () async {
-                      setState(() {
-                        SystemNavigation().applyCustomSystemChromeSettings(
-                            Colors.white,
-                            Brightness.dark,
-                            Colors.white,
-                            Brightness.dark);
-                      });
-                    });
                   },
                 ),
               ],

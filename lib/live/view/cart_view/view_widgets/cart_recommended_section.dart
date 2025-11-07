@@ -20,6 +20,7 @@ import '../../../widgets/text_widgets/heading_style_text.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 import '../../home_view/category_view/view_widgets/add_to_basket.dart';
 import '../../home_view/controller/home_view_controller.dart';
+import '../../home_view/view_specialty_info/view_specialty_info.dart';
 import '../all_recommendations_page.dart';
 
 class CartRecommendedSection extends StatefulWidget {
@@ -29,7 +30,6 @@ class CartRecommendedSection extends StatefulWidget {
   State<CartRecommendedSection> createState() => _CartRecommendedSectionState();
 }
 
-// In CartRecommendedSection, fix the _refreshRecommendations method and remove undefined specialtyController
 class _CartRecommendedSectionState extends State<CartRecommendedSection> {
   final RecommendationController _recommendationController = Get.find();
 
@@ -158,7 +158,6 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
     );
   }
 
-  // Fixed: Remove specialtyController parameter
   Widget buildSpecialtyWidget(
       String image,
       String price,
@@ -168,6 +167,8 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
       List itemsList,
       BuildContext context,
       NewSpecialtyModel specialty) {
+    final item = itemsList[index];
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,14 +226,34 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
               children: [
                 Positioned(
                   top: 10.0,
-                  child: SmallBlackText(
-                    text: 'More info',
-                    decoration: TextDecoration.underline,
-                    size: Dimensions.font20 / 1.8,
-                    font: 'Poppins',
-                    fontWeight: FontWeight.w600,
-                    overFlow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        SystemNavigation().applyCustomSystemChromeSettings(
+                            Colors.white,
+                            Brightness.dark,
+                            Colors.white,
+                            Brightness.dark);
+                      });
+                      Get.to(
+                        () => ViewSpecialtyInfo(
+                          item:
+                              specialty, // ← FIX: Pass the specialty object, not the item map
+                          shouldReturnToBlack: true,
+                        ),
+                        transition: Transition.native,
+                        duration: Duration(milliseconds: 500),
+                      );
+                    },
+                    child: SmallBlackText(
+                      text: 'More info',
+                      decoration: TextDecoration.underline,
+                      size: Dimensions.font20 / 1.8,
+                      font: 'Poppins',
+                      fontWeight: FontWeight.w600,
+                      overFlow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ),
                 Positioned(

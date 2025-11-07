@@ -28,31 +28,309 @@ class ProfileViewController extends ChangeNotifier {
   bool _isUserInfoIncomplete = false;
 
   bool get isUserinfoIncomplete => _isUserInfoIncomplete;
+// In ProfileViewController, add these methods:
 
-  Future<void> saveNewAddress(Map<String, dynamic> newAddress) async {
-    _savedAddresses.add(newAddress);
-    notifyListeners();
+// Update an existing address
+  Future<void> updateAddress(
+      int index, Map<String, dynamic> updatedAddress) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
 
-    // 👇 Replace this with however you get the current user ID (can be null)
-    final String? userId = _auth.currentUser?.uid;
-
-    if (userId != null && userId.isNotEmpty) {
-      try {
-        await FirebaseFirestore.instance
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Get the current addresses
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
-            .doc(userId)
-            .collection('addresses')
-            .add({
+            .doc(user.uid)
+            .get();
+
+        List<dynamic> addresses = userDoc['addresses'] ?? [];
+
+        // Update the specific address
+        if (index < addresses.length) {
+          addresses[index] = updatedAddress;
+
+          // Update in Firestore
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({
+            'addresses': addresses,
+          });
+
+          // Update local state
+          _savedAddresses = List<Map<String, dynamic>>.from(addresses);
+
+          // Show success message
+          // You can use your snackbar utility here
+        }
+      }
+    } catch (e) {
+      print('Error updating address: $e');
+      // Show error message
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // In ProfileViewController, update updateSelectedAddress method:
+  void updateSelectedAddress(String street) {
+    print('🔄 updateSelectedAddress called for: $street');
+    print(
+        '📊 Before update - selected addresses: ${_savedAddresses.where((addr) => addr['selected'] == true).length}');
+
+    // Iterate over all addresses
+    for (var address in _savedAddresses) {
+      bool wasSelected = address['selected'] == true;
+      address['selected'] = address['street'] == street;
+      bool isNowSelected = address['selected'] == true;
+
+      if (wasSelected != isNowSelected) {
+        print(
+            '📍 ${address['street']} selection changed: $wasSelected -> $isNowSelected');
+      }
+    }
+
+    notifyListeners();
+    print('✅ notifyListeners called');
+    print(
+        '📊 After update - selected addresses: ${_savedAddresses.where((addr) => addr['selected'] == true).length}');
+  }
+
+// Also update updateSelectedAddressInFirebase to call notifyListeners:
+  Future<void> updateSelectedAddressInFirebase(String street) async {
+    User? user = _firebaseAuth.currentUser;
+    if (user != null) {
+      // First update local state
+      updateSelectedAddress(street);
+
+      // Then update Firebase
+      CollectionReference addressesRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('addresses');
+
+      QuerySnapshot querySnapshot = await addressesRef.get();
+
+      for (var doc in querySnapshot.docs) {
+        var addressData = doc.data() as Map<String, dynamic>;
+
+        if (addressData['selected'] == true) {
+          await addressesRef.doc(doc.id).update({'selected': false});
+        }
+
+        if (addressData['street'] == street) {
+          await addressesRef.doc(doc.id).update({'selected': true});
+        }
+      }
+
+      print('✅ Firebase updated for: $street');
+    } else {
+      print("❌ User is not authenticated.");
+    }
+  }
+
+// Add a new address - UPDATED VERSION
+  Future<void> addNewAddress(Map<String, dynamic> newAddress) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Get current addresses
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        List<dynamic> addresses = userDoc['addresses'] ?? [];
+
+        // Set all existing addresses to selected: false
+        addresses = addresses.map((address) {
+          return {
+            ...address,
+            'selected': false,
+          };
+        }).toList();
+
+        // Add the new address with selected: true (or false if you prefer)
+        // If you want the new address to be automatically selected:
+        addresses.add({
           ...newAddress,
-          'timestamp': DateTime.now().toIso8601String(),
+          'selected': true, // Set new address as selected
         });
 
-        debugPrint("✅ Address saved to Firebase for user: $userId");
-      } catch (e) {
-        debugPrint("🔥 Failed to save address to Firebase: $e");
+        // Alternative: If you DON'T want new address to be automatically selected:
+        // addresses.add({
+        //   ...newAddress,
+        //   'selected': false, // Keep existing selection
+        // });
+
+        // Update in Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
+          'addresses': addresses,
+        });
+
+        // Update local state
+        _savedAddresses = List<Map<String, dynamic>>.from(addresses);
       }
-    } else {
-      debugPrint("⚠️ No user logged in. Skipping Firebase save.");
+    } catch (e) {
+      print('Error adding address: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+// Delete an address
+  Future<void> deleteAddress(int index) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        List<dynamic> addresses = userDoc['addresses'] ?? [];
+
+        if (index < addresses.length) {
+          addresses.removeAt(index);
+
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({
+            'addresses': addresses,
+          });
+
+          _savedAddresses = List<Map<String, dynamic>>.from(addresses);
+        }
+      }
+    } catch (e) {
+      print('Error deleting address: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveNewAddress(Map<String, dynamic> newAddress) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Set all existing addresses to selected: false
+      _savedAddresses = _savedAddresses.map((address) {
+        return {
+          ...address,
+          'selected': false,
+        };
+      }).toList();
+
+      // Add new address as selected
+      _savedAddresses.add({
+        ...newAddress,
+        'selected': true,
+      });
+
+      notifyListeners();
+
+      final String? userId = _auth.currentUser?.uid;
+
+      if (userId != null && userId.isNotEmpty) {
+        try {
+          // First, update all existing addresses in Firebase to selected: false
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .get();
+
+          if (userDoc.exists) {
+            List<dynamic> firebaseAddresses = userDoc['addresses'] ?? [];
+
+            // Update all existing addresses to selected: false
+            firebaseAddresses = firebaseAddresses.map((address) {
+              return {
+                ...address,
+                'selected': false,
+              };
+            }).toList();
+
+            // Add the new address
+            firebaseAddresses.add({
+              ...newAddress,
+              'selected': true,
+              'timestamp': DateTime.now().toIso8601String(),
+            });
+
+            // Save the updated list
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .update({
+              'addresses': firebaseAddresses,
+            });
+          }
+
+          debugPrint("✅ Address saved to Firebase for user: $userId");
+        } catch (e) {
+          debugPrint("🔥 Failed to save address to Firebase: $e");
+        }
+      } else {
+        debugPrint("⚠️ No user logged in. Skipping Firebase save.");
+      }
+    } catch (e) {
+      debugPrint("Error in saveNewAddress: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Helper method to ensure only one address is selected
+  void _ensureSingleSelection(String selectedStreet) {
+    for (var address in _savedAddresses) {
+      address['selected'] = address['street'] == selectedStreet;
+    }
+    notifyListeners();
+  }
+
+// In ProfileViewController - add this method
+  Future<void> updateAllAddresses(List<dynamic> updatedAddresses) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Update local state immediately
+      _savedAddresses = List<Map<String, dynamic>>.from(updatedAddresses);
+
+      // Update Firebase
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
+          'addresses': updatedAddresses,
+        });
+      }
+
+      print('✅ Addresses updated locally and in Firebase');
+    } catch (e) {
+      print('❌ Error updating addresses: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -308,30 +586,21 @@ class ProfileViewController extends ChangeNotifier {
 
     if (user != null) {
       try {
-        // Add timeout to prevent hanging
         final querySnapshot = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .collection('addresses')
             .get()
-            .timeout(const Duration(seconds: 10), onTimeout: () {
-          throw TimeoutException('Address fetch timed out after 10 seconds');
-        });
+            .timeout(const Duration(seconds: 10));
 
         _savedAddresses = querySnapshot.docs.map((doc) {
           return doc.data();
         }).toList();
-      } on TimeoutException catch (e) {
-        print('Timeout getting addresses: $e');
-        // Handle timeout - maybe show error to user or use cached data
-        _savedAddresses = []; // Reset or keep previous addresses?
-      } on FirebaseException catch (e) {
-        print('Firebase error getting addresses: $e');
-        // Handle Firebase specific errors
-        _savedAddresses = [];
+
+        // Ensure only one address is selected (fix any data inconsistencies)
+        _ensureSingleSelectionLogic();
       } catch (e) {
-        print('Unexpected error getting addresses: $e');
-        // Handle any other errors
+        print('Error getting addresses: $e');
         _savedAddresses = [];
       } finally {
         _isLoading = false;
@@ -343,53 +612,27 @@ class ProfileViewController extends ChangeNotifier {
     }
   }
 
-  // Function to update selected address based on index
-  void updateSelectedAddress(String street) {
-    // Iterate over all addresses
-    for (var address in _savedAddresses) {
-      // Set selected to false for the currently selected address
-      if (address['selected'] == true) {
-        address['selected'] = false;
-      }
-      // Set selected to true for the corresponding selection in the ui
-      if (address['street'] == street) {
-        address['selected'] = true;
-      }
-    }
+// Helper to fix multiple selected addresses
+  void _ensureSingleSelectionLogic() {
+    int selectedCount =
+        _savedAddresses.where((addr) => addr['selected'] == true).length;
 
-    notifyListeners();
-  }
-
-  Future<void> updateSelectedAddressInFirebase(String street) async {
-    User? user = _firebaseAuth.currentUser;
-    if (user != null) {
-      // Reference the user's addresses collection
-      CollectionReference addressesRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('addresses');
-
-      // Fetch all address documents
-      QuerySnapshot querySnapshot = await addressesRef.get();
-
-      // Iterate through the documents to find and update the selected field
-      for (var doc in querySnapshot.docs) {
-        var addressData = doc;
-
-        if (addressData['selected'] == true) {
-          // Set previously selected address's 'selected' field to false
-          await addressesRef.doc(doc.id).update({'selected': false});
-        }
-
-        if (addressData['street'] == street) {
-          // Set the new selected address's 'selected' field to true
-          await addressesRef.doc(doc.id).update({'selected': true});
+    if (selectedCount > 1) {
+      // If multiple are selected, keep only the first one selected
+      bool foundFirst = false;
+      for (var address in _savedAddresses) {
+        if (address['selected'] == true) {
+          if (!foundFirst) {
+            foundFirst = true;
+            // Keep this one selected
+          } else {
+            address['selected'] = false; // Unselect the rest
+          }
         }
       }
-
-      notifyListeners(); // Notify listeners to reflect changes in the UI
-    } else {
-      print("User is not authenticated.");
+    } else if (selectedCount == 0 && _savedAddresses.isNotEmpty) {
+      // If none are selected, select the first one
+      _savedAddresses.first['selected'] = true;
     }
   }
 

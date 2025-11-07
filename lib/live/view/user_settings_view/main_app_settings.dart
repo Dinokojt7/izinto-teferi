@@ -65,7 +65,7 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                     });
                     Get.to(
                       () => SavedAddresses(),
-                      transition: Transition.rightToLeftWithFade,
+                      transition: Transition.native,
                       duration: Duration(milliseconds: 500),
                     );
                   },

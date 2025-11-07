@@ -3,11 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/live/utilities/generic_snackbar.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../services/map_function.dart';
 import '../../../models/rudimentary_address_model.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../home_view/home_view.dart';
+import '../../profile_view/controller/profile_view_controller.dart';
 import '../save_address.dart';
 
 class MainAddressViewController extends ChangeNotifier {
@@ -15,7 +18,8 @@ class MainAddressViewController extends ChangeNotifier {
   bool get isDropdownOpen => _isDropdownOpen;
 
   //Add current user position
-  late LatLng _initialPosition;
+  LatLng _initialPosition =
+      LatLng(-26.056, 28.060); // Default Johannesburg coordinates
   LatLng get initialPosition => _initialPosition;
 
   //Initiate address search loader
@@ -207,13 +211,32 @@ class MainAddressViewController extends ChangeNotifier {
 
   Future<void> requestLocationPermission() async {
     await setInitialLoader();
-    await Geolocator.requestPermission();
 
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.best,
-    );
-    LatLng latLng = LatLng(position.latitude, position.longitude);
-    _initialPosition = latLng;
+    try {
+      LocationPermission permission = await Geolocator.requestPermission();
+
+      if (permission == LocationPermission.denied) {
+        // Handle denied permission gracefully
+        print('Location permission denied');
+        return;
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        // Handle permanently denied permission
+        print('Location permission permanently denied');
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+      LatLng latLng = LatLng(position.latitude, position.longitude);
+      _initialPosition = latLng;
+      notifyListeners();
+    } catch (e) {
+      print('Error getting location: $e');
+      // Keep the default position if location fails
+    }
   }
 
   Future<void> onAddressAutocomplete(String placesDetails, lat, lng) async {
@@ -260,26 +283,55 @@ class MainAddressViewController extends ChangeNotifier {
   Map<String, dynamic> _newAddress = {};
   Map<String, dynamic> get newAddress => _newAddress;
 
-  Future<void> saveSelectedAddress() async {
-    if (_autocompletePlace != '') {
-      await setSaveButtonLoader();
-      _newAddress = {
-        'street': _street,
-        'zip': _zipCode,
-        'suburb': _suburb,
-        'Town': _town,
-        'Country': _country,
-        'label': _label,
-        'selected': true,
-        'additional info': _additionalInfo,
-      };
+  bool _isGuestAccess = true;
 
-      print('Pre-saved address: $_newAddress');
+  bool setGuestAccessAddressSave() {
+    _isGuestAccess = false;
+    notifyListeners();
+    return true;
+  }
 
-      notifyListeners();
-    } else {
-      print('address not available');
-    }
+  Future<void> saveSelectedAddress(BuildContext context) async {
+    final profileController =
+        Provider.of<ProfileViewController>(context, listen: false);
+    final addressController =
+        Provider.of<MainAddressViewController>(context, listen: false);
+
+    // Create new address from the form data
+    final newAddress = {
+      'street': addressController.street,
+      'zip': addressController.zipCode,
+      'suburb': addressController.suburb,
+      'Town': addressController.town,
+      'Country': addressController.country,
+      'label':
+          addressController.label.isNotEmpty ? addressController.label : 'Home',
+      'selected': true, // This will be the only selected address
+      'additional info': addressController.additionalInfo,
+    };
+
+    // Save the new address using the updated method
+    profileController.addNewAddress(newAddress).then((_) {
+      if (_isGuestAccess) {
+        // For guest access - navigate to HomeView without snackbar
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => HomeView()),
+          (route) => false,
+        );
+      } else {
+        // For regular users - show snackbar and pop
+        GenericSnackBar().showCustomSnackBar(
+            null, context, 'Address added successfully', false);
+        Navigator.of(context).pop();
+      }
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
   }
 
   @override
@@ -295,73 +347,4 @@ class MainAddressViewController extends ChangeNotifier {
 
     super.dispose();
   }
-
-// {
-// 'street': 'b. d. Hauptfeuerwache 1',
-// 'zip': '20099',
-// 'suburb': 'Hamburg',
-// 'Town': 'Johannesburg',
-// 'Country': 'South Africa',
-// 'label': 'Office',
-// 'selected': false,
-// 'additional info': null
-// },
-
-// _getAddressFromElement() async {
-//   User? user = await _firebaseAuth.currentUser;
-//   FirebaseFirestore.instance
-//       .collection('users')
-//       .doc(user?.uid)
-//       .collection("Addresses")
-//       .doc('selected address')
-//       .set({
-//     'street': _searchResults[0],
-//     'address': _searchResults[1],
-//     'area': _searchResults[2],
-//     'province': _searchResults[1],
-//     'country': _searchResults[4],
-//     'postal Code': _searchResults[3],
-//     'createdAt': Timestamp.now(),
-//   });
-// }
-
-// @override
-// void dispose() {
-//   searchController.dispose();
-//   _searchController.dispose();
-//   super.dispose();
-// }
 }
-
-// void _showAddNewLabelDialog() {
-//   showDialog(
-//     context: context,
-//     builder: (BuildContext context) {
-//       String? customLabel;
-//       return AlertDialog(
-//         title: Text('Add New Label'),
-//         content: TextField(
-//           onChanged: (value) {
-//             customLabel = value;
-//           },
-//           decoration: InputDecoration(
-//             hintText: 'Enter label',
-//           ),
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () {
-//               if (customLabel != null && customLabel!.isNotEmpty) {
-//                 // setState(() {
-//                 //   selectedOption = customLabel;
-//                 // });
-//               }
-//               Navigator.of(context).pop();
-//             },
-//             child: Text('ADD'),
-//           ),
-//         ],
-//       );
-//     },
-//   );
-// }

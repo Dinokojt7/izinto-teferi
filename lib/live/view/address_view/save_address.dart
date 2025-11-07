@@ -203,8 +203,10 @@ class _SaveAddressState extends State<SaveAddress> {
                             description: 'Save address',
                             isAuthScreen: false,
                             onTap: () async {
-                              // Apply system chrome settings immediately
-                              await _addressController.saveSelectedAddress();
+                              await _addressController
+                                  .setGuestAccessAddressSave();
+                              await _addressController
+                                  .saveSelectedAddress(context);
                               await _profileController.saveNewAddress(
                                   _addressController.newAddress);
 

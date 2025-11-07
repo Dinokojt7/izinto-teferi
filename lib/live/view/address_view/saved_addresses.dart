@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -36,8 +38,7 @@ class _SavedAddressesState extends State<SavedAddresses> {
   Widget build(BuildContext context) {
     final addressViewController =
         Provider.of<MainAddressViewController>(context, listen: false);
-    final _controller =
-        Provider.of<ProfileViewController>(context, listen: false);
+    final _controller = Provider.of<ProfileViewController>(context);
     final List items = _controller.savedAddresses;
 
     return PopScope(
@@ -48,89 +49,130 @@ class _SavedAddressesState extends State<SavedAddresses> {
           Navigator.of(context).pop();
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.white.withOpacity(0.97),
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          automaticallyImplyLeading: false,
-          toolbarHeight: 0,
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Stack(
-                children: [
-                  GenericAppBar(
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    heading: 'Your addresses',
-                    onTap: _onTap,
-                  )
-                ],
-              ),
-              Expanded(
-                child: Container(
-                  height: double.maxFinite,
-                  child: Padding(
-                    padding:
-                        EdgeInsets.only(left: 24.0, top: 25.0, right: 24.0),
-                    child: ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount: items.length, // Number of items in the list
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        return Padding(
-                          padding: EdgeInsets.only(
-                              bottom: Dimensions.height20 * 1.4),
-                          child: GestureDetector(
-                            onTap: () {
-                              _controller.updateSelectedAddress(item['street']);
-                              _controller.updateSelectedAddressInFirebase(
-                                  item['street']);
-                            },
-                            child: GenericWhiteContainer(
-                              bottomPadding: Dimensions.height15,
-                              isSelected: item['selected'],
-                              child: SavedAddressWidget(
-                                streetNumber: item['street'],
-                                zipCode: item['zip'],
-                                suburb: item['suburb'],
-                                index: index,
+      child: Builder(builder: (context) {
+        return Scaffold(
+          backgroundColor: Colors.white.withOpacity(0.97),
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            automaticallyImplyLeading: false,
+            toolbarHeight: 0,
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    GenericAppBar(
+                      backgroundColor: Colors.white,
+                      textColor: Colors.black,
+                      heading: 'Your addresses',
+                      onTap: _onTap,
+                    )
+                  ],
+                ),
+                Expanded(
+                  child: Container(
+                    height: double.maxFinite,
+                    child: Padding(
+                      padding:
+                          EdgeInsets.only(left: 24.0, top: 25.0, right: 24.0),
+                      child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: items.length, // Number of items in the list
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          return Padding(
+                            padding: EdgeInsets.only(
+                                bottom: Dimensions.height20 * 1.4),
+                            child: GestureDetector(
+                              onTap: () {
+                                //  _selectAddress(context, index, item);
+
+                                _controller
+                                    .updateSelectedAddress(item['street']);
+                                _controller.updateSelectedAddressInFirebase(
+                                    item['street']);
+                              },
+                              child: GenericWhiteContainer(
+                                bottomPadding: Dimensions.height15,
+                                isSelected: item['selected'],
+                                child: SavedAddressWidget(
+                                  streetNumber: item['street'],
+                                  zipCode: item['zip'],
+                                  suburb: item['suburb'],
+                                  index: index,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
-        ),
-        bottomNavigationBar: Container(
-          height: Dimensions.bottomHeightBar / 1.1,
-          color: Colors.transparent,
-          child: Padding(
-              padding: EdgeInsets.only(
-                  left: 24.0, top: 15.0, right: 24.0, bottom: 15.0),
-              child: SaveButton(
-                isActive: true,
-                description: 'Add new address',
-                isAuthScreen: false,
-                onTap: () {
-                  addressViewController.disposeDialog();
-                  Get.to(
-                      () => AddNewAddress(
-                            shouldReturnDarkStatus: true,
-                          ),
-                      transition: Transition.fade,
-                      duration: Duration(seconds: 1));
-                },
-              )),
-        ),
-      ),
+          bottomNavigationBar: Container(
+            height: Dimensions.bottomHeightBar / 1.1,
+            color: Colors.transparent,
+            child: Padding(
+                padding: EdgeInsets.only(
+                    left: 24.0, top: 15.0, right: 24.0, bottom: 15.0),
+                child: SaveButton(
+                  isActive: true,
+                  description: 'Add new address',
+                  isAuthScreen: false,
+                  onTap: () {
+                    // addressViewController.disposeDialog();
+                    Get.to(
+                        () => AddNewAddress(
+                              shouldReturnDarkStatus: true,
+                            ),
+                        transition: Transition.fade,
+                        duration: Duration(seconds: 1));
+                  },
+                )),
+          ),
+        );
+      }),
     );
+  }
+
+  void _selectAddress(BuildContext context, int index, dynamic item) {
+    final profileController =
+        Provider.of<ProfileViewController>(context, listen: false);
+
+    // Update all addresses to set only this one as selected
+    final List<dynamic> addresses = profileController.savedAddresses;
+    final updatedAddresses = addresses.map((addr) {
+      return {
+        ...addr,
+        'selected': addr['street'] == item['street'],
+      };
+    }).toList();
+
+    // Use the new method that updates both local state and Firebase
+    profileController.updateAllAddresses(updatedAddresses);
+  }
+
+// Remove the _updateAllAddresses method entirely since it's now in the controller
+// Remove the _updateAllAddresses method entirely since it's now in the controller
+  void _updateAllAddresses(BuildContext context, List<dynamic> addresses) {
+    final profileController =
+        Provider.of<ProfileViewController>(context, listen: false);
+
+    // This is a simplified version - you might want to create a proper method in ProfileViewController
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+        'addresses': addresses,
+      }).then((_) {
+        // Update local state
+        // You might need to refresh the addresses list
+        // profileController.refreshAddresses();
+      });
+    }
   }
 }

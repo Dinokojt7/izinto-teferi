@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/view/address_view/controller/address_dropdown_controller.dart';
 import 'package:izinto/live/view/address_view/view_widgets/address_label.dart';
 import 'package:izinto/live/view/address_view/view_widgets/address_label_options.dart';
@@ -16,9 +17,25 @@ import '../../widgets/text_widgets/heading_style_text.dart';
 import '../profile_view/controller/profile_view_controller.dart';
 import '../profile_view/view_widgets/text_input_container.dart';
 
-class EditAddress extends StatelessWidget {
+class EditAddress extends StatefulWidget {
   final int index;
   const EditAddress({Key? key, required this.index}) : super(key: key);
+
+  @override
+  State<EditAddress> createState() => _EditAddressState();
+}
+
+class _EditAddressState extends State<EditAddress> {
+  @override
+  void dispose() {
+    // Close dropdown when leaving the page
+    final dropdownController =
+        Provider.of<MainAddressViewController>(context, listen: false);
+    if (dropdownController.isDropdownOpen) {
+      dropdownController.clearLabel();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +47,16 @@ class EditAddress extends StatelessWidget {
         ///Here's a list of addresses from the controller///
         final List<dynamic> _addresses = _profileController.savedAddresses;
 
-        final selectedAddress = _addresses[index];
+        // FIX: Check if index is still valid after deletion
+        if (widget.index >= _addresses.length) {
+          // If index is invalid, navigate back and return empty container
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.of(context).pop();
+          });
+          return Container();
+        }
+
+        final selectedAddress = _addresses[widget.index];
 
         ///Show fields for a specific address///
         final List<String> area = [
@@ -168,17 +194,24 @@ class EditAddress extends StatelessWidget {
                           isActive: true,
                           description: 'Save address',
                           isAuthScreen: false,
-                          onTap: () {},
+                          onTap: () {
+                            _saveEditedAddress(context, widget.index);
+                          },
                         ),
                         SizedBox(
                           height: Dimensions.height20 * 1.2,
                         ),
-                        HeadingStyleText(
-                          text: 'Delete address',
-                          size: Dimensions.font16,
-                          family: 'Poppins',
-                          weight: FontWeight.w600,
-                          color: LiveColors.standardRed,
+                        GestureDetector(
+                          onTap: () {
+                            _showDeleteConfirmation(context, widget.index);
+                          },
+                          child: HeadingStyleText(
+                            text: 'Delete address',
+                            size: Dimensions.font16,
+                            family: 'Poppins',
+                            weight: FontWeight.w600,
+                            color: LiveColors.standardRed,
+                          ),
                         ),
                       ],
                     ),
@@ -194,6 +227,112 @@ class EditAddress extends StatelessWidget {
         );
       });
     });
+  }
+
+  void _saveEditedAddress(BuildContext context, int index) {
+    final profileController =
+        Provider.of<ProfileViewController>(context, listen: false);
+    final addressController =
+        Provider.of<MainAddressViewController>(context, listen: false);
+
+    // Get the current address data
+    final List<dynamic> addresses = profileController.savedAddresses;
+    final selectedAddress = addresses[index];
+
+    // Create updated address with new values
+    final updatedAddress = {
+      'street': selectedAddress[
+          'street'], // You might want to make these editable too
+      'zip': selectedAddress['zip'],
+      'suburb': selectedAddress['suburb'],
+      'Town': selectedAddress['Town'],
+      'Country': selectedAddress['Country'],
+      'label': addressController.label.isNotEmpty
+          ? addressController.label
+          : selectedAddress['label'],
+      'selected': selectedAddress['selected'],
+      'additional info':
+          addressController.additionalInfo != addressController.additionalInfo
+              ? addressController.additionalInfo
+              : selectedAddress['additional info'],
+    };
+
+    // Save the updated address
+    profileController.updateAddress(index, updatedAddress).then((_) {
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Address updated successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate back
+      Navigator.of(context).pop();
+    }).catchError((error) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  }
+
+// Also update the delete method to use the controller:
+  void _deleteAddress(BuildContext context, int index) {
+    final profileController =
+        Provider.of<ProfileViewController>(context, listen: false);
+
+    profileController.deleteAddress(index).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Address deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop(); // Go back to addresses list
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete address'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  }
+
+// Add this method to EditAddress class
+  void _showDeleteConfirmation(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: HeadingStyleText(
+            text: 'Delete Address?',
+            weight: FontWeight.w600,
+          ),
+          content: Text(
+              'This address will be permanently removed from your saved addresses.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child:
+                  Text('CANCEL', style: TextStyle(color: Colors.grey.shade600)),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteAddress(context, index);
+                Navigator.of(context).pop();
+              },
+              child: Text('DELETE',
+                  style: TextStyle(color: LiveColors.standardRed)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

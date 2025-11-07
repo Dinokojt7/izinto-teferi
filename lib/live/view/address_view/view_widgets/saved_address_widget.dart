@@ -12,13 +12,13 @@ class SavedAddressWidget extends StatelessWidget {
   final String zipCode;
   final String suburb;
   final int index;
-  const SavedAddressWidget(
-      {Key? key,
-      required this.streetNumber,
-      required this.zipCode,
-      required this.suburb,
-      required this.index})
-      : super(key: key);
+  const SavedAddressWidget({
+    Key? key,
+    required this.streetNumber,
+    required this.zipCode,
+    required this.suburb,
+    required this.index,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +28,12 @@ class SavedAddressWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: Image.asset(
-            'assets/image/pin.png', // Image path from item list
+            'assets/image/pin.png',
             width: 22.0,
             height: 22.0,
           ),
         ),
-        SizedBox(
-          width: Dimensions.width20,
-        ),
+        SizedBox(width: Dimensions.width20),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(top: 16.0),
@@ -47,44 +45,54 @@ class SavedAddressWidget extends StatelessWidget {
                   size: Dimensions.font20 / 1.3,
                   family: 'Poppins',
                   weight: FontWeight.w600,
+                  maxLines: 2,
+                  overFlow: TextOverflow.ellipsis,
                 ),
-                Row(
+                const SizedBox(height: 4.0),
+                // Replace the Row with Column for better text wrapping
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: Dimensions.width10,
                   children: [
                     HeadingStyleText(
-                        text: zipCode,
-                        size: Dimensions.font20 / 1.3,
-                        family: 'Poppins',
-                        weight: FontWeight.w300,
-                        color: Colors.black),
-                    SizedBox(
-                      width: Dimensions.width10,
+                      text: zipCode,
+                      size: Dimensions.font20 / 1.3,
+                      family: 'Poppins',
+                      weight: FontWeight.w300,
+                      color: Colors.black,
+                      maxLines: 1,
+                      overFlow: TextOverflow.ellipsis,
                     ),
                     HeadingStyleText(
-                        text: suburb,
-                        size: Dimensions.font20 / 1.3,
-                        family: 'Poppins',
-                        weight: FontWeight.w300,
-                        color: Colors.black),
+                      text: suburb,
+                      size: Dimensions.font20 / 1.3,
+                      family: 'Poppins',
+                      weight: FontWeight.w300,
+                      color: Colors.black,
+                      maxLines: 2,
+                      overFlow: TextOverflow.ellipsis,
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
         ),
-        SizedBox(
-          width: Dimensions.width20,
-        ),
+        SizedBox(width: Dimensions.width20),
         Padding(
-            padding: const EdgeInsets.only(top: 18.0),
-            child: BlueTextButton(
-              text: 'Edit',
-              horizontalPadding: Dimensions.width20 * 1.2,
-              onTap: () {
-                Get.to(() => EditAddress(
-                      index: index,
-                    ));
-              },
-            )),
+          padding: const EdgeInsets.only(top: 18.0),
+          child: BlueTextButton(
+            text: 'Edit',
+            horizontalPadding: Dimensions.width20 * 1.2,
+            onTap: () {
+              Get.to(
+                () => EditAddress(index: index),
+                transition: Transition.native,
+                duration: const Duration(milliseconds: 500),
+              );
+            },
+          ),
+        ),
       ],
     );
   }

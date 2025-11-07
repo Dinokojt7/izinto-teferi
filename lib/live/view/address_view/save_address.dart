@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/live/auxiliery_classes/live_progress_indicator.dart';
 import 'package:izinto/live/utilities/generic_system_navigation.dart';
 import 'package:izinto/live/view/address_view/controller/address_dropdown_controller.dart';
 import 'package:izinto/live/view/address_view/view_widgets/address_label.dart';
 import 'package:izinto/live/view/address_view/view_widgets/address_label_options.dart';
 import 'package:izinto/live/widgets/generic_text_field.dart';
-import 'package:izinto/live/view/address_view/view_widgets/list_tile_label.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/generic_white_container.dart';
-import 'package:izinto/live/widgets/buttons/delete_widget.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:provider/provider.dart';
 
@@ -23,7 +22,6 @@ import '../../widgets/text_widgets/introduction_text.dart';
 import '../../wrapper.dart';
 import '../home_view/home_view.dart';
 import '../profile_view/controller/profile_view_controller.dart';
-import '../profile_view/view_widgets/text_input_container.dart';
 
 class SaveAddress extends StatefulWidget {
   final String addressLabel;
@@ -35,6 +33,7 @@ class SaveAddress extends StatefulWidget {
 
 class _SaveAddressState extends State<SaveAddress> {
   Color _statusBarColor = Colors.white.withOpacity(0.05);
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -63,22 +62,12 @@ class _SaveAddressState extends State<SaveAddress> {
           final String fullAddress = widget.addressLabel;
           final _isDropdownOpen = _addressController.isDropdownOpen;
 
-          ///Button loader
-          var _isLoading = _addressController.isSaveAddressButtonLoading;
-
-          ///Show additional address details///
-          final String defaultText =
-              _profileController.defaultAdditionalInfoText;
-          final String additionalInfo = defaultText;
-
           return Stack(
             children: [
               GestureDetector(
                 onTap: () {
                   if (_isDropdownOpen) {
                     _addressController.selectLabel();
-                  } else {
-                    null;
                   }
                 },
                 child: Scaffold(
@@ -163,8 +152,11 @@ class _SaveAddressState extends State<SaveAddress> {
                                         keyboardType: TextInputType.text,
                                         obscureText: false,
                                         cursorColor: Colors.black,
+                                        // Use default text as hint, controller handles the actual value
                                         decoration: buildInputDecoration(
-                                            additionalInfo, false),
+                                            _profileController
+                                                .defaultAdditionalInfoText,
+                                            false),
                                         style: buildTextStyle(),
                                       ),
                                     ),
@@ -197,28 +189,14 @@ class _SaveAddressState extends State<SaveAddress> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SaveButton(
-                            isLoading:
-                                _addressController.isSaveAddressButtonLoading,
+                            isLoading: _isSaving, // Use local loading state
                             isActive: true,
                             description: 'Save address',
                             isAuthScreen: false,
                             onTap: () async {
-                              await _addressController
-                                  .setGuestAccessAddressSave();
-                              await _addressController
-                                  .saveSelectedAddress(context);
-                              await _profileController.saveNewAddress(
-                                  _addressController.newAddress);
+                              if (_isSaving) return; // Prevent multiple taps
 
-                              // Navigate after a short delay
-                              Future.delayed(const Duration(milliseconds: 500),
-                                  () {
-                                Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => HomeView()),
-                                    (route) => false);
-                              });
+                              await _saveAddress(context, _addressController);
                             },
                           ),
                           SizedBox(
@@ -234,12 +212,52 @@ class _SaveAddressState extends State<SaveAddress> {
                 AddressLabelOptions(
                   isEditAddressChild: false,
                 ),
-              if (_isLoading) LockScreen()
+              if (_isSaving)
+                LiveProgressIndicator(
+                  color: Colors.black,
+                ),
             ],
           );
         });
       }),
     );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return Container(
+      color: Colors.black.withOpacity(0.3),
+      child: Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(LiveColors.cartBlue),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveAddress(
+      BuildContext context, MainAddressViewController addressController) async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // This should update local state immediately and then sync with Firebase
+      await addressController.saveSelectedAddress(context);
+      // No need to call saveNewAddress separately - it's handled in saveSelectedAddress
+    } catch (e) {
+      print('Error saving address: $e');
+      // Show error message to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save address: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
   }
 
   Padding buildHeader(BuildContext context, bool isFromWhiteThemeParent) {
@@ -295,8 +313,7 @@ TextStyle buildTextStyle() {
       fontFamily: 'Poppins');
 }
 
-InputDecoration buildInputDecoration(
-    String addressShowing, bool isAddressField) {
+InputDecoration buildInputDecoration(String hintText, bool isAddressField) {
   return InputDecoration(
     border: InputBorder.none,
     enabledBorder: InputBorder.none,
@@ -312,7 +329,7 @@ InputDecoration buildInputDecoration(
         bottom: isAddressField ? Dimensions.height10 : Dimensions.height20,
         left: 20),
     floatingLabelBehavior: FloatingLabelBehavior.always,
-    hintText: addressShowing,
+    hintText: hintText, // Use the passed hint text (default text)
     hintStyle: TextStyle(
       decoration: TextDecoration.none,
       fontSize: Dimensions.font20 / 1.38,

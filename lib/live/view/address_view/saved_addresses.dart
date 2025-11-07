@@ -77,30 +77,37 @@ class _SavedAddressesState extends State<SavedAddresses> {
                     child: Padding(
                       padding:
                           EdgeInsets.only(left: 24.0, top: 25.0, right: 24.0),
-                      child: ListView.builder(
+                      child:
+// In your SavedAddresses widget build method, update the ListView.builder:
+                          ListView.builder(
                         scrollDirection: Axis.vertical,
-                        itemCount: items.length, // Number of items in the list
+                        itemCount: items.length,
                         itemBuilder: (context, index) {
                           final item = items[index];
+
+                          // Safe address field access
+                          final street =
+                              item['street']?.toString() ?? 'No street address';
+                          final zip = item['zip']?.toString() ?? '';
+                          final suburb = item['suburb']?.toString() ?? '';
+                          final isSelected = item['selected'] == true;
+
                           return Padding(
                             padding: EdgeInsets.only(
                                 bottom: Dimensions.height20 * 1.4),
                             child: GestureDetector(
                               onTap: () {
-                                //  _selectAddress(context, index, item);
-
+                                _controller.updateSelectedAddress(street);
                                 _controller
-                                    .updateSelectedAddress(item['street']);
-                                _controller.updateSelectedAddressInFirebase(
-                                    item['street']);
+                                    .updateSelectedAddressInFirebase(street);
                               },
                               child: GenericWhiteContainer(
                                 bottomPadding: Dimensions.height15,
-                                isSelected: item['selected'],
+                                isSelected: isSelected,
                                 child: SavedAddressWidget(
-                                  streetNumber: item['street'],
-                                  zipCode: item['zip'],
-                                  suburb: item['suburb'],
+                                  streetNumber: street,
+                                  zipCode: zip,
+                                  suburb: suburb,
                                   index: index,
                                 ),
                               ),
@@ -125,7 +132,9 @@ class _SavedAddressesState extends State<SavedAddresses> {
                   description: 'Add new address',
                   isAuthScreen: false,
                   onTap: () {
-                    // addressViewController.disposeDialog();
+                    addressViewController.setNavigationSource('regular');
+
+                    addressViewController.disposeDialog();
                     Get.to(
                         () => AddNewAddress(
                               shouldReturnDarkStatus: true,
@@ -138,41 +147,5 @@ class _SavedAddressesState extends State<SavedAddresses> {
         );
       }),
     );
-  }
-
-  void _selectAddress(BuildContext context, int index, dynamic item) {
-    final profileController =
-        Provider.of<ProfileViewController>(context, listen: false);
-
-    // Update all addresses to set only this one as selected
-    final List<dynamic> addresses = profileController.savedAddresses;
-    final updatedAddresses = addresses.map((addr) {
-      return {
-        ...addr,
-        'selected': addr['street'] == item['street'],
-      };
-    }).toList();
-
-    // Use the new method that updates both local state and Firebase
-    profileController.updateAllAddresses(updatedAddresses);
-  }
-
-// Remove the _updateAllAddresses method entirely since it's now in the controller
-// Remove the _updateAllAddresses method entirely since it's now in the controller
-  void _updateAllAddresses(BuildContext context, List<dynamic> addresses) {
-    final profileController =
-        Provider.of<ProfileViewController>(context, listen: false);
-
-    // This is a simplified version - you might want to create a proper method in ProfileViewController
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-        'addresses': addresses,
-      }).then((_) {
-        // Update local state
-        // You might need to refresh the addresses list
-        // profileController.refreshAddresses();
-      });
-    }
   }
 }

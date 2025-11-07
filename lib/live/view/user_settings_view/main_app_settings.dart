@@ -4,6 +4,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/address_view/saved_addresses.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/view/profile_view/profile_view.dart';
+import 'package:izinto/live/view/user_settings_view/screens/legal_documents/legal_document_screen.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_heading.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_section.dart';
 import 'package:izinto/services/firebase_auth_methods.dart';
@@ -11,6 +12,7 @@ import 'package:provider/provider.dart';
 
 import '../../../utils/dimensions.dart';
 import '../../../widgets/texts/small_text.dart';
+import '../../utilities/colors.dart';
 import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/buttons/delete_widget.dart';
 import '../../widgets/generic_header_row.dart';
@@ -153,8 +155,27 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Privacy policy',
                   onTap: () {
-                    Provider.of<HomeViewController>(context, listen: false)
-                        .navigateToNestedWidget(context, SavedAddresses());
+                    Get.to(
+                      () => LegalDocumentScreen(
+                        documentType: 'privacy-policy',
+                        screenTitle: 'Privacy Policy',
+                        description:
+                            'How we protect and use your personal information',
+                        primaryColor: LiveColors.cartBlue,
+                        lastUpdated: 'December 2024',
+                      ),
+                      transition: Transition.native,
+                      duration: Duration(milliseconds: 500),
+                    );
+                    Future.delayed(const Duration(milliseconds: 510), () async {
+                      setState(() {
+                        SystemNavigation().applyCustomSystemChromeSettings(
+                            Colors.white,
+                            Brightness.dark,
+                            Colors.white,
+                            Brightness.dark);
+                      });
+                    });
                   },
                 ),
                 SizedBox(
@@ -164,10 +185,26 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                   subHeading: 'Terms & conditions',
                   onTap: () {
                     Get.to(
-                      () => ProfileView(),
-                      transition: Transition.rightToLeftWithFade,
+                      () => LegalDocumentScreen(
+                        documentType: 'terms-of-use',
+                        screenTitle: 'Terms & Conditions',
+                        description:
+                            'Please read these terms carefully before using our services',
+                        primaryColor: LiveColors.cartBlue,
+                        lastUpdated: 'December 2024',
+                      ),
+                      transition: Transition.native,
                       duration: Duration(milliseconds: 500),
                     );
+                    Future.delayed(const Duration(milliseconds: 510), () async {
+                      setState(() {
+                        SystemNavigation().applyCustomSystemChromeSettings(
+                            Colors.white,
+                            Brightness.dark,
+                            Colors.white,
+                            Brightness.dark);
+                      });
+                    });
                   },
                 ),
                 SizedBox(
@@ -177,10 +214,25 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                   subHeading: 'Imprint',
                   onTap: () {
                     Get.to(
-                      () => ProfileView(),
-                      transition: Transition.rightToLeftWithFade,
+                      () => LegalDocumentScreen(
+                        documentType: 'imprint',
+                        screenTitle: 'Imprint',
+                        description: 'Company information and legal details',
+                        primaryColor: Colors.purple,
+                        lastUpdated: 'December 2024',
+                      ),
+                      transition: Transition.native,
                       duration: Duration(milliseconds: 500),
                     );
+                    Future.delayed(const Duration(milliseconds: 510), () async {
+                      setState(() {
+                        SystemNavigation().applyCustomSystemChromeSettings(
+                            Colors.white,
+                            Brightness.dark,
+                            Colors.white,
+                            Brightness.dark);
+                      });
+                    });
                   },
                 ),
               ],

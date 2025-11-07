@@ -25,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/car_specialty_controller.dart';
 import '../controllers/car_wash_support_questions_controller.dart';
 import '../controllers/favorite_controller.dart';
+import '../controllers/legal_documents_controller.dart';
 import '../controllers/new_cart_controller.dart';
 import '../controllers/new_recommended_specialty_controller.dart';
 import '../controllers/popular_specialty_controller.dart';
@@ -37,6 +38,7 @@ import '../services/phone_auth_methods.dart';
 import '../utils/app_constants.dart';
 import 'data/repository/auth_repo.dart';
 import 'data/repository/car_specialty_repo.dart';
+import 'data/repository/legal_documents_repo.dart';
 import 'data/repository/popular_specialty_repo.dart';
 import 'data/repository/user_repo.dart';
 
@@ -105,6 +107,10 @@ Future<void> init() async {
 
   Get.lazyPut(() => PetCareSpecialtyController(
       petCareRepo: Get.find(), cartRepo: Get.find()));
+
+  // In your main binding file
+  Get.lazyPut(() => LegalDocumentsRepo(apiClient: Get.find()));
+  Get.lazyPut(() => LegalDocumentsController(legalDocumentsRepo: Get.find()));
 
   Get.lazyPut(() => CartController(cartRepo: Get.find()));
   Get.lazyPut(() => TabsHeaderController(tabsHeaderRepo: Get.find()));

@@ -8,6 +8,7 @@ import 'package:izinto/controllers/car_wash_support_questions_controller.dart';
 import 'package:izinto/controllers/favorite_controller.dart';
 import 'package:izinto/controllers/gas_refill_specialty_controller.dart';
 import 'package:izinto/controllers/carpet_care_specialty_controller.dart';
+import 'package:izinto/controllers/legal_documents_controller.dart';
 import 'package:izinto/controllers/pet_care_specialty_controller.dart';
 import 'package:izinto/controllers/home_items_controller.dart';
 import 'package:izinto/controllers/laundry_support_questions_controller.dart';
@@ -70,6 +71,7 @@ class _WrapperState extends State<Wrapper> {
     await Get.find<TabsHeaderController>().getTabsHeaderList();
     await Get.find<LaundrySupportQuestionsController>()
         .getLaundrySupportQuestions();
+    await Get.find<LegalDocumentsController>().getLegalDocuments();
     await Get.find<HomeItemsController>().getHomeItemsList();
     await Get.find<CarWashSupportQuestionsController>()
         .getCarWashSupportQuestionsList();

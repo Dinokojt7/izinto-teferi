@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/favorite_controller.dart';
+import 'package:izinto/live/view/favourites_view/view_widgets/favourite_item_view.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:izinto/models/new_specialty_model.dart';
 import 'package:izinto/utils/dimensions.dart';
@@ -117,115 +118,14 @@ class FavoritesView extends StatelessWidget {
             itemCount: favorites.length,
             itemBuilder: (context, index) {
               final item = favorites[index];
-              return _buildFavoriteItem(
-                context,
-                item,
-                favoriteController,
-                index,
+              return FavoriteItemView(
+                item: item,
+                index: index,
               );
             },
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildFavoriteItem(
-    BuildContext context,
-    dynamic item,
-    FavoriteController favoriteController,
-    int index,
-  ) {
-    final isSizeVariant = item is NewSpecialtyModel &&
-        item.isSizeVariant == true &&
-        item.selectedSize != null;
-
-    return Card(
-      margin: EdgeInsets.only(bottom: Dimensions.height15),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: Dimensions.width15,
-          vertical: Dimensions.height10,
-        ),
-        leading: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(
-              image: AssetImage(item.img ?? 'assets/image/placeholder.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              item.name ?? 'Unnamed Item',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: Dimensions.font16,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            if (isSizeVariant)
-              Container(
-                margin: EdgeInsets.only(top: 4),
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: LiveColors.standardBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  item.selectedSize!,
-                  style: TextStyle(
-                    fontSize: Dimensions.font16 / 1.2,
-                    color: LiveColors.standardBlue,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        subtitle: Padding(
-          padding: EdgeInsets.only(top: 4),
-          child: Text(
-            'R${item.actualPrice},00',
-            style: TextStyle(
-              color: LiveColors.standardBlue,
-              fontWeight: FontWeight.w600,
-              fontSize: Dimensions.font16,
-            ),
-          ),
-        ),
-        trailing: IconButton(
-          icon: Icon(Icons.favorite, color: Colors.red),
-          onPressed: () => favoriteController.clearFavoritesData(
-            context,
-            'Remove ${item.displayName} from favorites?',
-            'Remove',
-            false,
-            index,
-            item,
-          ),
-        ),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ViewSpecialtyInfo(
-                index: 0,
-                homeItemList: [item],
-                shouldReturnToBlack: true,
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
 

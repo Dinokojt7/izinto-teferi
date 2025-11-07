@@ -35,7 +35,7 @@ class _CustomerServiceScreenState extends State<CustomerServiceScreen> {
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(Dimensions.width20),
                 child: Container(
-                  padding: EdgeInsets.all(Dimensions.width10),
+                  padding: EdgeInsets.all(Dimensions.width20),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(Dimensions.radius15),

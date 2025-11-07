@@ -261,7 +261,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
 
   Widget _buildLastUpdatedInfo() {
     return Container(
-      margin: EdgeInsets.only(bottom: Dimensions.height20 / 100),
+      margin: EdgeInsets.only(bottom: Dimensions.height20),
       padding: EdgeInsets.all(Dimensions.width15),
       decoration: BoxDecoration(
         color: widget.primaryColor.withOpacity(0.1),

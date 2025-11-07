@@ -71,9 +71,9 @@ class CartProductView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SmallBlackText(
-                        text: 'R${cartItem.price!.toString()},00*',
                         size: Dimensions.font20 / 1.1,
                         font: 'Poppins',
+                        text: 'R${cartItem.price!.toString()},00*',
                         fontWeight: FontWeight.w600,
                       ),
                       _buildFavoriteIcon(specialty, context),

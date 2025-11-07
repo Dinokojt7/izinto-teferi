@@ -57,21 +57,29 @@ class BottomRemoveSheet extends StatelessWidget {
               SizedBox(
                 height: Dimensions.height20,
               ),
+              // In BottomRemoveSheet, update the Row widget:
               Row(
                 mainAxisAlignment: isMiniaturized
                     ? MainAxisAlignment.center
                     : MainAxisAlignment.start,
                 children: [
-                  HeadingStyleText(
-                    text: headerText,
-                    weight: FontWeight.w600,
-                    size: Dimensions.font26 / 1.2,
+                  Expanded(
+                    // ← Add Expanded widget to constrain the text
+                    child: HeadingStyleText(
+                      text: headerText,
+                      weight: FontWeight.w600,
+                      size: Dimensions.font26 / 1.2,
+                      maxLines: 2, // ← Allow up to 2 lines
+                      overFlow: TextOverflow
+                          .ellipsis, // ← Add ellipsis if still too long
+                      align: isMiniaturized
+                          ? TextAlign.center
+                          : TextAlign.left, // ← Maintain alignment
+                    ),
                   ),
                 ],
               ),
-              SizedBox(
-                height: Dimensions.height10,
-              ),
+
               const Divider(
                 indent: 8,
                 endIndent: 8,
@@ -81,7 +89,7 @@ class BottomRemoveSheet extends StatelessWidget {
               SizedBox(
                 height: isMiniaturized
                     ? Dimensions.height10 / 2
-                    : Dimensions.height30,
+                    : Dimensions.height20,
               ),
               isMiniaturized
                   ? Container()
@@ -93,12 +101,13 @@ class BottomRemoveSheet extends StatelessWidget {
                             weight: FontWeight.w400,
                             size: Dimensions.font16 / 1.1,
                             maxLines: 3,
+                            overFlow: TextOverflow.ellipsis, // ← Add this too
                           ),
                         ),
                       ],
                     ),
               SizedBox(
-                height: Dimensions.height45,
+                height: Dimensions.height45 / 1.2,
               ),
               SaveButton(
                 buttonHeight: isCartView

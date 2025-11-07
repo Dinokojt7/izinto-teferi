@@ -37,18 +37,23 @@ class CartActionsController extends ChangeNotifier {
           onTap: () async {
             _isLoading = true;
             notifyListeners();
-            if (_isLoading) {
-              Future.delayed(const Duration(seconds: 2), () async {
-                if (isClearAllCached) {
-                  await removeCachedData();
-                } else {
-                  await removeItem(index!, specialty!);
-                }
-                Navigator.of(context).pop();
-                _isLoading = false;
-              });
+
+            try {
+              // Perform the operation
+              if (isClearAllCached) {
+                await removeCachedData();
+              } else {
+                await removeItem(index!, specialty!);
+              }
+
+              // Add a small delay to ensure operation completes
+              await Future.delayed(const Duration(milliseconds: 500));
+            } finally {
+              // Dismiss modal and update state in correct order
+              Navigator.of(context).pop();
+              _isLoading = false;
+              notifyListeners();
             }
-            notifyListeners();
           },
         );
       },

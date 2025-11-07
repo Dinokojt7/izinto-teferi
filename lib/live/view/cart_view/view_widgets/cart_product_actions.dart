@@ -37,9 +37,9 @@ class CartProductActions extends StatelessWidget {
           Provider.of<CartActionsController>(context, listen: false);
 
       return Container(
-        width: 90,
+        width: 95,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.3),
+          borderRadius: BorderRadius.circular(Dimensions.radius15),
           color: Colors.black,
         ),
         child: Row(

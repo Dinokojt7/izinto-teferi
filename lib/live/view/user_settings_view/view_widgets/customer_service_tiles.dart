@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/frequently_asked_questions/frequently_asked_questions.dart';
+import 'package:izinto/live/view/user_settings_view/screens/customer_service_screen.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_heading.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_section.dart';
 import 'package:provider/provider.dart';
@@ -72,7 +73,7 @@ class _CustomerServiceTilesState extends State<CustomerServiceTiles> {
                 subHeading: 'Customer service',
                 onTap: () {
                   Provider.of<HomeViewController>(context, listen: false)
-                      .navigateToNestedWidget(context, OpeningHours());
+                      .navigateToNestedWidget(context, CustomerServiceScreen());
                 },
               ),
               SizedBox(

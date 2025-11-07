@@ -1,7 +1,6 @@
 // legal_documents_controller.dart
 import 'package:get/get.dart';
 import 'package:izinto/models/legal_documents_model.dart';
-
 import '../helpers/data/repository/legal_documents_repo.dart';
 
 class LegalDocumentsController extends GetxController {
@@ -11,6 +10,12 @@ class LegalDocumentsController extends GetxController {
 
   List<LegalDocumentCategory> _legalDocuments = [];
   List<LegalDocumentCategory> get legalDocuments => _legalDocuments;
+
+  ContactInfo _contactInfo = ContactInfo();
+  ContactInfo get contactInfo => _contactInfo;
+
+  DocumentMetadata _metadata = DocumentMetadata();
+  DocumentMetadata get metadata => _metadata;
 
   bool _isLoaded = false;
   bool get isLoaded => _isLoaded;
@@ -30,6 +35,8 @@ class LegalDocumentsController extends GetxController {
         final data = response.body;
         final documents = LegalDocuments.fromJson(data);
         _legalDocuments = documents.categories;
+        _contactInfo = documents.contactInfo;
+        _metadata = documents.metadata;
         _isLoaded = true;
       } else {
         _errorMessage = 'Failed to load documents: ${response.statusText}';

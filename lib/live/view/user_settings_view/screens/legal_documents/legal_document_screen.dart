@@ -123,7 +123,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
             size: Dimensions.font26 * 2,
             color: Colors.grey.shade400,
           ),
-          SizedBox(height: Dimensions.height20),
+          SizedBox(height: Dimensions.height20 / 100),
           Text(
             'Unable to Load Document',
             style: TextStyle(
@@ -184,7 +184,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
               size: Dimensions.font26 * 2,
               color: Colors.grey.shade400,
             ),
-            SizedBox(height: Dimensions.height20),
+            SizedBox(height: Dimensions.height20 / 100),
             Text(
               '${widget.screenTitle} Not Available',
               style: TextStyle(
@@ -229,10 +229,10 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
             );
           }).toList(),
 
-          SizedBox(height: Dimensions.height20 * 2),
+          SizedBox(height: Dimensions.height20 / 100 * 2),
 
           // Contact Footer
-          _buildContactFooter(),
+          _buildContactFooter(controller),
         ],
       ),
     );
@@ -261,7 +261,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
 
   Widget _buildLastUpdatedInfo() {
     return Container(
-      margin: EdgeInsets.only(bottom: Dimensions.height20),
+      margin: EdgeInsets.only(bottom: Dimensions.height20 / 100),
       padding: EdgeInsets.all(Dimensions.width15),
       decoration: BoxDecoration(
         color: widget.primaryColor.withOpacity(0.1),
@@ -310,7 +310,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
     );
   }
 
-  Widget _buildContactFooter() {
+  Widget _buildContactFooter(LegalDocumentsController controller) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(Dimensions.width20),
@@ -328,7 +328,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
           Text(
             'Need Help?',
             style: TextStyle(
-              fontSize: Dimensions.font16 * 1.1,
+              fontSize: Dimensions.font16 / 1.1,
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w600,
               color: Colors.black.withOpacity(0.8),
@@ -345,23 +345,44 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
             ),
           ),
           SizedBox(height: Dimensions.height15),
-          _buildContactItem(
-            Icons.email,
-            'Email',
-            'info@izinto.africa',
-          ),
-          SizedBox(height: Dimensions.height10),
-          _buildContactItem(
-            Icons.phone,
-            'Phone/WhatsApp',
-            '+27 81 725 8447',
-          ),
-          SizedBox(height: Dimensions.height10),
-          _buildContactItem(
-            Icons.access_time,
-            'Support Hours',
-            'Mon-Sun: 8:00 - 22:00',
-          ),
+          if (controller.contactInfo.email != null)
+            _buildContactItem(
+              Icons.email,
+              'Email',
+              controller.contactInfo.email!,
+            ),
+          if (controller.contactInfo.phone != null) ...[
+            SizedBox(height: Dimensions.height10),
+            _buildContactItem(
+              Icons.phone,
+              'Phone/WhatsApp',
+              controller.contactInfo.phone!,
+            ),
+          ],
+          if (controller.contactInfo.supportHours != null) ...[
+            SizedBox(height: Dimensions.height10),
+            _buildContactItem(
+              Icons.access_time,
+              'Support Hours',
+              controller.contactInfo.supportHours!,
+            ),
+          ],
+          if (controller.contactInfo.website != null) ...[
+            SizedBox(height: Dimensions.height10),
+            _buildContactItem(
+              Icons.language,
+              'Website',
+              controller.contactInfo.website!,
+            ),
+          ],
+          if (controller.contactInfo.address != null) ...[
+            SizedBox(height: Dimensions.height10),
+            _buildContactItem(
+              Icons.location_on,
+              'Address',
+              controller.contactInfo.address!,
+            ),
+          ],
         ],
       ),
     );
@@ -369,13 +390,14 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
 
   Widget _buildContactItem(IconData icon, String title, String value) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(
           icon,
           size: Dimensions.font16 * 1.1,
           color: widget.primaryColor,
         ),
-        SizedBox(width: Dimensions.width15 / 1.1),
+        SizedBox(width: Dimensions.width15 / 1.2),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,7 +415,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: Dimensions.font16 / 1.2,
+                  fontSize: Dimensions.font16 / 1.1,
                   fontFamily: 'Poppins',
                   color: Colors.black.withOpacity(0.8),
                   fontWeight: FontWeight.w600,

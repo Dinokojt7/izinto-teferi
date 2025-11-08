@@ -32,8 +32,7 @@ class _MainAddressViewState extends State<MainAddressView> {
         Provider.of<MainAddressViewController>(context, listen: false);
 
     ///Here's a list of addresses from the controller
-    final _profileController =
-        Provider.of<ProfileViewController>(context, listen: false);
+    final _profileController = Provider.of<ProfileViewController>(context);
     final List<dynamic> _addresses = _profileController.savedAddresses;
 
     ///Here's the selection of currently active address///
@@ -49,15 +48,12 @@ class _MainAddressViewState extends State<MainAddressView> {
         builder: (recommendedSpecialties) {
       return GestureDetector(
         onTap: () async {
-          await addressViewController.initiateSearch(false);
-          addressViewController.disposeDialog();
           Get.to(
-              () => AddNewAddress(
-                    shouldReturnDarkStatus: true,
-                  ),
-              transition: Transition.fade,
-              duration: Duration(seconds: 1));
-          Future.delayed(const Duration(milliseconds: 410), () async {
+            () => SavedAddresses(),
+            transition: Transition.circularReveal,
+            duration: Duration(milliseconds: 500),
+          );
+          Future.delayed(const Duration(milliseconds: 210), () async {
             setState(() {
               SystemNavigation().applyCustomSystemChromeSettings(
                   Colors.white, Brightness.dark, Colors.white, Brightness.dark);

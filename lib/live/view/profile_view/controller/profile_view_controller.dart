@@ -31,6 +31,11 @@ class ProfileViewController extends ChangeNotifier {
 
   // ========== ADDRESS MANAGEMENT METHODS ==========
 
+  Future<void> resetAddressDetailsFields() async {
+    _defaultAdditionalInfoText = 'Additional info (building, floor...)';
+    notifyListeners();
+  }
+
   // Safe address field accessor
   String _getSafeAddressField(Map<String, dynamic> address, String field,
       {String defaultValue = ''}) {
@@ -315,6 +320,7 @@ class ProfileViewController extends ChangeNotifier {
         }
 
         notifyListeners();
+        // REMOVED Navigator.pop from here - navigation should be in UI layer
       }
     } catch (e) {
       print('Error updating address: $e');

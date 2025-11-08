@@ -106,7 +106,7 @@ class ShowResultsDialog extends StatelessWidget {
                             _isWithinRadius ? 'Next' : 'Browse available areas',
                         onTap: () async {
                           if (_isWithinRadius) {
-                            await controller.setSaveButtonLoaderOff();
+                            await controller.setSaveButtonLoaderOff(context);
                           } else {
                             await controller.setIsLoading();
                             await Get.to(() => OpeningHours(),

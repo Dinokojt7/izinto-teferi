@@ -292,8 +292,9 @@ class _EditAddressState extends State<EditAddress> {
               isActive: true,
               description: 'Save Changes',
               isAuthScreen: false,
-              onTap: () {
-                _saveEditedAddress(context, widget.index);
+              onTap: () async {
+                await _saveEditedAddress(context, widget.index);
+                Navigator.of(context).pop();
               },
             ),
             SizedBox(height: Dimensions.height20 * 1.2),
@@ -339,7 +340,7 @@ class _EditAddressState extends State<EditAddress> {
     return items.where((item) => item != null && item!.isNotEmpty).join(', ');
   }
 
-  void _saveEditedAddress(BuildContext context, int index) async {
+  Future<void> _saveEditedAddress(BuildContext context, int index) async {
     if (_isSaving) return; // Prevent multiple saves
 
     final profileController =
@@ -408,9 +409,8 @@ class _EditAddressState extends State<EditAddress> {
       await profileController.deleteAddress(index);
 
       // Navigate back to addresses list
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+      Navigator.of(context).pop();
+      Navigator.of(context).pop();
     } catch (error) {
       print('Error deleting address: $error');
     }

@@ -86,7 +86,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 children: [
                                   GenericHeaderRow(
                                     headingChild: HeadingStyleText(
-                                      text: 'Delivery address',
+                                      text: 'Address',
                                       weight: FontWeight.w600,
                                     ),
                                     actionButtonChild: BlueTextButton(

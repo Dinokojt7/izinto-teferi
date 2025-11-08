@@ -22,7 +22,7 @@ class CheckoutPageAddress extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: Image.asset(
-            'assets/image/pin.png', // Image path from item list
+            'assets/image/pin.png',
             width: 22.0,
             height: 22.0,
           ),
@@ -30,25 +30,33 @@ class CheckoutPageAddress extends StatelessWidget {
         SizedBox(
           width: Dimensions.width20,
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HeadingStyleText(
-                text: street,
-                size: Dimensions.font20 / 1.3,
-                family: 'Poppins',
-                weight: FontWeight.w600,
-              ),
-              HeadingStyleText(
-                text: '${zip} ${suburb}',
-                size: Dimensions.font20 / 1.3,
-                family: 'Poppins',
-                weight: FontWeight.w300,
-                color: Colors.black,
-              )
-            ],
+        Expanded(
+          // Add Expanded here to take available space
+          child: Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                HeadingStyleText(
+                  text: street,
+                  size: Dimensions.font20 / 1.3,
+                  family: 'Poppins',
+                  weight: FontWeight.w600,
+                  maxLines: 2, // Limit street to 2 lines
+                  overFlow: TextOverflow.ellipsis, // Show ellipsis if too long
+                ),
+                const SizedBox(height: 4), // Add small spacing between lines
+                HeadingStyleText(
+                  text: '${zip} ${suburb}',
+                  size: Dimensions.font20 / 1.3,
+                  family: 'Poppins',
+                  weight: FontWeight.w300,
+                  color: Colors.black,
+                  maxLines: 1, // Limit to 1 line
+                  overFlow: TextOverflow.ellipsis, // Show ellipsis if too long
+                )
+              ],
+            ),
           ),
         )
       ],

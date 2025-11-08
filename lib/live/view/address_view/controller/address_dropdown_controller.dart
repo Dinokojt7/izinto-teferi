@@ -130,7 +130,11 @@ class MainAddressViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setSaveButtonLoaderOff() async {
+  Future<void> setSaveButtonLoaderOff(context) async {
+    final _profileController =
+        Provider.of<ProfileViewController>(context, listen: false);
+    await _profileController.resetAddressDetailsFields();
+    _label = '';
     await setIsLoading();
     await _disposeSearchAddressLoader();
     notifyListeners();
@@ -291,8 +295,8 @@ class MainAddressViewController extends ChangeNotifier {
         // Validate address and set status
         _isValidAddress = _isWithinRadius(latitude, longitude);
         _searchStatusText = _isValidAddress
-            ? '\u{1F60E} We deliver to you!'
-            : '\u{1F494} We don\'t deliver to you yet!';
+            ? '\u{1F60E} Yay we\'re available in your area!'
+            : '\u{1F494} Oops! we\'re not available in this area!';
 
         // Update UI
         _hasData = true;

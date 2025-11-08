@@ -227,9 +227,21 @@ class ProfileViewController extends ChangeNotifier {
     }
   }
 
-  // Delete address
-  Future<void> deleteAddress(int index) async {
+  // Check if this is the last address
+  bool get isLastAddress => _savedAddresses.length <= 1;
+
+// Enhanced delete address method with validation
+  Future<void> deleteAddress(int index, {BuildContext? context}) async {
     try {
+      // Prevent deleting the last address
+      if (isLastAddress) {
+        if (context != null) {
+          GenericSnackBar().showCustomSnackBar(
+              null, context, 'You need to have at least one address', false);
+        }
+        return;
+      }
+
       _isLoading = true;
       notifyListeners();
 
@@ -257,9 +269,19 @@ class ProfileViewController extends ChangeNotifier {
         }
 
         notifyListeners();
+
+        // Show success message if context provided
+        if (context != null) {
+          GenericSnackBar().showCustomSnackBar(
+              null, context, 'Address deleted successfully', true);
+        }
       }
     } catch (e) {
       print('Error deleting address: $e');
+      if (context != null) {
+        GenericSnackBar().showCustomSnackBar(
+            null, context, 'Failed to delete address', false);
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -267,7 +289,6 @@ class ProfileViewController extends ChangeNotifier {
   }
 
 // Update an existing address
-  // Update an existing address - FIXED VERSION
   Future<void> updateAddress(
       int index, Map<String, dynamic> updatedAddress) async {
     try {

@@ -12,12 +12,14 @@ class SavedAddressWidget extends StatelessWidget {
   final String zipCode;
   final String suburb;
   final int index;
+  final bool isLastAddress;
   const SavedAddressWidget({
     Key? key,
     required this.streetNumber,
     required this.zipCode,
     required this.suburb,
     required this.index,
+    required this.isLastAddress,
   }) : super(key: key);
 
   @override
@@ -86,7 +88,10 @@ class SavedAddressWidget extends StatelessWidget {
             horizontalPadding: Dimensions.width20 * 1.2,
             onTap: () {
               Get.to(
-                () => EditAddress(index: index),
+                () => EditAddress(
+                  index: index,
+                  isLastAddress: isLastAddress,
+                ),
                 transition: Transition.native,
                 duration: const Duration(milliseconds: 500),
               );

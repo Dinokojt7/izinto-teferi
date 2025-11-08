@@ -17,7 +17,10 @@ import '../profile_view/controller/profile_view_controller.dart';
 
 class EditAddress extends StatefulWidget {
   final int index;
-  const EditAddress({Key? key, required this.index}) : super(key: key);
+  final bool isLastAddress;
+
+  const EditAddress({Key? key, required this.index, this.isLastAddress = false})
+      : super(key: key);
 
   @override
   State<EditAddress> createState() => _EditAddressState();
@@ -191,7 +194,8 @@ class _EditAddressState extends State<EditAddress> {
                         ],
                       ),
                     ),
-                    bottomNavigationBar: _buildBottomNavigationBar(context),
+                    bottomNavigationBar: _buildBottomNavigationBar(
+                        context, widget.isLastAddress),
                   ),
                 ),
                 if (_isDropdownOpen)
@@ -278,7 +282,7 @@ class _EditAddressState extends State<EditAddress> {
     );
   }
 
-  Widget _buildBottomNavigationBar(BuildContext context) {
+  Widget _buildBottomNavigationBar(BuildContext context, bool isLastAddress) {
     return Container(
       color: Colors.transparent,
       height: Dimensions.bottomHeightBar * 1.3,
@@ -300,14 +304,21 @@ class _EditAddressState extends State<EditAddress> {
             SizedBox(height: Dimensions.height20 * 1.2),
             GestureDetector(
               onTap: () {
-                _showDeleteConfirmation(context, widget.index);
+                if (isLastAddress) {
+                  GenericSnackBar().showCustomSnackBar(null, context,
+                      'You cannot delete your only address', false);
+                } else {
+                  _showDeleteConfirmation(context, widget.index);
+                }
               },
               child: HeadingStyleText(
                 text: 'Delete address',
                 size: Dimensions.font16,
                 family: 'Poppins',
                 weight: FontWeight.w600,
-                color: LiveColors.standardRed,
+                color: isLastAddress
+                    ? Colors.grey.shade400
+                    : LiveColors.standardRed,
               ),
             ),
           ],
@@ -341,7 +352,7 @@ class _EditAddressState extends State<EditAddress> {
   }
 
   Future<void> _saveEditedAddress(BuildContext context, int index) async {
-    if (_isSaving) return; // Prevent multiple saves
+    if (_isSaving) return;
 
     final profileController =
         Provider.of<ProfileViewController>(context, listen: false);
@@ -353,7 +364,6 @@ class _EditAddressState extends State<EditAddress> {
     });
 
     try {
-      // Get the current address data
       final List<dynamic> addresses = profileController.savedAddresses;
 
       if (index >= addresses.length) {
@@ -362,27 +372,27 @@ class _EditAddressState extends State<EditAddress> {
 
       final selectedAddress = addresses[index];
 
-      // Get the current label from dropdown controller
+      // PROPERLY CAPTURE CURRENT VALUES FROM CONTROLLERS
       final String currentLabel = addressController.label.isNotEmpty
           ? addressController.label
           : selectedAddress['label']?.toString() ?? 'Home';
 
-      // Get the current additional info from text controller
       final String currentAdditionalInfo =
           _additionalInfoController.text.isNotEmpty
               ? _additionalInfoController.text
               : selectedAddress['additional info']?.toString() ?? '';
 
-      // Create updated address with new values - properly typed
+      // Create updated address with new values
       final Map<String, dynamic> updatedAddress = {
         'street': selectedAddress['street']?.toString() ?? '',
         'zip': selectedAddress['zip']?.toString() ?? '',
         'suburb': selectedAddress['suburb']?.toString() ?? '',
         'Town': selectedAddress['Town']?.toString() ?? '',
         'Country': selectedAddress['Country']?.toString() ?? 'South Africa',
-        'label': currentLabel,
+        'label': currentLabel, // Use the captured label
         'selected': selectedAddress['selected'] == true,
-        'additional info': currentAdditionalInfo,
+        'additional info':
+            currentAdditionalInfo, // Use the captured additional info
         // Keep the document ID if it exists for Firebase operations
         if (selectedAddress['id'] != null)
           'id': selectedAddress['id']?.toString(),
@@ -390,6 +400,10 @@ class _EditAddressState extends State<EditAddress> {
 
       // Save the updated address
       await profileController.updateAddress(index, updatedAddress);
+
+      // Show success message
+      GenericSnackBar().showCustomSnackBar(
+          null, context, 'Address updated successfully', true);
 
       Navigator.of(context).pop();
     } catch (error) {
@@ -401,16 +415,15 @@ class _EditAddressState extends State<EditAddress> {
     }
   }
 
-  void _deleteAddress(BuildContext context, int index) async {
+  Future<void> _deleteAddress(BuildContext context, int index) async {
     final profileController =
         Provider.of<ProfileViewController>(context, listen: false);
 
     try {
-      await profileController.deleteAddress(index);
+      await profileController.deleteAddress(index, context: context);
 
-      // Navigate back to addresses list
       Navigator.of(context).pop();
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(); // Close edit screen
     } catch (error) {
       print('Error deleting address: $error');
     }

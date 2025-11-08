@@ -9,6 +9,8 @@ class HyperTextColumn extends StatelessWidget {
   final String firstLink;
   final String middleText;
   final String secondLink;
+  final VoidCallback? onFirstLinkTap;
+  final VoidCallback? onSecondLinkTap;
 
   const HyperTextColumn({
     super.key,
@@ -16,6 +18,8 @@ class HyperTextColumn extends StatelessWidget {
     required this.firstLink,
     required this.middleText,
     required this.secondLink,
+    this.onFirstLinkTap,
+    this.onSecondLinkTap,
   });
 
   @override
@@ -37,11 +41,7 @@ class HyperTextColumn extends StatelessWidget {
               width: Dimensions.width10 / 2,
             ),
             GestureDetector(
-              onTap: () {
-                // Get.to(() => const TermsOfUse(),
-                //     transition: Transition.rightToLeft,
-                //     duration: Duration(milliseconds: 100));
-              },
+              onTap: onFirstLinkTap,
               child: HeadingStyleText(
                 text: firstLink,
                 size: Dimensions.font20 / 1.8,
@@ -69,11 +69,7 @@ class HyperTextColumn extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: () {
-                // Get.to(() => const TermsOfUse(),
-                //     transition: Transition.rightToLeft,
-                //     duration: Duration(milliseconds: 100));
-              },
+              onTap: onSecondLinkTap,
               child: HeadingStyleText(
                 text: secondLink,
                 size: Dimensions.font20 / 1.8,

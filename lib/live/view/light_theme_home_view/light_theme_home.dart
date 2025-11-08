@@ -40,8 +40,7 @@ class _LightThemeHomeState extends State<LightThemeHome> {
   Widget build(BuildContext context) {
     return GetBuilder<HomeItemsController>(builder: (homeItems) {
       ///Here's a list of addresses from the controller
-      final _profileController =
-          Provider.of<ProfileViewController>(context, listen: false);
+      final _profileController = Provider.of<ProfileViewController>(context);
       final List<dynamic> _addresses = _profileController.savedAddresses;
       final String _firstName = _profileController.firstName;
 

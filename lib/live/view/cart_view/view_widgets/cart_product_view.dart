@@ -35,6 +35,9 @@ class CartProductView extends StatelessWidget {
     final isGasRefill = specialty.type?.toLowerCase().contains('gas') ?? false;
     final isHomeCare =
         specialty.material?.toLowerCase().contains('deep cleaning') ?? false;
+    final isCarWash =
+        specialty.type?.toLowerCase().contains('car wash') ?? false;
+
     final hasSize = specialty is NewSpecialtyModel &&
         specialty.selectedSize != null &&
         specialty.selectedSize!.isNotEmpty;
@@ -54,7 +57,8 @@ class CartProductView extends StatelessWidget {
         child: Row(
           children: [
             // Temperature icon with conditional styling
-            _buildTemperatureIcon(specialty, isGasRefill, isHomeCare, context),
+            _buildTemperatureIcon(
+                specialty, isGasRefill, isHomeCare, isCarWash, context),
 
             // Image with error handling
             Container(
@@ -224,8 +228,8 @@ class CartProductView extends StatelessWidget {
   }
 
   Widget _buildTemperatureIcon(dynamic specialty, bool isGasRefill,
-      bool isHomeCare, BuildContext context) {
-    if (isGasRefill || isHomeCare) {
+      bool isHomeCare, bool isCarWash, BuildContext context) {
+    if (isGasRefill || isHomeCare || isCarWash) {
       // Dimmed/grayed out for gas refill and home care
       return AppIcon(
         size: 24,

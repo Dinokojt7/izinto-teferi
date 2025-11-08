@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../controllers/new_cart_controller.dart';
+import '../../../../models/new_cart_model.dart';
 
 class CheckoutViewController extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -82,8 +83,13 @@ class CheckoutViewController extends ChangeNotifier {
 
   // Order summary (dynamic)
   int get orderSubtotal {
-    final cartController = Get.find<NewCartController>();
-    return cartController.totalAmount;
+    try {
+      final cartController = Get.find<NewCartController>();
+      return cartController.totalAmount;
+    } catch (e) {
+      print('Error getting order subtotal: $e');
+      return 0;
+    }
   }
 
   int get serviceFee => 35; // Fixed service fee
@@ -132,101 +138,151 @@ class CheckoutViewController extends ChangeNotifier {
   // Order Processing
   Future<Map<String, dynamic>> createOrderObject(
       Map<String, dynamic> address) async {
-    final cartController = Get.find<NewCartController>();
-    final user = _auth.currentUser;
+    try {
+      final cartController = Get.find<NewCartController>();
+      final user = _auth.currentUser;
 
-    if (user == null) throw Exception('User not authenticated');
+      if (user == null) throw Exception('User not authenticated');
 
-    final orderId = _firestore.collection('orders').doc().id;
-    final timestamp = FieldValue.serverTimestamp();
+      final orderId = _firestore.collection('orders').doc().id;
+      final timestamp = FieldValue.serverTimestamp();
 
-    // Build delivery instructions
-    final deliveryInstructions = {
-      'leaveAtDoor': _shouldLeaveAtTheDoor,
-      'dontRingBell': _isBellAllowed,
-      'callWhenArrive': _shouldCallWhenArrive,
-      'additionalNotes': _deliveryNote,
-    };
+      // Convert cart items to serializable format - FIXED
+      final List<Map<String, dynamic>> cartItems = [];
+      for (final item in cartController.getItems) {
+        if (item is NewCartModel) {
+          cartItems.add({
+            'id': item.id,
+            'name': item.name ?? 'Unknown Item',
+            'price': item.price ?? 0,
+            'quantity': item.quantity ?? 1,
+            'type': item.type ?? 'General',
+            'image': item.img ?? '',
+            'time': item.time ?? DateTime.now().toString(),
+          });
+        } else {
+          // Fallback for any other type
+          cartItems.add({
+            'id': item.id?.toString() ?? 'unknown',
+            'name': item.name?.toString() ?? 'Unknown Item',
+            'price': item.price is int ? item.price : 0,
+            'quantity': item.quantity is int ? item.quantity : 1,
+            'type': item.type?.toString() ?? 'General',
+            'image': item.img?.toString() ?? '',
+          });
+        }
+      }
 
-    // Build order object
-    final order = {
-      'orderId': orderId,
-      'userId': user.uid,
-      'userEmail': user.email,
-      'status': 'pending',
-      'createdAt': timestamp,
-      'updatedAt': timestamp,
+      // Build delivery instructions
+      final deliveryInstructions = {
+        'leaveAtDoor': _shouldLeaveAtTheDoor,
+        'dontRingBell': _isBellAllowed,
+        'callWhenArrive': _shouldCallWhenArrive,
+        'additionalNotes': _deliveryNote,
+      };
 
-      // Order details
-      'items': cartController.getItems.map((item) => item.toJson()).toList(),
-      'subtotal': orderSubtotal,
-      'serviceFee': serviceFee,
-      'tipAmount': optionalTip,
-      'totalAmount': orderTotal,
+      // Build order object
+      final order = {
+        'orderId': orderId,
+        'userId': user.uid,
+        'userEmail': user.email ?? 'No email',
+        'status': 'pending',
+        'createdAt': timestamp,
+        'updatedAt': timestamp,
 
-      // Delivery information
-      'deliveryAddress': address,
-      'deliveryInstructions': deliveryInstructions,
+        // Order details
+        'items': cartItems,
+        'subtotal': orderSubtotal,
+        'serviceFee': serviceFee,
+        'tipAmount': optionalTip,
+        'totalAmount': orderTotal,
 
-      // Payment information
-      'paymentMethod': _selectedPaymentMethod,
-      'paymentStatus': 'pending',
+        // Delivery information
+        'deliveryAddress': address,
+        'deliveryInstructions': deliveryInstructions,
 
-      // Service information
-      'serviceTypes': _getServiceTypes(cartController.getItems),
-    };
+        // Payment information
+        'paymentMethod': _selectedPaymentMethod,
+        'paymentStatus': 'pending',
 
-    return order;
+        // Service information
+        'serviceTypes': _getServiceTypes(cartController.getItems),
+      };
+
+      print('✅ Order object created successfully: $orderId');
+      return order;
+    } catch (e) {
+      print('❌ Error creating order object: $e');
+      rethrow;
+    }
   }
 
   List<String> _getServiceTypes(List<dynamic> items) {
     final types = <String>{};
     for (final item in items) {
-      if (item.type != null) {
-        types.add(item.type);
+      try {
+        if (item.type != null) {
+          types.add(item.type.toString());
+        }
+      } catch (e) {
+        print('Error getting service type from item: $e');
       }
     }
     return types.toList();
   }
 
-// In CheckoutViewController - Update the submitOrder method
-// Change the return type from Future<void> to Future<Map<String, dynamic>>
   Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
     try {
+      print('🚀 Starting order submission...');
       _isLoadingIndicator = true;
       notifyListeners();
 
-      final order = await createOrderObject(address);
       final user = _auth.currentUser;
-
       if (user == null) {
-        throw Exception('User not authenticated');
+        throw Exception('User not authenticated - please log in');
+      }
+
+      print('👤 User authenticated: ${user.uid}');
+
+      final order = await createOrderObject(address);
+      print('📦 Order object created: ${order['orderId']}');
+
+      // Validate required fields
+      if (order['orderId'] == null) {
+        throw Exception('Order ID is null');
       }
 
       // Save to Firestore
+      print('💾 Saving to Firestore...');
       await _firestore.collection('orders').doc(order['orderId']).set(order);
+      print('✅ Saved to main orders collection');
 
-      // Also save to user's orders subcollection
+      // Save to user's orders subcollection
       await _firestore
           .collection('users')
           .doc(user.uid)
           .collection('orders')
           .doc(order['orderId'])
           .set(order);
+      print('✅ Saved to user orders subcollection');
 
       // Clear cart after successful order
       final cartController = Get.find<NewCartController>();
+      final cartItemsCount = cartController.getItems.length;
       cartController.clear();
+      print('🛒 Cart cleared. Had $cartItemsCount items');
 
       _isLoadingIndicator = false;
       notifyListeners();
 
-      return order; // Now this matches the return type
-    } catch (error) {
+      print('🎉 Order submission completed successfully!');
+      return order;
+    } catch (error, stackTrace) {
       _isLoadingIndicator = false;
       notifyListeners();
-      print('Error submitting order: $error');
-      throw error;
+      print('❌ Order submission failed: $error');
+      print('📋 Stack trace: $stackTrace');
+      rethrow;
     }
   }
 

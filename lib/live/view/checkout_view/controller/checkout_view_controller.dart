@@ -189,21 +189,27 @@ class CheckoutViewController extends ChangeNotifier {
     return types.toList();
   }
 
-  Future<void> submitOrder(Map<String, dynamic> address) async {
+// In CheckoutViewController - Update the submitOrder method
+// Change the return type from Future<void> to Future<Map<String, dynamic>>
+  Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
     try {
       _isLoadingIndicator = true;
       notifyListeners();
 
       final order = await createOrderObject(address);
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
 
       // Save to Firestore
       await _firestore.collection('orders').doc(order['orderId']).set(order);
 
       // Also save to user's orders subcollection
-      final user = _auth.currentUser;
       await _firestore
           .collection('users')
-          .doc(user!.uid)
+          .doc(user.uid)
           .collection('orders')
           .doc(order['orderId'])
           .set(order);
@@ -214,9 +220,12 @@ class CheckoutViewController extends ChangeNotifier {
 
       _isLoadingIndicator = false;
       notifyListeners();
+
+      return order; // Now this matches the return type
     } catch (error) {
       _isLoadingIndicator = false;
       notifyListeners();
+      print('Error submitting order: $error');
       throw error;
     }
   }

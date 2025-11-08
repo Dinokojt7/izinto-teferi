@@ -6,6 +6,7 @@ import 'package:izinto/live/view/checkout_view/controller/checkout_view_controll
 import 'package:izinto/live/view/checkout_view/view_widgets/checkout_page_address.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/delivery_options_settings.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/payment_method_selector.dart';
+import 'package:izinto/live/view/checkout_view/view_widgets/payment_success_screen.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/select_payment_pending.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/selected_payment_method.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/service_tip_section.dart';
@@ -331,26 +332,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+// For Option 1 (returning order):
   void _processOrder(BuildContext context, Map<String, dynamic> address) async {
     final checkoutController =
         Provider.of<CheckoutViewController>(context, listen: false);
-    final homeViewController =
-        Provider.of<HomeViewController>(context, listen: false);
 
     try {
-      await checkoutController.submitOrder(address);
+      final order = await checkoutController.submitOrder(address);
 
-      // Navigate to order success
-      homeViewController.changeIndex(1, false);
-
-      // Show success message
-      Get.snackbar(
-        'Order Placed Successfully!',
-        'Your order has been confirmed and is being processed.',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+      // Navigate to success screen with order data
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => CashPaymentSuccessScreen(order: order),
+        ),
+        (route) => false,
       );
     } catch (error) {
+      print('Order processing error: $error');
       Get.snackbar(
         'Order Failed',
         'There was an error processing your order. Please try again.',

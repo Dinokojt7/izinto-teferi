@@ -133,13 +133,31 @@ class NewCartController extends GetxController {
     }
   }
 
+  // In NewCartController - Update the clear method
   void clear() {
     _items = {};
+    storageItems = [];
+
+    // Clear shared preferences
+    cartRepo.clearCart();
+
     update();
+    print('🛒 Cart cleared completely - local state and shared preferences');
   }
 
+// Also add a method to check if cart is empty (for debugging)
+  bool get isCartEmpty {
+    return _items.isEmpty && storageItems.isEmpty;
+  }
+
+// Update the addToCartList to ensure it's working
   void addToCartList() {
-    cartRepo.addToNewCartList(getItems);
-    update();
+    try {
+      cartRepo.addToNewCartList(getItems);
+      update();
+      print('💾 Cart saved to shared preferences: ${getItems.length} items');
+    } catch (e) {
+      print('❌ Error saving cart to shared preferences: $e');
+    }
   }
 }

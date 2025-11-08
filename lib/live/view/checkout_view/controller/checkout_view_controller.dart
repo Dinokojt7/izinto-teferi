@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../controllers/new_cart_controller.dart';
 import '../../../../models/new_cart_model.dart';
+import '../../../../models/new_specialty_model.dart';
 
 class CheckoutViewController extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -136,6 +139,21 @@ class CheckoutViewController extends ChangeNotifier {
   }
 
   // Order Processing
+  // Add this method to CheckoutViewController for generating short order IDs
+  String _generateShortOrderId() {
+    final random = Random();
+    final letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    // Generate 2 random capital letters
+    final letterPart = String.fromCharCodes(List.generate(
+        2, (_) => letters.codeUnitAt(random.nextInt(letters.length))));
+
+    // Generate 5 random numbers
+    final numberPart = List.generate(5, (_) => random.nextInt(10)).join();
+
+    return '$letterPart$numberPart';
+  }
+
   Future<Map<String, dynamic>> createOrderObject(
       Map<String, dynamic> address) async {
     try {
@@ -144,42 +162,31 @@ class CheckoutViewController extends ChangeNotifier {
 
       if (user == null) throw Exception('User not authenticated');
 
-      final orderId = _firestore.collection('orders').doc().id;
+      final orderId = _generateShortOrderId();
       final timestamp = FieldValue.serverTimestamp();
 
-      // Convert cart items to serializable format - FIXED
+      // FIXED: Convert cart items with proper serialization
       final List<Map<String, dynamic>> cartItems = [];
       for (final item in cartController.getItems) {
         if (item is NewCartModel) {
-          cartItems.add({
+          // Create a safe serializable version of the cart item
+          final serializableItem = {
             'id': item.id,
-            'name': item.name ?? 'Unknown Item',
-            'price': item.price ?? 0,
-            'quantity': item.quantity ?? 1,
-            'type': item.type ?? 'General',
-            'image': item.img ?? '',
-            'time': item.time ?? DateTime.now().toString(),
-          });
-        } else {
-          // Fallback for any other type
-          cartItems.add({
-            'id': item.id?.toString() ?? 'unknown',
-            'name': item.name?.toString() ?? 'Unknown Item',
-            'price': item.price is int ? item.price : 0,
-            'quantity': item.quantity is int ? item.quantity : 1,
-            'type': item.type?.toString() ?? 'General',
-            'image': item.img?.toString() ?? '',
-          });
+            'name': item.name,
+            'price': item.price,
+            'time': item.time,
+            'img': item.img,
+            'type': item.type,
+            'material': item.material,
+            'quantity': item.quantity,
+            'isExist': item.isExist,
+            'provider': item.provider,
+            // Handle specialty field carefully
+            'specialty': _serializeSpecialty(item.specialty),
+          };
+          cartItems.add(serializableItem);
         }
       }
-
-      // Build delivery instructions
-      final deliveryInstructions = {
-        'leaveAtDoor': _shouldLeaveAtTheDoor,
-        'dontRingBell': _isBellAllowed,
-        'callWhenArrive': _shouldCallWhenArrive,
-        'additionalNotes': _deliveryNote,
-      };
 
       // Build order object
       final order = {
@@ -189,31 +196,63 @@ class CheckoutViewController extends ChangeNotifier {
         'status': 'pending',
         'createdAt': timestamp,
         'updatedAt': timestamp,
-
-        // Order details
         'items': cartItems,
         'subtotal': orderSubtotal,
         'serviceFee': serviceFee,
         'tipAmount': optionalTip,
         'totalAmount': orderTotal,
-
-        // Delivery information
         'deliveryAddress': address,
-        'deliveryInstructions': deliveryInstructions,
-
-        // Payment information
+        'deliveryInstructions': {
+          'leaveAtDoor': _shouldLeaveAtTheDoor,
+          'dontRingBell': _isBellAllowed,
+          'callWhenArrive': _shouldCallWhenArrive,
+          'additionalNotes': _deliveryNote,
+        },
         'paymentMethod': _selectedPaymentMethod,
         'paymentStatus': 'pending',
-
-        // Service information
         'serviceTypes': _getServiceTypes(cartController.getItems),
       };
 
-      print('✅ Order object created successfully: $orderId');
+      print('✅ Order object created with ID: $orderId');
       return order;
     } catch (e) {
       print('❌ Error creating order object: $e');
       rethrow;
+    }
+  }
+
+// Add this helper method to handle specialty serialization
+  dynamic _serializeSpecialty(dynamic specialty) {
+    try {
+      if (specialty == null) return null;
+
+      if (specialty is NewSpecialtyModel) {
+        // Convert NewSpecialtyModel to a serializable map
+        return {
+          'id': specialty.id,
+          'name': specialty.name,
+          'introduction': specialty.introduction,
+          'price': specialty.price,
+          'size': specialty.size,
+          'img': specialty.img,
+          'type': specialty.type,
+          'material': specialty.material,
+          'provider': specialty.provider,
+          'time': specialty.time,
+          'originalId': specialty.originalId,
+          'selectedSize': specialty.selectedSize,
+          'isSizeVariant': specialty.isSizeVariant,
+        };
+      } else if (specialty is Map) {
+        // Already a map, return as is
+        return specialty;
+      } else {
+        // Fallback: convert to string or basic representation
+        return specialty.toString();
+      }
+    } catch (e) {
+      print('⚠️ Error serializing specialty: $e');
+      return null;
     }
   }
 
@@ -231,57 +270,39 @@ class CheckoutViewController extends ChangeNotifier {
     return types.toList();
   }
 
+// In CheckoutViewController - Update submitOrder with better cart clearing
   Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
     try {
-      print('🚀 Starting order submission...');
       _isLoadingIndicator = true;
       notifyListeners();
 
       final user = _auth.currentUser;
       if (user == null) {
-        throw Exception('User not authenticated - please log in');
+        throw Exception('User not authenticated');
       }
 
-      print('👤 User authenticated: ${user.uid}');
+      final cartController = Get.find<NewCartController>();
 
       final order = await createOrderObject(address);
-      print('📦 Order object created: ${order['orderId']}');
-
-      // Validate required fields
-      if (order['orderId'] == null) {
-        throw Exception('Order ID is null');
-      }
 
       // Save to Firestore
-      print('💾 Saving to Firestore...');
       await _firestore.collection('orders').doc(order['orderId']).set(order);
-      print('✅ Saved to main orders collection');
-
-      // Save to user's orders subcollection
       await _firestore
           .collection('users')
           .doc(user.uid)
           .collection('orders')
           .doc(order['orderId'])
           .set(order);
-      print('✅ Saved to user orders subcollection');
 
-      // Clear cart after successful order
-      final cartController = Get.find<NewCartController>();
-      final cartItemsCount = cartController.getItems.length;
       cartController.clear();
-      print('🛒 Cart cleared. Had $cartItemsCount items');
 
       _isLoadingIndicator = false;
       notifyListeners();
 
-      print('🎉 Order submission completed successfully!');
       return order;
     } catch (error, stackTrace) {
       _isLoadingIndicator = false;
       notifyListeners();
-      print('❌ Order submission failed: $error');
-      print('📋 Stack trace: $stackTrace');
       rethrow;
     }
   }

@@ -114,6 +114,17 @@ class _OptionLayoutState extends State<OptionLayout> {
                   borderRadius: BorderRadius.circular(2.0),
                   side: BorderSide(color: Colors.black, width: 1.0),
                 ),
+                fillColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Colors.black; // Black when checked
+                  }
+                  return Colors.transparent;
+                }),
+                checkColor:
+                    MaterialStateProperty.all(Colors.white), // White checkmark
+                overlayColor:
+                    MaterialStateProperty.all(Colors.black.withOpacity(0.1)),
+                splashRadius: 0,
               ),
             ),
             child: Checkbox(

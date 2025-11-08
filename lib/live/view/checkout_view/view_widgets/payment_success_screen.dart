@@ -218,13 +218,6 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                 padding: EdgeInsets.all(Dimensions.width20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: Offset(0, -2),
-                    ),
-                  ],
                 ),
                 child: SaveButton(
                   isActive: true,

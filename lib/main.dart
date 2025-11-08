@@ -264,10 +264,10 @@ class MyApp extends StatelessWidget {
                                       title: 'Izinto',
                                       home: Wrapper(),
                                       theme: ThemeData(
-                                        colorScheme:
-                                            ColorScheme.fromSwatch().copyWith(
-                                          primary: LiveColors.primary,
-                                          secondary: const Color(0Xff353839),
+                                        colorScheme: ColorScheme.fromSeed(
+                                          seedColor: Colors
+                                              .black, // Your primary color
+                                          brightness: Brightness.light,
                                         ),
                                       ),
                                       getPages: RouteHelper.routes,

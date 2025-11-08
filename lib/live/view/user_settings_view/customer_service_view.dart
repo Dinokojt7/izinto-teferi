@@ -12,6 +12,7 @@ import '../../widgets/generic_header_row.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
 import '../home_view/controller/home_view_controller.dart';
 import '../home_view/sliver_home_page.dart';
+import '../order_history_view/controller/order_history_controller.dart';
 import 'opening_hours.dart';
 
 class CustomerServiceView extends StatelessWidget {
@@ -23,6 +24,8 @@ class CustomerServiceView extends StatelessWidget {
   Widget build(BuildContext context) {
     final _homeViewController =
         Provider.of<HomeViewController>(context, listen: false);
+    final orderController = Provider.of<OrderHistoryController>(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5.0),
       child: Column(

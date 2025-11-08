@@ -76,10 +76,10 @@ class OpeningHours extends StatelessWidget {
                             actionButtonChild: BlueTextButton(
                               text: 'Change',
                               onTap: () {
-                                Provider.of<CheckoutViewController>(context,
-                                        listen: false)
-                                    .onUserNavigation(
-                                        context, SavedAddresses());
+                                // Provider.of<CheckoutViewController>(context,
+                                //         listen: false)
+                                //     .onUserNavigation(
+                                //         context, SavedAddresses());
                               },
                             ),
                           ),

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 
 import '../../utils/dimensions.dart';
 import '../utilities/colors.dart';
+import '../utilities/generic_system_navigation.dart';
+import '../view/user_settings_view/screens/legal_documents/legal_document_screen.dart';
 
-class HyperTextRow extends StatelessWidget {
+class HyperTextRow extends StatefulWidget {
   final String preText;
   final String firstLink;
   final String middleText;
@@ -19,11 +23,16 @@ class HyperTextRow extends StatelessWidget {
   });
 
   @override
+  State<HyperTextRow> createState() => _HyperTextRowState();
+}
+
+class _HyperTextRowState extends State<HyperTextRow> {
+  @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         HeadingStyleText(
-          text: preText,
+          text: widget.preText,
           size: Dimensions.font20 / 1.8,
           family: 'Poppins',
           weight: FontWeight.w300,
@@ -34,12 +43,25 @@ class HyperTextRow extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () {
-            // Get.to(() => const TermsOfUse(),
-            //     transition: Transition.rightToLeft,
-            //     duration: Duration(milliseconds: 100));
+            setState(() {
+              SystemNavigation().applyCustomSystemChromeSettings(
+                  Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+            });
+            Get.to(
+              () => LegalDocumentScreen(
+                description:
+                    'Please read these terms carefully before using our services',
+                documentType: 'terms-of-use',
+                screenTitle: 'Terms & Conditions',
+                primaryColor: LiveColors.cartBlue,
+                lastUpdated: 'December 2024',
+              ),
+              transition: Transition.native,
+              duration: Duration(milliseconds: 500),
+            );
           },
           child: HeadingStyleText(
-            text: firstLink,
+            text: widget.firstLink,
             size: Dimensions.font20 / 1.8,
             family: 'Poppins',
             weight: FontWeight.w600,
@@ -50,7 +72,7 @@ class HyperTextRow extends StatelessWidget {
           width: Dimensions.width10 / 2,
         ),
         HeadingStyleText(
-          text: middleText,
+          text: widget.middleText,
           size: Dimensions.font20 / 1.8,
           family: 'Poppins',
           weight: FontWeight.w300,
@@ -61,12 +83,24 @@ class HyperTextRow extends StatelessWidget {
         ),
         GestureDetector(
           onTap: () {
-            // Get.to(() => const TermsOfUse(),
-            //     transition: Transition.rightToLeft,
-            //     duration: Duration(milliseconds: 100));
+            setState(() {
+              SystemNavigation().applyCustomSystemChromeSettings(
+                  Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+            });
+            Get.to(
+              () => LegalDocumentScreen(
+                documentType: 'privacy-policy',
+                screenTitle: 'Privacy Policy',
+                description: 'How we protect and use your personal information',
+                primaryColor: LiveColors.cartBlue,
+                lastUpdated: 'December 2024',
+              ),
+              transition: Transition.native,
+              duration: Duration(milliseconds: 500),
+            );
           },
           child: HeadingStyleText(
-            text: secondLink,
+            text: widget.secondLink,
             size: Dimensions.font20 / 1.8,
             family: 'Poppins',
             weight: FontWeight.w600,

@@ -104,7 +104,7 @@ class CartViewPage extends StatelessWidget {
                           GenericSnackBar().showCustomSnackBar(() {
                             ScaffoldMessenger.of(context)
                                 .removeCurrentSnackBar();
-                            homeViewController.onPopNavigation(
+                            homeViewController.onIndependentPageNavigation(
                                 context, PhoneAuthView());
                           }, context, 'Please login to continue', false);
                         } else {

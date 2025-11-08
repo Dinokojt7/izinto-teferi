@@ -32,6 +32,9 @@ class _DeliveryOptionsSettingsState extends State<DeliveryOptionsSettings> {
                 icon: Icons.door_front_door_outlined,
                 settingDescription: 'Leave at the door',
                 isSelected: shouldLeaveAtTheDoor,
+                onChanged: (value) {
+                  checkout.toggleLeaveAtDoor(value);
+                },
               ),
               Container(
                 height: Dimensions.height45,
@@ -46,6 +49,9 @@ class _DeliveryOptionsSettingsState extends State<DeliveryOptionsSettings> {
             icon: MdiIcons.bellCancelOutline,
             settingDescription: 'Don\'t ring the bell',
             isSelected: shouldRingBell,
+            onChanged: (value) {
+              checkout.toggleBellAllowed(value);
+            },
           ),
           SizedBox(
             height: Dimensions.height10 / 5,
@@ -54,6 +60,9 @@ class _DeliveryOptionsSettingsState extends State<DeliveryOptionsSettings> {
             icon: Icons.call_outlined,
             settingDescription: 'Call when you arrive',
             isSelected: shouldCall,
+            onChanged: (value) {
+              checkout.toggleCallWhenArrive(value);
+            },
           ),
         ],
       );
@@ -65,11 +74,15 @@ class OptionLayout extends StatefulWidget {
   final IconData icon;
   final String settingDescription;
   bool isSelected;
-  OptionLayout(
-      {super.key,
-      required this.icon,
-      required this.settingDescription,
-      required this.isSelected});
+  final Function(bool) onChanged;
+
+  OptionLayout({
+    super.key,
+    required this.icon,
+    required this.settingDescription,
+    required this.isSelected,
+    required this.onChanged,
+  });
 
   @override
   State<OptionLayout> createState() => _OptionLayoutState();
@@ -80,8 +93,8 @@ class _OptionLayoutState extends State<OptionLayout> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(widget.icon, size: 24.0), // Your icon
-        SizedBox(width: Dimensions.width20), // Space between icon and text
+        Icon(widget.icon, size: 24.0),
+        SizedBox(width: Dimensions.width20),
         Expanded(
           child: HeadingStyleText(
             text: widget.settingDescription,
@@ -95,12 +108,11 @@ class _OptionLayoutState extends State<OptionLayout> {
           scale: 1.1,
           child: Theme(
             data: Theme.of(context).copyWith(
-              unselectedWidgetColor: Colors.black, // Darker border color
+              unselectedWidgetColor: Colors.black,
               checkboxTheme: CheckboxThemeData(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(2.0), // Square shape
-                  side: BorderSide(
-                      color: Colors.black, width: 1.0), // Darker border
+                  borderRadius: BorderRadius.circular(2.0),
+                  side: BorderSide(color: Colors.black, width: 1.0),
                 ),
               ),
             ),
@@ -110,8 +122,7 @@ class _OptionLayoutState extends State<OptionLayout> {
                 setState(() {
                   widget.isSelected = value ?? false;
                 });
-                Provider.of<CheckoutViewController>(context, listen: false)
-                    .selectOption();
+                widget.onChanged(widget.isSelected);
               },
             ),
           ),

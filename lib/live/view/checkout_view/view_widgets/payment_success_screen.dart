@@ -32,17 +32,13 @@ class CashPaymentSuccessScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: Colors.black,
+          backgroundColor: Colors.white,
           automaticallyImplyLeading: false,
           toolbarHeight: 0,
         ),
         body: SafeArea(
           child: Column(
             children: [
-              GenericAppBar(
-                heading: 'Order Confirmed',
-                removeLeading: true,
-              ),
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
@@ -60,13 +56,12 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color:
-                                      LiveColors.standardBlue.withOpacity(0.1),
+                                  color: LiveColors.accent.withOpacity(0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
                                   Icons.check_circle,
-                                  color: LiveColors.standardBlue,
+                                  color: LiveColors.accent,
                                   size: 40,
                                 ),
                               ),
@@ -85,10 +80,10 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                         // Order Confirmed Message
                         HeadingStyleText(
                           text: 'Order Confirmed!',
-                          size: Dimensions.font26,
+                          size: Dimensions.font20 / 1.2,
                           weight: FontWeight.w700,
                           align: TextAlign.center,
-                          color: Colors.black,
+                          color: LiveColors.accent,
                         ),
                         SizedBox(height: Dimensions.height15),
 
@@ -97,7 +92,7 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                           'Your order has been successfully placed and is being processed.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: Dimensions.font16,
+                            fontSize: Dimensions.font16 / 1.1,
                             color: Colors.grey.shade600,
                             fontFamily: 'Poppins',
                             height: 1.5,
@@ -182,7 +177,7 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                             children: [
                               HeadingStyleText(
                                 text: 'What happens next?',
-                                size: Dimensions.font20,
+                                size: Dimensions.font20 / 1.2,
                                 weight: FontWeight.w600,
                                 color: Colors.black,
                               ),
@@ -266,16 +261,16 @@ class CashPaymentSuccessScreen extends StatelessWidget {
             flex: 2,
             child: HeadingStyleText(
               text: label,
-              size: Dimensions.font16,
+              size: Dimensions.font16 / 1.2,
               weight: FontWeight.w500,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade900,
             ),
           ),
           Expanded(
             flex: 3,
             child: HeadingStyleText(
               text: value,
-              size: Dimensions.font16,
+              size: Dimensions.font16 / 1.2,
               weight: FontWeight.w600,
               color: valueColor,
               align: TextAlign.right,
@@ -313,7 +308,7 @@ class CashPaymentSuccessScreen extends StatelessWidget {
             child: Text(
               text,
               style: TextStyle(
-                fontSize: Dimensions.font16 / 1.1,
+                fontSize: Dimensions.font16 / 1.2,
                 color: Colors.grey.shade700,
                 fontFamily: 'Poppins',
                 height: 1.4,

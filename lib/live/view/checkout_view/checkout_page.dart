@@ -343,11 +343,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
       print('✅ Order successful, navigating to success screen');
       // Navigate directly to success screen
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => CashPaymentSuccessScreen(order: order),
-        ),
-      );
+      setState(() {
+        SystemNavigation().applyCustomSystemChromeSettings(
+            Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+      });
+
+      Get.to(() => CashPaymentSuccessScreen(order: order));
     } catch (error) {
       print('❌ Order processing error: $error');
       Get.snackbar(

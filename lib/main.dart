@@ -25,6 +25,7 @@ import 'package:izinto/live/view/checkout_view/controller/checkout_view_controll
 import 'package:izinto/live/view/checkout_view/controller/riderTip_controller.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
+import 'package:izinto/live/view/order_history_view/controller/order_history_controller.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/view/user_settings_view/controller/user_settings_controller.dart';
 import 'package:izinto/models/user.dart';
@@ -253,6 +254,10 @@ class MyApp extends StatelessWidget {
                                           UserSettingsController>(
                                         create: (_) => UserSettingsController(),
                                       ),
+                                      ChangeNotifierProvider<
+                                          OrderHistoryController>(
+                                        create: (_) => OrderHistoryController(),
+                                      )
                                     ],
                                     child: GetMaterialApp(
                                       debugShowCheckedModeBanner: false,

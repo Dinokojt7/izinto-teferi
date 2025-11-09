@@ -34,7 +34,7 @@ class HomeButton extends StatelessWidget {
                       : null,
                   borderRadius: BorderRadius.circular(Dimensions.radius30 * 2),
                   color: isCurrentActiveTab
-                      ? LiveColors.secondary
+                      ? LiveColors.accent.withOpacity(0.5)
                       : Colors.transparent,
                 ),
                 child: Padding(

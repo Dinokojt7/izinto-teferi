@@ -4,10 +4,13 @@ import 'package:izinto/live/view/order_history_view/view_widgets/order_history_i
 import 'package:provider/provider.dart';
 import '../../../models/user.dart';
 import '../../../utils/dimensions.dart';
+import '../../../widgets/texts/integers_and_doubles.dart';
+import '../../../widgets/texts/small_text.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';
 import '../../utilities/colors.dart';
 import '../../widgets/generic_center_dialog.dart';
 import '../../widgets/no_user_page.dart';
+import '../../widgets/text_widgets/heading_style_text.dart';
 import '../home_view/controller/home_view_controller.dart';
 import 'controller/order_history_controller.dart';
 
@@ -48,6 +51,11 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
     final filteredOrders =
         _filterOrders(orderController.orders, _selectedFilter);
 
+    String _filterText(String text) {
+      if (text.isEmpty) return text;
+      return text[0].toUpperCase() + text.substring(1).toLowerCase();
+    }
+
     return Scaffold(
       backgroundColor: Colors.white.withOpacity(0.97),
       appBar: AppBar(
@@ -65,6 +73,31 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
 
           // Filter Menu
           _buildFilterMenu(),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              Dimensions.width20,
+              Dimensions.height20,
+              Dimensions.height10,
+              Dimensions.height10,
+            ),
+            child: Row(
+              children: [
+                HeadingStyleText(
+                  text: _filterText(_selectedFilter),
+                  weight: FontWeight.w600,
+                ),
+                SizedBox(
+                  width: Dimensions.width10,
+                ),
+                SmallText(
+                    height: 1.5,
+                    color: Colors.black,
+                    size: Dimensions.font16 / 1.5,
+                    text:
+                        '${filteredOrders.length} ${filteredOrders.length == 1 ? 'item' : 'items'}')
+              ],
+            ),
+          ),
 
           if (orderController.isLoading)
             Expanded(
@@ -117,7 +150,7 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
   Widget _buildFilterMenu() {
     return Container(
       width: double.infinity,
-      height: 60,
+      height: Dimensions.height30 * 2,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -128,16 +161,19 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
           ),
         ],
       ),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
-        children: [
-          _buildFilterChip('Active', 'active'),
-          SizedBox(width: Dimensions.width10),
-          _buildFilterChip('Fulfilled', 'fulfilled'),
-          SizedBox(width: Dimensions.width10),
-          _buildFilterChip('Closed', 'closed'),
-        ],
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: Dimensions.height10 * 1.1),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
+          children: [
+            _buildFilterChip('Active', 'active'),
+            SizedBox(width: Dimensions.width10),
+            _buildFilterChip('Fulfilled', 'fulfilled'),
+            SizedBox(width: Dimensions.width10),
+            _buildFilterChip('Closed', 'closed'),
+          ],
+        ),
       ),
     );
   }
@@ -146,44 +182,40 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
     final isSelected = _selectedFilter == value;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilter = value;
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: Dimensions.width20,
-          vertical: Dimensions.height10,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? LiveColors.standardBlue : Colors.white,
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: isSelected ? LiveColors.standardBlue : Colors.grey.shade300,
-            width: 1.5,
+        onTap: () {
+          setState(() {
+            _selectedFilter = value;
+          });
+        },
+        child: Container(
+          height: Dimensions.height45 / 1.1,
+          decoration: BoxDecoration(
+            border: isSelected
+                ? Border.all(
+                    width: 1,
+                    color: Colors.grey.withOpacity(0.1),
+                  )
+                : null,
+            borderRadius: BorderRadius.circular(Dimensions.radius30 * 2),
+            color: isSelected
+                ? LiveColors.accent.withOpacity(0.5)
+                : Colors.transparent,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: LiveColors.standardBlue.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ]
-              : [],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: Dimensions.font16 / 1.2,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : Colors.black,
-            fontFamily: 'Poppins',
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: Dimensions.width10 / 2,
+                horizontal: Dimensions.width10),
+            child: Center(
+              //register
+              child: IntegerText(
+                text: label,
+                size: Dimensions.font16 / 1.1,
+                fontWeight: FontWeight.w600,
+                color: Color(0Xff353839),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   List<Map<String, dynamic>> _filterOrders(

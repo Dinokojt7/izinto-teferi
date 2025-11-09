@@ -274,20 +274,26 @@ class TabsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TabBar(
-      labelPadding: EdgeInsets.symmetric(horizontal: 8.0),
-      indicator: BoxDecoration(),
-      physics: AlwaysScrollableScrollPhysics(),
-      indicatorColor:
-          //isSpecialtiesLoaded
-          //   ?
-          //AppColors.secondary
-          // :
-          Colors.transparent,
-      controller: _tabController,
-      tabs: _tabs,
-      labelColor: AppColors.fontColor,
-      unselectedLabelColor: Colors.grey,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(LiveDimensions.radius30 * 2),
+      ),
+      child: TabBar(
+        labelPadding: EdgeInsets.symmetric(horizontal: 8.0),
+        indicator: BoxDecoration(),
+        physics: AlwaysScrollableScrollPhysics(),
+        indicatorColor:
+            //isSpecialtiesLoaded
+            //   ?
+            //AppColors.secondary
+            // :
+            Colors.transparent,
+        controller: _tabController,
+        tabs: _tabs,
+        labelColor: AppColors.fontColor,
+        unselectedLabelColor: Colors.grey,
+      ),
     );
   }
 }

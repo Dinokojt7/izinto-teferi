@@ -193,7 +193,7 @@ class LatestOrderItem extends StatelessWidget {
                 // Track Order Button
                 SaveButton(
                   isActive: true,
-                  description: 'Track the order',
+                  description: 'View',
                   isAuthScreen: false,
                   onTap: onTap,
                 ),
@@ -547,7 +547,7 @@ class LatestOrderItem extends StatelessWidget {
       final suburb = deliveryAddress['suburb']?.toString() ?? '';
 
       // Check if street has more than 5 characters
-      if (street.length > 5) {
+      if (street.length > 20) {
         return street;
       } else {
         // Use both street and suburb

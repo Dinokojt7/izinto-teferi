@@ -44,4 +44,30 @@ class OrderHistoryController extends ChangeNotifier {
       print('Error loading orders: $error');
     }
   }
+
+  // In OrderHistoryController - Add this method
+  Map<String, dynamic>? getLatestOrder() {
+    if (_orders.isEmpty) return null;
+
+    // Sort by createdAt in descending order
+    _orders.sort((a, b) {
+      final aTime = _parseTimestamp(a['createdAt']);
+      final bTime = _parseTimestamp(b['createdAt']);
+      return bTime.compareTo(aTime); // Newest first
+    });
+
+    return _orders.first;
+  }
+
+// Helper method to parse different timestamp formats
+  DateTime _parseTimestamp(dynamic timestamp) {
+    if (timestamp is Timestamp) {
+      return timestamp.toDate();
+    } else if (timestamp is String) {
+      return DateTime.parse(timestamp);
+    } else if (timestamp is DateTime) {
+      return timestamp;
+    }
+    return DateTime.now(); // Fallback
+  }
 }

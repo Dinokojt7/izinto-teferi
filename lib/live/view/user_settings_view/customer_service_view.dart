@@ -49,7 +49,7 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(height: Dimensions.height30),
+          SizedBox(height: Dimensions.height30 * 1.5),
 
           // Your Orders Header
           Padding(

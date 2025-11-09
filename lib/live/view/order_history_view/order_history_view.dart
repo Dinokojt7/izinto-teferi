@@ -19,6 +19,8 @@ class OrderHistoryView extends StatefulWidget {
 }
 
 class _OrderHistoryViewState extends State<OrderHistoryView> {
+  String _selectedFilter = 'active';
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +44,10 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
       );
     }
 
+    // Filter orders based on selected filter
+    final filteredOrders =
+        _filterOrders(orderController.orders, _selectedFilter);
+
     return Scaffold(
       backgroundColor: Colors.white.withOpacity(0.97),
       appBar: AppBar(
@@ -56,6 +62,10 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
             heading: 'Your orders',
             removeLeading: true,
           ),
+
+          // Filter Menu
+          _buildFilterMenu(),
+
           if (orderController.isLoading)
             Expanded(
               child: Center(
@@ -64,16 +74,15 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                 ),
               ),
             )
-          else if (orderController.orders.isEmpty)
+          else if (filteredOrders.isEmpty)
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(
                     top: Dimensions.height30, bottom: Dimensions.height20),
                 child: GenericCenterDialog(
-                  emoji: '\u{1F9FA}',
-                  heading: 'No past orders',
-                  description:
-                      '..yet! View and explore services that are available in your area to get started.',
+                  emoji: _getEmptyStateEmoji(_selectedFilter),
+                  heading: _getEmptyStateHeading(_selectedFilter),
+                  description: _getEmptyStateDescription(_selectedFilter),
                   buttonText: 'Browse services',
                   callBack: () {
                     final homeViewController =
@@ -90,9 +99,9 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                   horizontal: Dimensions.width20,
                   vertical: Dimensions.height10,
                 ),
-                itemCount: orderController.orders.length,
+                itemCount: filteredOrders.length,
                 itemBuilder: (context, index) {
-                  final order = orderController.orders[index];
+                  final order = filteredOrders[index];
                   return OrderHistoryItem(
                     order: order,
                     index: index,
@@ -103,5 +112,143 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
         ],
       ),
     );
+  }
+
+  Widget _buildFilterMenu() {
+    return Container(
+      width: double.infinity,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
+        children: [
+          _buildFilterChip('Active', 'active'),
+          SizedBox(width: Dimensions.width10),
+          _buildFilterChip('Fulfilled', 'fulfilled'),
+          SizedBox(width: Dimensions.width10),
+          _buildFilterChip('Closed', 'closed'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final isSelected = _selectedFilter == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFilter = value;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: Dimensions.width20,
+          vertical: Dimensions.height10,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? LiveColors.standardBlue : Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color: isSelected ? LiveColors.standardBlue : Colors.grey.shade300,
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: LiveColors.standardBlue.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: Dimensions.font16 / 1.2,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.white : Colors.black,
+            fontFamily: 'Poppins',
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _filterOrders(
+      List<Map<String, dynamic>> orders, String filter) {
+    switch (filter) {
+      case 'active':
+        return orders.where((order) {
+          final status = order['status']?.toString().toLowerCase() ?? '';
+          return status == 'pending' ||
+              status == 'in_progress' ||
+              status == 'processing';
+        }).toList();
+      case 'fulfilled':
+        return orders.where((order) {
+          final status = order['status']?.toString().toLowerCase() ?? '';
+          return status == 'completed' || status == 'fulfilled';
+        }).toList();
+      case 'closed':
+        return orders.where((order) {
+          final status = order['status']?.toString().toLowerCase() ?? '';
+          return status == 'cancelled' ||
+              status == 'closed' ||
+              status == 'refunded';
+        }).toList();
+      default:
+        return orders;
+    }
+  }
+
+  String _getEmptyStateEmoji(String filter) {
+    switch (filter) {
+      case 'active':
+        return '🕒';
+      case 'fulfilled':
+        return '✅';
+      case 'closed':
+        return '📦';
+      default:
+        return '📝';
+    }
+  }
+
+  String _getEmptyStateHeading(String filter) {
+    switch (filter) {
+      case 'active':
+        return 'No active orders';
+      case 'fulfilled':
+        return 'No fulfilled orders';
+      case 'closed':
+        return 'No closed orders';
+      default:
+        return 'No past orders';
+    }
+  }
+
+  String _getEmptyStateDescription(String filter) {
+    switch (filter) {
+      case 'active':
+        return 'You don\'t have any active orders at the moment. Browse services to get started!';
+      case 'fulfilled':
+        return 'Your completed orders will appear here once they\'re fulfilled.';
+      case 'closed':
+        return 'Cancelled or closed orders will appear here.';
+      default:
+        return '..yet! View and explore services that are available in your area to get started.';
+    }
   }
 }

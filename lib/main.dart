@@ -255,7 +255,10 @@ class MyApp extends StatelessWidget {
                                           OrderSupportController>(
                                         create: (_) => OrderSupportController(),
                                       ),
-                                      // Add this to your MultiProvider
+                                      ChangeNotifierProvider<
+                                          OrderSupportController>(
+                                        create: (_) => OrderSupportController(),
+                                      ),
                                       Provider<NotificationService>(
                                         create: (_) => NotificationService(),
                                       ),

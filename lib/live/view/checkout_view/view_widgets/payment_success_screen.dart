@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:izinto/live/auxiliery_classes/generic_app_bar.dart';
+import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:lottie/lottie.dart';
@@ -67,7 +68,7 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                               ),
                               SizedBox(height: Dimensions.height15),
                               HeadingStyleText(
-                                text: 'Payment Successful!',
+                                text: 'Confirmed!',
                                 size: Dimensions.font20,
                                 weight: FontWeight.w600,
                                 color: Colors.black,
@@ -75,11 +76,17 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        SizedBox(height: Dimensions.height30),
+                        SizedBox(height: Dimensions.height15),
+                        Icon(
+                          Icons.local_shipping,
+                          size: 48,
+                          color: LiveColors.cartBlue,
+                        ),
+                        SizedBox(height: Dimensions.height15),
 
                         // Order Confirmed Message
                         HeadingStyleText(
-                          text: 'Order Confirmed!',
+                          text: 'Order Received!',
                           size: Dimensions.font20 / 1.2,
                           weight: FontWeight.w700,
                           align: TextAlign.center,
@@ -89,7 +96,7 @@ class CashPaymentSuccessScreen extends StatelessWidget {
 
                         // Success Message
                         Text(
-                          'Your order has been successfully placed and is being processed.',
+                          'You’re all set! We’ll handle the rest.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: Dimensions.font16 / 1.1,
@@ -214,23 +221,29 @@ class CashPaymentSuccessScreen extends StatelessWidget {
 
               // Bottom Action Button
               Container(
-                height: Dimensions.bottomHeightBar,
+                height: Dimensions.bottomHeightBar / 1.1,
                 padding: EdgeInsets.all(Dimensions.width20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                 ),
-                child: SaveButton(
-                  isActive: true,
-                  description: 'View My Orders',
-                  isAuthScreen: false,
-                  onTap: () {
-                    // Simply navigate to order history using your existing navigation
-                    // This will automatically handle the back navigation since it's changing tabs
-                    homeViewController.changeIndex(1, false);
-
-                    // Close the success screen
-                    Navigator.of(context).pop();
-                  },
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: SaveButton(
+                    isActive: true,
+                    description: 'View',
+                    isAuthScreen: false,
+                    onTap: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (_) => ViewOrderScreen(
+                                  orderNumber: '#$orderId',
+                                  order: order,
+                                  isFromCheckout: true,
+                                )),
+                        (Route<dynamic> route) => false, // removes everything
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

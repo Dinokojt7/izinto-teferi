@@ -72,7 +72,7 @@ class HomeViewController extends ChangeNotifier {
 
   Future<void> onUserNavigation(BuildContext context, Widget child) async {
     _isLoadingIndicator = true;
-    notifyListeners(); // Immediately notify listeners about the change
+    notifyListeners(); //
 
     await Future.delayed(const Duration(seconds: 3), () async {
       _isLoadingIndicator = false;
@@ -89,7 +89,7 @@ class HomeViewController extends ChangeNotifier {
   Future<void> onIndependentPageNavigation(
       BuildContext context, Widget child) async {
     _isLoadingIndicator = true;
-    notifyListeners(); // Immediately notify listeners about the change
+    notifyListeners();
 
     await Future.delayed(const Duration(seconds: 3), () async {
       await Get.to(() => child,

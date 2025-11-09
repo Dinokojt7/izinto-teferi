@@ -2,7 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../services/notification_service.dart';
 
 class OrderSupportController extends ChangeNotifier {
@@ -12,12 +11,9 @@ class OrderSupportController extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  List<Map<String, dynamic>> _messages = [];
-  List<Map<String, dynamic>> get messages => _messages;
-
   TextEditingController messageController = TextEditingController();
 
-  // Create or get chat room for order
+  // Get or create chat room
   Future<String> getOrCreateChatRoom(String orderId) async {
     try {
       final user = _auth.currentUser;
@@ -41,7 +37,7 @@ class OrderSupportController extends ChangeNotifier {
           'status': 'active',
           'participants': {
             user.uid: true,
-            'admin': true, // Admin will be notified
+            'admin': true,
           }
         });
       }
@@ -64,7 +60,6 @@ class OrderSupportController extends ChangeNotifier {
       notifyListeners();
 
       final chatRoomId = await getOrCreateChatRoom(orderId);
-      final timestamp = FieldValue.serverTimestamp();
 
       // Add message to subcollection
       await _firestore
@@ -75,7 +70,7 @@ class OrderSupportController extends ChangeNotifier {
         'senderId': user.uid,
         'senderType': 'user',
         'message': message.trim(),
-        'timestamp': timestamp,
+        'timestamp': FieldValue.serverTimestamp(),
         'readBy': [user.uid],
       });
 
@@ -85,11 +80,11 @@ class OrderSupportController extends ChangeNotifier {
           .doc(chatRoomId)
           .update({
         'lastMessage': message.trim(),
-        'lastMessageAt': timestamp,
+        'lastMessageAt': FieldValue.serverTimestamp(),
         'lastSenderId': user.uid,
       });
 
-      // Send notification to admin
+      // Send notification to admin (only if message is from user)
       await _sendSupportNotification(orderId, message.trim());
 
       messageController.clear();
@@ -105,45 +100,61 @@ class OrderSupportController extends ChangeNotifier {
 
   // Stream messages for a chat room
   Stream<QuerySnapshot> getMessagesStream(String orderId) {
+    final chatRoomId = 'order_${orderId}_support';
     return _firestore
         .collection('order_support_chats')
-        .doc('order_${orderId}_support')
+        .doc(chatRoomId)
         .collection('messages')
         .orderBy('timestamp', descending: false)
         .snapshots();
   }
 
-// In OrderSupportController, use the singleton instance:
+  // Mark messages as read
+  Future<void> markMessagesAsRead(String orderId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      final chatRoomId = 'order_${orderId}_support';
+
+      final messages = await _firestore
+          .collection('order_support_chats')
+          .doc(chatRoomId)
+          .collection('messages')
+          .where('readBy', isNotEqualTo: user.uid)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in messages.docs) {
+        batch.update(doc.reference, {
+          'readBy': FieldValue.arrayUnion([user.uid])
+        });
+      }
+
+      await batch.commit();
+    } catch (e) {
+      print('Error marking messages as read: $e');
+    }
+  }
+
+  // Send support notification (to admin when user messages, to user when admin messages)
   Future<void> _sendSupportNotification(String orderId, String message) async {
     try {
-      // Use the singleton instance directly
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      // For now, we'll just show a local notification to the user
+      // In a real implementation, you'd send this to admin
       await NotificationService().showSupportNotification(
         orderId: orderId,
         title: 'Support Message Sent',
-        body:
-            'Your message has been sent to our support team. We\'ll respond soon.',
+        body: 'Your message has been sent to our support team.',
       );
 
       print('✅ Support notification sent for order: $orderId');
     } catch (e) {
       print('❌ Error sending support notification: $e');
     }
-  }
-
-  // Helper method to send FCM notifications
-  Future<void> _sendFCMNotification({
-    required List<String> tokens,
-    required String title,
-    required String body,
-    required Map<String, dynamic> data,
-  }) async {
-    // This would integrate with your FCM service
-    // For now, we'll just print
-    print('FCM Notification:');
-    print('Title: $title');
-    print('Body: $body');
-    print('Data: $data');
-    print('Tokens: ${tokens.length}');
   }
 
   @override

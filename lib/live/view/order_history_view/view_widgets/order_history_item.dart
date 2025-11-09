@@ -1,12 +1,15 @@
 // Updated OrderHistoryItem.dart
 import 'package:flutter/material.dart';
+import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../utilities/colors.dart';
 import '../../../widgets/buttons/save_button.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
+import '../../order_support/order_support_chat.dart';
 
 class OrderHistoryItem extends StatelessWidget {
   final Map<String, dynamic> order;
@@ -857,17 +860,18 @@ class OrderHistoryItem extends StatelessWidget {
   }
 
   void _openSupportChat(BuildContext context, Map<String, dynamic> order) {
-    // This will be implemented with the chat controller
     Navigator.of(context).pop(); // Close the bottom sheet first
-    // Navigate to chat screen
-    // Get.to(() => OrderSupportChat(order: order));
-
-    // For now, show a placeholder
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Support chat feature coming soon!'),
-        backgroundColor: LiveColors.standardBlue,
-      ),
+    final homeViewController =
+        Provider.of<HomeViewController>(context, listen: false);
+    // Navigate to support chat
+    homeViewController.onIndependentPageNavigation(
+      context,
+      OrderSupportChat(order: order),
     );
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (context) => OrderSupportChat(order: order),
+    //   ),
+    // );
   }
 }

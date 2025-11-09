@@ -117,47 +117,44 @@ class OrderHistoryItem extends StatelessWidget {
                 // Address Section
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: Dimensions.width15,
-                            vertical: Dimensions.height20 * 1.1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius:
-                                BorderRadius.circular(Dimensions.radius15 / 2),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Dimensions.width15,
+                      vertical: Dimensions.height20 * 1.1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius:
+                          BorderRadius.circular(Dimensions.radius15 / 2),
+                      border: Border.all(
+                        color: Colors.grey.shade200,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                        SizedBox(width: Dimensions.width10 / 2),
+                        Flexible(
+                          child: Text(
+                            address,
+                            style: TextStyle(
+                              fontSize: Dimensions.font16 / 1.3,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                              fontFamily: 'Poppins',
                             ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.location_on_outlined,
-                                size: 16,
-                                color: Colors.grey.shade600,
-                              ),
-                              SizedBox(width: Dimensions.width10 / 2),
-                              Text(
-                                address,
-                                style: TextStyle(
-                                  fontSize: Dimensions.font16 / 1.3,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade700,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ],
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 
@@ -784,7 +781,7 @@ class OrderHistoryItem extends StatelessWidget {
                 onPressed: () {
                   _openSupportChat(context, order);
                 },
-                backgroundColor: LiveColors.standardBlue,
+                backgroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),

@@ -43,6 +43,7 @@ import 'package:izinto/services/dependency_injection.dart';
 import 'package:izinto/services/firebase_auth_methods.dart';
 import 'package:izinto/services/location/location_model.dart';
 import 'package:izinto/services/location/location_service.dart';
+import 'package:izinto/services/notification_service.dart';
 import 'package:izinto/services/phone_auth_methods.dart';
 import 'package:izinto/services/subscription_methods.dart';
 import 'package:izinto/utils/colors.dart';
@@ -61,30 +62,22 @@ import 'live/view/address_view/controller/address_dropdown_controller.dart';
 import 'live/view/auth_view/controller/phone_auth_view_controller.dart';
 import 'live/view/cart_view/controller/cart_actions_controller.dart';
 import 'live/view/home_view/category_view/controller/category_view_controller.dart';
+import 'live/view/order_support/controller/order_support_controller.dart';
 import 'models/subscription_model.dart';
 
 /// Initialize Firebase Messaging and setup notification handlers
 Future<void> setupFirebaseMessaging() async {
-  // Request permission for notifications
-  await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+  // Initialize notification service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
 
-  // Set foreground notification presentation options
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+  print('✅ Firebase messaging setup complete');
 }
 
 /// Handle foreground messages
 void handleForegroundMessage(RemoteMessage message) {
   print('Handling a foreground message: ${message.messageId}');
 
-  // You can show a custom dialog or snackbar here for foreground notifications
   // For example, using GetX:
   if (message.notification != null) {
     Get.snackbar(
@@ -257,7 +250,15 @@ class MyApp extends StatelessWidget {
                                       ChangeNotifierProvider<
                                           OrderHistoryController>(
                                         create: (_) => OrderHistoryController(),
-                                      )
+                                      ),
+                                      ChangeNotifierProvider<
+                                          OrderSupportController>(
+                                        create: (_) => OrderSupportController(),
+                                      ),
+                                      // Add this to your MultiProvider
+                                      Provider<NotificationService>(
+                                        create: (_) => NotificationService(),
+                                      ),
                                     ],
                                     child: GetMaterialApp(
                                       debugShowCheckedModeBanner: false,

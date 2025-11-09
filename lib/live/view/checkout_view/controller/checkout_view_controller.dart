@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../controllers/new_cart_controller.dart';
 import '../../../../models/new_cart_model.dart';
 import '../../../../models/new_specialty_model.dart';
+import '../../../../services/notification_service.dart';
 
 class CheckoutViewController extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -271,6 +272,7 @@ class CheckoutViewController extends ChangeNotifier {
   }
 
 // In CheckoutViewController - Update submitOrder with better cart clearing
+// In CheckoutViewController - Update submitOrder to include notification
   Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
     try {
       _isLoadingIndicator = true;
@@ -282,7 +284,6 @@ class CheckoutViewController extends ChangeNotifier {
       }
 
       final cartController = Get.find<NewCartController>();
-
       final order = await createOrderObject(address);
 
       // Save to Firestore
@@ -294,8 +295,10 @@ class CheckoutViewController extends ChangeNotifier {
           .doc(order['orderId'])
           .set(order);
 
-      cartController.clear();
+      // ✅ CRITICAL: Send order notification after successful order creation
+      await sendOrderNotification(order);
 
+      cartController.clear();
       _isLoadingIndicator = false;
       notifyListeners();
 
@@ -309,6 +312,24 @@ class CheckoutViewController extends ChangeNotifier {
 
   bool get isFormValid {
     return _selectedPaymentMethod.isNotEmpty;
+  }
+
+// Simple and reliable
+  Future<void> sendOrderNotification(Map<String, dynamic> order) async {
+    try {
+      final notificationService = NotificationService();
+
+      await notificationService.showOrderNotification(
+        orderId: order['orderId'],
+        title: 'Order Received! 🎉',
+        body:
+            'Your order ${order['orderId']} has been received and is being prepared.',
+      );
+
+      print('✅ Order notification sent');
+    } catch (e) {
+      print('❌ Error sending order notification: $e');
+    }
   }
 
   @override

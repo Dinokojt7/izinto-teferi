@@ -421,6 +421,67 @@ class NotificationService {
     }
   }
 
+// Listen for new support messages in the background
+  void setupChatMessageListener() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('📱 Chat message received in foreground: ${message.messageId}');
+      _handleChatMessage(message);
+    });
+
+    // Setup for background messages
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('🔔 Chat app opened from notification');
+      _handleChatMessage(message);
+    });
+  }
+
+  void _handleChatMessage(RemoteMessage message) {
+    final data = message.data;
+    final type = data['type'];
+    final orderId = data['orderId'];
+    final senderType = data['senderType'];
+
+    // Only show notification if message is from admin (not from user)
+    if (type == 'order_support' && senderType == 'admin') {
+      _showLocalNotificationFromMessage(message);
+
+      // Navigate to chat if app is in foreground
+      if (message.notification != null) {
+        _navigateToSupportChat(orderId);
+      }
+    }
+  }
+
+// Send chat notification (to be called from Firebase Functions)
+  Future<void> sendChatNotification({
+    required String orderId,
+    required String message,
+    required String senderType,
+  }) async {
+    try {
+      // Only send notification if message is from admin
+      if (senderType == 'admin') {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await showSupportNotification(
+            orderId: orderId,
+            title: 'New Support Message',
+            body: message.length > 50
+                ? '${message.substring(0, 50)}...'
+                : message,
+            additionalData: {
+              'senderType': senderType,
+              'timestamp': DateTime.now().toIso8601String(),
+            },
+          );
+          print('✅ Chat notification sent for order: $orderId');
+        }
+      }
+    } catch (e) {
+      print('❌ Error sending chat notification: $e');
+    }
+  }
+
   // Clear all notifications
   Future<void> clearAllNotifications() async {
     await _localNotifications.cancelAll();

@@ -77,7 +77,8 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
 
           // Chat Messages
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
+            child: // In OrderSupportChat, update the StreamBuilder:
+                StreamBuilder<QuerySnapshot>(
               stream: controller.getMessagesStream(widget.order['orderId']),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -101,6 +102,14 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
                 }
 
                 final messages = snapshot.data!.docs;
+
+                // Auto-mark messages as read when they arrive
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (messages.isNotEmpty) {
+                    controller.markMessagesAsRead(widget.order['orderId']);
+                  }
+                });
+
                 if (messages.isEmpty) {
                   return _buildEmptyState();
                 }

@@ -72,6 +72,7 @@ class OrderSupportController extends ChangeNotifier {
         'message': message.trim(),
         'timestamp': FieldValue.serverTimestamp(),
         'readBy': [user.uid],
+        'notificationSent': false, // Track if notification was sent
       });
 
       // Update chat room last message
@@ -82,10 +83,8 @@ class OrderSupportController extends ChangeNotifier {
         'lastMessage': message.trim(),
         'lastMessageAt': FieldValue.serverTimestamp(),
         'lastSenderId': user.uid,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
-
-      // Send notification to admin (only if message is from user)
-      await _sendSupportNotification(orderId, message.trim());
 
       messageController.clear();
       _isLoading = false;
@@ -98,18 +97,45 @@ class OrderSupportController extends ChangeNotifier {
     }
   }
 
-  // Stream messages for a chat room
-  Stream<QuerySnapshot> getMessagesStream(String orderId) {
+// Add method to check for unread messages
+  Stream<int> getUnreadMessagesCount(String orderId) {
+    final user = _auth.currentUser;
+    if (user == null) return Stream.value(0);
+
     final chatRoomId = 'order_${orderId}_support';
+
     return _firestore
         .collection('order_support_chats')
         .doc(chatRoomId)
         .collection('messages')
-        .orderBy('timestamp', descending: false)
-        .snapshots();
+        .where('readBy', isNotEqualTo: user.uid)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
   }
 
-  // Mark messages as read
+  // Send support notification (to admin when user messages, to user when admin messages)
+  Future<void> _sendSupportNotification(String orderId, String message) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      // For now, we'll just show a local notification to the user
+      // In a real implementation, you'd send this to admin
+      await NotificationService().showSupportNotification(
+        orderId: orderId,
+        title: 'Support Message Sent',
+        body: 'Your message has been sent to our support team.',
+      );
+
+      print('✅ Support notification sent for order: $orderId');
+    } catch (e) {
+      print('❌ Error sending support notification: $e');
+    }
+  }
+
+  // In OrderSupportController, add these methods:
+
+// Mark messages as read in real-time
   Future<void> markMessagesAsRead(String orderId) async {
     try {
       final user = _auth.currentUser;
@@ -132,29 +158,37 @@ class OrderSupportController extends ChangeNotifier {
       }
 
       await batch.commit();
+      print('✅ Messages marked as read for order: $orderId');
     } catch (e) {
-      print('Error marking messages as read: $e');
+      print('❌ Error marking messages as read: $e');
     }
   }
 
-  // Send support notification (to admin when user messages, to user when admin messages)
-  Future<void> _sendSupportNotification(String orderId, String message) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) return;
+// Listen for new messages and mark them as read automatically
+  Stream<QuerySnapshot> getMessagesStream(String orderId) {
+    final chatRoomId = 'order_${orderId}_support';
 
-      // For now, we'll just show a local notification to the user
-      // In a real implementation, you'd send this to admin
-      await NotificationService().showSupportNotification(
-        orderId: orderId,
-        title: 'Support Message Sent',
-        body: 'Your message has been sent to our support team.',
-      );
+    // When new messages arrive, mark them as read
+    _firestore
+        .collection('order_support_chats')
+        .doc(chatRoomId)
+        .collection('messages')
+        .where('readBy', isNotEqualTo: _auth.currentUser?.uid)
+        .snapshots()
+        .listen((snapshot) {
+      for (final doc in snapshot.docs) {
+        doc.reference.update({
+          'readBy': FieldValue.arrayUnion([_auth.currentUser?.uid])
+        });
+      }
+    });
 
-      print('✅ Support notification sent for order: $orderId');
-    } catch (e) {
-      print('❌ Error sending support notification: $e');
-    }
+    return _firestore
+        .collection('order_support_chats')
+        .doc(chatRoomId)
+        .collection('messages')
+        .orderBy('timestamp', descending: false)
+        .snapshots();
   }
 
   @override

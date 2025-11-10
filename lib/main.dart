@@ -67,9 +67,13 @@ import 'models/subscription_model.dart';
 
 /// Initialize Firebase Messaging and setup notification handlers
 Future<void> setupFirebaseMessaging() async {
-  // Initialize notification service
+  print('🚀 Setting up Firebase Messaging...');
+
   final notificationService = NotificationService();
   await notificationService.initialize();
+
+  // Setup chat message listeners
+  notificationService.setupChatMessageListener();
 
   print('✅ Firebase messaging setup complete');
 }

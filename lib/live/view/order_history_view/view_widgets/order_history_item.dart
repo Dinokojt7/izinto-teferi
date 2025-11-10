@@ -11,7 +11,7 @@ import '../../../widgets/buttons/save_button.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 import '../../order_support/order_support_chat.dart';
 
-class OrderHistoryItem extends StatelessWidget {
+class OrderHistoryItem extends StatefulWidget {
   final Map<String, dynamic> order;
   final int index;
   const OrderHistoryItem({
@@ -21,22 +21,49 @@ class OrderHistoryItem extends StatelessWidget {
   });
 
   @override
+  State<OrderHistoryItem> createState() => _OrderHistoryItemState();
+}
+
+class _OrderHistoryItemState extends State<OrderHistoryItem> {
+  bool _isLoading = false;
+
+  Future<void> _handleViewButtonPress() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _showOrderDetails(context, widget.order);
+    } catch (e) {
+      print('Error showing order details: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final totalAmount = order['totalAmount'] ?? 0;
-    final status = order['status'] ?? 'pending';
-    final createdAt = order['createdAt'] != null
-        ? _formatTimestamp(order['createdAt'])
+    final totalAmount = widget.order['totalAmount'] ?? 0;
+    final status = widget.order['status'] ?? 'pending';
+    final createdAt = widget.order['createdAt'] != null
+        ? _formatTimestamp(widget.order['createdAt'])
         : 'Unknown date';
-    final orderId = order['orderId'] ?? 'N/A';
-    final items = order['items'] ?? [];
-    final serviceTypes = order['serviceTypes'] ?? [];
-    final address = _getAddress(order);
+    final orderId = widget.order['orderId'] ?? 'N/A';
+    final items = widget.order['items'] ?? [];
+    final serviceTypes = widget.order['serviceTypes'] ?? [];
+    final address = _getAddress(widget.order);
 
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: Dimensions.height10),
         child: Container(
-          height: Dimensions.screenHeight / 2.5,
+          height: Dimensions.screenHeight / 4,
           width: Dimensions.screenWidth,
           decoration: BoxDecoration(
             boxShadow: [
@@ -75,56 +102,16 @@ class OrderHistoryItem extends StatelessWidget {
                     _buildStatusBadge(status),
                   ],
                 ),
-                SizedBox(height: Dimensions.height10),
+                SizedBox(height: Dimensions.height10 / 2),
 
-                // Image and Service Type
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 60,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          // Stacked images container
-                          Container(
-                            width: 120,
-                            child: Stack(
-                              children: _buildStackedImages(items, context),
-                            ),
-                          ),
-
-                          // Optional: Add a "+X more" text if there are many items
-                          if (items.length > 3)
-                            Padding(
-                              padding:
-                                  EdgeInsets.only(left: Dimensions.width10),
-                              child: Text(
-                                '+${items.length - 3} more',
-                                style: TextStyle(
-                                  fontSize: Dimensions.font16 / 1.3,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: Dimensions.width10),
-
-                // Address Section
+                // Address Section - Reduced height
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
                   child: Container(
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(
                       horizontal: Dimensions.width15,
-                      vertical: Dimensions.height20 * 1.1,
+                      vertical: Dimensions.height10, // Reduced vertical padding
                     ),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
@@ -140,7 +127,7 @@ class OrderHistoryItem extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.location_on_outlined,
-                          size: 16,
+                          size: 14, // Slightly smaller icon
                           color: Colors.grey.shade600,
                         ),
                         SizedBox(width: Dimensions.width10 / 2),
@@ -148,12 +135,13 @@ class OrderHistoryItem extends StatelessWidget {
                           child: Text(
                             address,
                             style: TextStyle(
-                              fontSize: Dimensions.font16 / 1.3,
+                              fontSize: Dimensions.font16 / 1.4, // Smaller font
                               fontWeight: FontWeight.w600,
                               color: Colors.grey.shade700,
                               fontFamily: 'Poppins',
                             ),
                             overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ],
@@ -161,42 +149,86 @@ class OrderHistoryItem extends StatelessWidget {
                   ),
                 ),
 
-                // Items and Price Section
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: Dimensions.width10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Items count
-                      Text(
-                        'Items ${items.length}',
-                        style: TextStyle(
-                          fontSize: Dimensions.font16 / 1.2,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: 'Poppins',
+                SizedBox(height: Dimensions.height10 / 2),
+
+                // Image, item service provider and view button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Image stack
+                    Container(
+                      height: 60,
+                      width: 60,
+                      child: Stack(
+                        children: _buildStackedImages(items, context),
+                      ),
+                    ),
+
+                    // Provider name with flexible width and wrapping
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: Dimensions.width10),
+                        child: Text(
+                          items.isNotEmpty
+                              ? (items[0]['name']?.toString() ?? 'Izinto')
+                              : 'Izinto',
+                          style: TextStyle(
+                            fontSize: Dimensions.font16 / 1.3,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Poppins',
+                            color: Colors.black,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                         ),
                       ),
+                    ),
 
-                      // Price
-                      SmallBlackText(
-                        size: Dimensions.font20 / 1.1,
-                        font: 'Poppins',
-                        text: 'R$totalAmount,00',
-                        fontWeight: FontWeight.w600,
+                    // View Button with InkWell
+                    Container(
+                      height: Dimensions.height30 * 1.3,
+                      width: Dimensions.width30 * 3,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius15),
                       ),
-                    ],
-                  ),
-                ),
-
-                // View Button (replaces Track Order)
-                SaveButton(
-                  isActive: true,
-                  description: 'View',
-                  isAuthScreen: false,
-                  onTap: () {
-                    _showOrderDetails(context, order);
-                  },
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _isLoading ? null : _handleViewButtonPress,
+                          borderRadius:
+                              BorderRadius.circular(Dimensions.radius15 * 1.3),
+                          splashColor: Colors.white.withOpacity(0.3),
+                          highlightColor: Colors.white.withOpacity(0.2),
+                          child: Center(
+                            child: _isLoading
+                                ? SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
+                                    ),
+                                  )
+                                : Text(
+                                    'View',
+                                    style: TextStyle(
+                                      fontSize: Dimensions.font16 / 1.3,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -219,58 +251,53 @@ class OrderHistoryItem extends StatelessWidget {
       stackedWidgets.add(
         Positioned(
           left: offset,
-          child: GestureDetector(
-            onTap: () {
-              _showFullImageList(context, items);
-            },
-            child: Transform.rotate(
-              angle: i == 0 ? 0 : (i % 2 == 0 ? -0.05 : 0.05),
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: Offset(1, 2),
-                    ),
-                  ],
-                  border: Border.all(
-                    color: Colors.grey.shade300,
-                    width: 1,
+          child: Transform.rotate(
+            angle: i == 0 ? 0 : (i % 2 == 0 ? -0.05 : 0.05),
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: Offset(1, 2),
                   ),
+                ],
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 1,
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: imageUrl != null
-                      ? Image.asset(
-                          imageUrl,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: Icon(
-                                Icons.shopping_bag,
-                                size: 24,
-                                color: Colors.grey.shade400,
-                              ),
-                            );
-                          },
-                        )
-                      : Container(
-                          color: Colors.grey.shade200,
-                          child: Icon(
-                            Icons.shopping_bag,
-                            size: 24,
-                            color: Colors.grey.shade400,
-                          ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: imageUrl != null
+                    ? Image.asset(
+                        imageUrl,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: Icon(
+                              Icons.shopping_bag,
+                              size: 24,
+                              color: Colors.grey.shade400,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: Colors.grey.shade200,
+                        child: Icon(
+                          Icons.shopping_bag,
+                          size: 24,
+                          color: Colors.grey.shade400,
                         ),
-                ),
+                      ),
               ),
             ),
           ),
@@ -513,7 +540,8 @@ class OrderHistoryItem extends StatelessWidget {
   }
 
   // Updated order details modal with support FAB
-  void _showOrderDetails(BuildContext context, Map<String, dynamic> order) {
+  Future<void> _showOrderDetails(
+      BuildContext context, Map<String, dynamic> order) async {
     final items = order['items'] ?? [];
     final deliveryAddress = order['deliveryAddress'] ?? {};
     final deliveryInstructions = order['deliveryInstructions'] ?? {};
@@ -522,7 +550,7 @@ class OrderHistoryItem extends StatelessWidget {
     final orderId = order['orderId'] ?? 'N/A';
     final totalAmount = order['totalAmount'] ?? 0;
 
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -868,10 +896,5 @@ class OrderHistoryItem extends StatelessWidget {
       context,
       OrderSupportChat(order: order),
     );
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (context) => OrderSupportChat(order: order),
-    //   ),
-    // );
   }
 }

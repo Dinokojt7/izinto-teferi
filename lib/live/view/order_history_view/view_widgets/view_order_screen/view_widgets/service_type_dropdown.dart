@@ -1,14 +1,15 @@
-// service_type_dropdown.dart
+// service_type_dropdown.dart (updated)
 import 'package:flutter/material.dart';
 import 'package:izinto/utils/dimensions.dart';
 import '../../../../../utilities/service_type_utils.dart';
 
-class ServiceTypeDropdown extends StatefulWidget {
+class ServiceTypeDropdown extends StatelessWidget {
   final List<String> serviceTypes;
   final String selectedServiceType;
   final Function(String) onServiceTypeChanged;
   final Map<String, dynamic> order;
   final VoidCallback onViewDetails;
+  final VoidCallback onShowServicesDialog; // New callback
 
   const ServiceTypeDropdown({
     Key? key,
@@ -17,18 +18,12 @@ class ServiceTypeDropdown extends StatefulWidget {
     required this.onServiceTypeChanged,
     required this.order,
     required this.onViewDetails,
+    required this.onShowServicesDialog, // New parameter
   }) : super(key: key);
 
   @override
-  State<ServiceTypeDropdown> createState() => _ServiceTypeDropdownState();
-}
-
-class _ServiceTypeDropdownState extends State<ServiceTypeDropdown> {
-  bool _isDropdownOpen = false;
-
-  @override
   Widget build(BuildContext context) {
-    final hasMultipleTypes = widget.serviceTypes.length > 1;
+    final hasMultipleTypes = serviceTypes.length > 1;
 
     return Container(
       margin: EdgeInsets.symmetric(
@@ -57,11 +52,11 @@ class _ServiceTypeDropdownState extends State<ServiceTypeDropdown> {
           Expanded(
             flex: 2,
             child: GestureDetector(
-              onTap: hasMultipleTypes ? _showServiceTypeDialog : null,
+              onTap: hasMultipleTypes ? onShowServicesDialog : null,
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: Dimensions.width15,
-                  vertical: Dimensions.height15 / 2,
+                  vertical: Dimensions.height15,
                 ),
                 decoration: BoxDecoration(
                   border: Border(
@@ -75,15 +70,15 @@ class _ServiceTypeDropdownState extends State<ServiceTypeDropdown> {
                   children: [
                     // Service type image
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 30,
+                      height: 30,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: Image.asset(
                         ServiceTypeUtils.getServiceTypeImage(
-                            widget.selectedServiceType),
+                            selectedServiceType),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Icon(
@@ -97,7 +92,7 @@ class _ServiceTypeDropdownState extends State<ServiceTypeDropdown> {
                     SizedBox(width: Dimensions.width10),
                     Expanded(
                       child: Text(
-                        widget.selectedServiceType,
+                        selectedServiceType,
                         style: TextStyle(
                           fontSize: Dimensions.font16 / 1.3,
                           fontWeight: FontWeight.w600,
@@ -110,9 +105,7 @@ class _ServiceTypeDropdownState extends State<ServiceTypeDropdown> {
                     ),
                     if (hasMultipleTypes)
                       Icon(
-                        _isDropdownOpen
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
+                        Icons.keyboard_arrow_down,
                         size: 20,
                         color: Colors.grey.shade600,
                       ),
@@ -128,7 +121,7 @@ class _ServiceTypeDropdownState extends State<ServiceTypeDropdown> {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: widget.onViewDetails,
+                onTap: onViewDetails,
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(Dimensions.radius15),
                   bottomRight: Radius.circular(Dimensions.radius15),
@@ -157,92 +150,5 @@ class _ServiceTypeDropdownState extends State<ServiceTypeDropdown> {
         ],
       ),
     );
-  }
-
-  void _showServiceTypeDialog() {
-    if (widget.serviceTypes.length <= 1) return;
-
-    setState(() {
-      _isDropdownOpen = true;
-    });
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: EdgeInsets.symmetric(vertical: Dimensions.height10),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
-              child: Text(
-                'Select Service Type',
-                style: TextStyle(
-                  fontSize: Dimensions.font16 * 1.2,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-            ),
-            SizedBox(height: Dimensions.height20),
-            ...widget.serviceTypes
-                .map((serviceType) => ListTile(
-                      leading: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Image.asset(
-                          ServiceTypeUtils.getServiceTypeImage(serviceType),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      title: Text(
-                        serviceType,
-                        style: TextStyle(
-                          fontSize: Dimensions.font16,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                      trailing: widget.selectedServiceType == serviceType
-                          ? Icon(Icons.check, color: Colors.black)
-                          : null,
-                      onTap: () {
-                        Navigator.pop(context);
-                        widget.onServiceTypeChanged(serviceType);
-                        setState(() {
-                          _isDropdownOpen = false;
-                        });
-                      },
-                    ))
-                .toList(),
-            SizedBox(height: Dimensions.height20),
-          ],
-        ),
-      ),
-    ).then((_) {
-      setState(() {
-        _isDropdownOpen = false;
-      });
-    });
   }
 }

@@ -101,7 +101,7 @@ class ServiceTypeUtils {
   static String getServiceTypeImage(String serviceType) {
     switch (serviceType) {
       case 'Gas Refill':
-        return 'assets/image/gas_refill.png';
+        return 'assets/image/gas.png';
       case 'Laundry':
         return 'assets/image/laundry.png';
       case 'Home Care':

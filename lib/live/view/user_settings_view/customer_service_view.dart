@@ -14,6 +14,7 @@ import '../home_view/controller/home_view_controller.dart';
 import '../home_view/sliver_home_page.dart';
 import '../order_history_view/controller/order_history_controller.dart';
 import '../order_history_view/view_widgets/latest_order_item.dart'; // Import the LatestOrderItem
+import '../order_history_view/view_widgets/view_order_screen/view_order_screen.dart';
 import 'opening_hours.dart';
 
 class CustomerServiceView extends StatefulWidget {
@@ -34,6 +35,30 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
           Provider.of<OrderHistoryController>(context, listen: false);
       controller.loadUserOrders();
     });
+  }
+
+  Future<void> _handleViewButtonPress(BuildContext context, order) async {
+    try {
+      await _openOrderDetails(context, order);
+    } catch (e) {
+      print('Error opening order details: $e');
+    }
+  }
+
+  Future<void> _openOrderDetails(
+      BuildContext context, Map<String, dynamic> order) async {
+    final homeViewController =
+        Provider.of<HomeViewController>(context, listen: false);
+
+    // Navigate to ViewOrderScreen
+    homeViewController.onIndependentPageNavigation(
+      context,
+      ViewOrderScreen(
+        order: order,
+        orderNumber: order['orderId']?.toString() ?? 'N/A',
+        isFromCheckout: false,
+      ),
+    );
   }
 
   @override
@@ -82,11 +107,8 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
             )
           else if (latestOrder != null)
             LatestOrderItem(
-              order: latestOrder,
-              onTap: () {
-                _homeViewController.changeIndex(1, false);
-              },
-            )
+                order: latestOrder,
+                onTap: () => _handleViewButtonPress(context, latestOrder))
           else
             GenericCenterDialog(
               emoji: '\u{1F9FA}',

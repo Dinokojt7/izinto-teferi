@@ -10,6 +10,7 @@ import '../../../../auxiliery_classes/generic_app_bar.dart';
 import '../../../../utilities/generic_system_navigation.dart';
 import '../../../../utilities/service_type_utils.dart';
 import '../../../home_view/controller/home_view_controller.dart';
+import '../../../order_support/order_support_chat.dart';
 
 class ViewOrderScreen extends StatefulWidget {
   final String orderNumber;
@@ -83,6 +84,10 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
   }
 
   void _showDetailsBottomSheet() {
+    final items = _getSafeItemsList(_selectedServiceType);
+    final paymentMethod = widget.order['paymentMethod'] ?? 'Unknown';
+    final paymentInfo = _getPaymentMethodInfo(paymentMethod);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -90,7 +95,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
       builder: (context) => Stack(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.85,
+            height: MediaQuery.of(context).size.height * 0.95,
             padding: EdgeInsets.all(Dimensions.width20),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -115,55 +120,59 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
                   ),
                 ),
 
-                // Order header
-                Row(
-                  children: [
-                    // Stacked images for order
-                    Container(
-                      width: 60,
-                      height: 60,
-                      child: _buildServiceTypeImageStack(),
-                    ),
-                    SizedBox(width: Dimensions.width15),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Order #${widget.order['orderId'] ?? 'N/A'}',
-                            style: TextStyle(
-                              fontSize: Dimensions.font16 * 1.2,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          _buildStatusBadge(
-                              widget.order['status'] ?? 'pending'),
-                          SizedBox(height: 8),
-                          // Service provider display
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              _getServiceProviderDisplay(),
-                              style: TextStyle(
-                                fontSize: Dimensions.font16 / 1.3,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade700,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ),
-                        ],
+                // Service Provider Display
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: Dimensions.height10),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey.shade200,
+                        width: 1,
                       ),
                     ),
-                  ],
+                  ),
+                  child: Text(
+                    _getServiceProviderDisplay(),
+                    style: TextStyle(
+                      fontSize: Dimensions.font16 / 1.4,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                      fontFamily: 'Poppins',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
+
+                SizedBox(height: Dimensions.height10),
+
+                // Order Number and Status Row
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(Dimensions.width15),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey.shade200,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(Dimensions.radius15),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Order #${widget.order['orderId'] ?? 'N/A'}',
+                        style: TextStyle(
+                          fontSize: Dimensions.font16,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      _buildStatusBadge(widget.order['status'] ?? 'pending'),
+                    ],
+                  ),
+                ),
+
                 SizedBox(height: Dimensions.height20),
 
                 // Order details sections
@@ -172,39 +181,210 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Service Items Section
-                        _buildServiceItemsSection(),
-                        SizedBox(height: Dimensions.height20),
-
-                        // Delivery address
-                        _buildDetailSection(
-                          title: 'Delivery Address',
-                          content: _buildAddressContent(),
+                        // Items Count Header
+                        Row(
+                          children: [
+                            Text(
+                              'Items',
+                              style: TextStyle(
+                                fontSize: Dimensions.font20 / 1.1,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            SizedBox(width: Dimensions.width10),
+                            Text(
+                              '${items.length} ${items.length == 1 ? 'item' : 'items'}',
+                              style: TextStyle(
+                                fontSize: Dimensions.font16 / 1.5,
+                                color: Colors.grey.shade600,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
                         ),
+                        SizedBox(height: Dimensions.height10),
+
+                        // Service Items List
+                        ...items
+                            .map((item) => Column(
+                                  children: [
+                                    _buildServiceItemRow(item),
+                                    Divider(
+                                      color: Colors.grey.shade200,
+                                      height: 1,
+                                      thickness: 0.5,
+                                    ),
+                                  ],
+                                ))
+                            .toList(),
+
                         SizedBox(height: Dimensions.height20),
 
-                        // Delivery instructions
-                        if (_hasDeliveryInstructions())
-                          _buildDetailSection(
-                            title: 'Delivery Instructions',
-                            content: _buildInstructionsContent(),
+                        // Total Section
+                        Container(
+                          padding: EdgeInsets.all(Dimensions.width15),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.05),
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radius15),
+                            border:
+                                Border.all(color: Colors.blue.withOpacity(0.2)),
                           ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total for ${_selectedServiceType}',
+                                style: TextStyle(
+                                  fontSize: Dimensions.font16,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              Text(
+                                'R${ServiceTypeUtils.calculateServiceTypeTotal(items).toStringAsFixed(0)},00',
+                                style: TextStyle(
+                                  fontSize: Dimensions.font16 * 1.1,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.blue,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                        if (_hasDeliveryInstructions())
-                          SizedBox(height: Dimensions.height20),
+                        SizedBox(height: Dimensions.height20),
 
-                        // Payment method
-                        _buildDetailSection(
-                          title: 'Payment',
-                          content: Text(
-                            _getPaymentMethodDisplayName(
-                                widget.order['paymentMethod'] ?? 'Unknown'),
+                        // Address Section
+                        Text(
+                          'Address',
+                          style: TextStyle(
+                            fontSize: Dimensions.font20 / 1.1,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                        SizedBox(height: Dimensions.height10),
+
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 6.0),
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: Dimensions.width15,
+                              vertical: Dimensions.height10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(
+                                  Dimensions.radius15 / 2),
+                              border: Border.all(
+                                color: Colors.grey.shade200,
+                                width: 1,
+                              ),
+                            ),
+                            child: _buildAddressContent(),
+                          ),
+                        ),
+
+                        SizedBox(height: Dimensions.height20),
+                        Divider(color: Colors.grey.shade300, height: 1),
+
+                        SizedBox(height: Dimensions.height20),
+
+                        // Instructions Section (if exists)
+                        if (_hasDeliveryInstructions()) ...[
+                          Text(
+                            'Instructions',
                             style: TextStyle(
-                              fontSize: Dimensions.font16 / 1.1,
+                              fontSize: Dimensions.font20 / 1.1,
+                              fontWeight: FontWeight.w600,
                               fontFamily: 'Poppins',
                             ),
                           ),
+                          SizedBox(height: Dimensions.height10),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6.0),
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: Dimensions.width15,
+                                vertical: Dimensions.height10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(
+                                    Dimensions.radius15 / 2),
+                                border: Border.all(
+                                  color: Colors.grey.shade200,
+                                  width: 1,
+                                ),
+                              ),
+                              child: _buildInstructionsContent(),
+                            ),
+                          ),
+                          SizedBox(height: Dimensions.height20),
+                        ],
+
+                        // Payment Section
+                        Row(
+                          children: [
+                            // Payment Image
+                            if (paymentInfo != null)
+                              Container(
+                                width: 40,
+                                height: 40,
+                                margin:
+                                    EdgeInsets.only(right: Dimensions.width10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border:
+                                      Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: Image.asset(
+                                  paymentInfo['image'],
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.payment,
+                                      size: 20,
+                                      color: Colors.grey.shade400,
+                                    );
+                                  },
+                                ),
+                              ),
+
+                            // Payment Text
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _getPaymentMethodDisplayName(paymentMethod),
+                                    style: TextStyle(
+                                      fontSize: Dimensions.font16 / 1.3,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  if (paymentInfo != null)
+                                    Text(
+                                      paymentInfo['description'],
+                                      style: TextStyle(
+                                        fontSize: Dimensions.font16 / 1.5,
+                                        color: Colors.grey.shade600,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
+
                         SizedBox(height: Dimensions.height20),
                       ],
                     ),
@@ -240,6 +420,151 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
             ),
         ],
       ),
+    );
+  }
+
+// Add this helper method for payment info
+  Map<String, dynamic>? _getPaymentMethodInfo(String method) {
+    final List<Map<String, dynamic>> _paymentMethods = [
+      {
+        'type': 'yoco',
+        'name': 'Yoco Payment Link',
+        'image': 'assets/image/yoco-payment-link.png',
+        'description': 'Secure online payment'
+      },
+      {
+        'type': 'cash',
+        'name': 'Cash Payment',
+        'image': 'assets/image/cash-payments.png',
+        'description': 'Pay with cash on delivery'
+      },
+      {
+        'type': 'card',
+        'name': 'Card Payment',
+        'image': 'assets/image/card-payments.png',
+        'description': 'Pay with card'
+      },
+      {
+        'type': 'eft',
+        'name': 'EFT Payment',
+        'image': 'assets/image/eft-payment.png',
+        'description': 'Electronic Funds Transfer'
+      },
+    ];
+
+    return _paymentMethods.firstWhere(
+      (pm) => pm['type'] == method.toLowerCase(),
+      orElse: () => _paymentMethods.first, // fallback
+    );
+  }
+
+// Updated Service Item Row without time
+  Widget _buildServiceItemRow(Map<String, dynamic> item) {
+    final price = (item['price'] ?? 0).toDouble();
+    final quantity = (item['quantity'] ?? 1).toInt();
+    final totalPrice = price * quantity;
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: Dimensions.height10),
+      child: Row(
+        children: [
+          // Item Image
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: _getItemImage(item) != null
+                ? Image.asset(
+                    _getItemImage(item)!,
+                    fit: BoxFit.cover,
+                  )
+                : Icon(Icons.shopping_bag, color: Colors.grey.shade400),
+          ),
+          SizedBox(width: Dimensions.width10),
+
+          // Item Name
+          Expanded(
+            child: Text(
+              item['name'] ?? 'Unknown Item',
+              style: TextStyle(
+                fontSize: Dimensions.font16 / 1.1,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Poppins',
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          SizedBox(width: Dimensions.width10),
+
+          // Price
+          Text(
+            'R${totalPrice.toStringAsFixed(0)},00',
+            style: TextStyle(
+              fontSize: Dimensions.font20 / 1.2,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Updated Address Content with proper styling
+  Widget _buildAddressContent() {
+    final deliveryAddress = widget.order['deliveryAddress'] ?? {};
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (deliveryAddress['street'] != null)
+          Text(
+            deliveryAddress['street'],
+            style: TextStyle(
+              fontSize: Dimensions.font16 / 1.4,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+              fontFamily: 'Poppins',
+            ),
+          ),
+        if (deliveryAddress['suburb'] != null)
+          Text(
+            deliveryAddress['suburb'],
+            style: TextStyle(
+              fontSize: Dimensions.font16 / 1.4,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+              fontFamily: 'Poppins',
+            ),
+          ),
+        if (deliveryAddress['zip'] != null)
+          Text(
+            deliveryAddress['zip'],
+            style: TextStyle(
+              fontSize: Dimensions.font16 / 1.4,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+              fontFamily: 'Poppins',
+            ),
+          ),
+      ],
+    );
+  }
+
+// Fix the support chat method
+  void _openSupportChat(BuildContext context, Map<String, dynamic> order) {
+    Navigator.of(context).pop(); // Close the bottom sheet first
+    final homeViewController =
+        Provider.of<HomeViewController>(context, listen: false);
+    // Navigate to support chat
+    homeViewController.onIndependentPageNavigation(
+      context,
+      OrderSupportChat(order: order),
     );
   }
 
@@ -609,39 +934,6 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
     return Colors.grey.shade600;
   }
 
-  Widget _buildAddressContent() {
-    final deliveryAddress = widget.order['deliveryAddress'] ?? {};
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (deliveryAddress['street'] != null)
-          Text(
-            deliveryAddress['street'],
-            style: TextStyle(
-              fontSize: Dimensions.font16 / 1.1,
-              fontFamily: 'Poppins',
-            ),
-          ),
-        if (deliveryAddress['suburb'] != null)
-          Text(
-            deliveryAddress['suburb'],
-            style: TextStyle(
-              fontSize: Dimensions.font16 / 1.1,
-              fontFamily: 'Poppins',
-            ),
-          ),
-        if (deliveryAddress['zip'] != null)
-          Text(
-            deliveryAddress['zip'],
-            style: TextStyle(
-              fontSize: Dimensions.font16 / 1.1,
-              fontFamily: 'Poppins',
-            ),
-          ),
-      ],
-    );
-  }
-
   bool _hasDeliveryInstructions() {
     final instructions = widget.order['deliveryInstructions'] ?? {};
     return instructions.isNotEmpty;
@@ -805,10 +1097,5 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
     } catch (e) {
       return DateTime.now();
     }
-  }
-
-  void _openSupportChat(BuildContext context, Map<String, dynamic> order) {
-    // Implement support chat navigation
-    print('Opening support chat for order: ${order['orderId']}');
   }
 }

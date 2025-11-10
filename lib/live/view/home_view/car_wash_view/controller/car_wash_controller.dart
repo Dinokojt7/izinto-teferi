@@ -249,6 +249,13 @@ class CarWashController extends GetxController {
     },
   ];
 
+  // Add this method to your CarWashController class
+  void removeFromCarWashCart(String itemId) {
+    // Convert string itemId to int if needed
+    final id = int.tryParse(itemId) ?? 0;
+    removeCarWashItem(id);
+  }
+
   // Mock car wash specialties - replace with your actual data source
   final List<NewSpecialtyModel> carWashSpecialties = [
     NewSpecialtyModel(

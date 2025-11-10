@@ -131,210 +131,262 @@ class _CarWashViewState extends State<CarWashView> {
   }
 
   void _showCartDetailsDialog(CarWashController controller) {
-    final cartItems = controller.carWashCartDetails;
-
     showModalBottomSheet(
       backgroundColor: Colors.transparent,
       context: context,
       isScrollControlled: true,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: EdgeInsets.symmetric(
-          horizontal: Dimensions.width20,
-          vertical: Dimensions.width15,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          children: [
-            TopNotch(
-              color: Colors.black.withOpacity(0.1),
-            ),
-            SizedBox(height: Dimensions.height15),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          // This makes the bottom sheet reactive to changes
+          final cartItems = controller.carWashCartDetails;
+          final totalItems = controller.totalCarWashItems;
+          final totalAmount = controller.totalCarWashAmount;
 
-            HeadingStyleText(
-              text: 'Car Wash Services',
-              size: Dimensions.font20,
-              family: 'Poppins',
-              weight: FontWeight.w600,
-            ),
-            SizedBox(height: Dimensions.height10),
-            Divider(),
-            SizedBox(height: Dimensions.height10),
+          return Stack(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height * 0.85,
+                padding: EdgeInsets.all(Dimensions.width20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Drag handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: EdgeInsets.only(bottom: Dimensions.height10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
 
-            // Cart Items List
-            Expanded(
-              child: cartItems.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: cartItems.length,
-                      itemBuilder: (context, index) {
-                        final item = cartItems[index];
-                        return _buildCartItemCard(controller, item, index);
-                      },
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.shopping_cart_outlined,
-                            size: 50,
-                            color: Colors.grey.shade400,
-                          ),
-                          SizedBox(height: Dimensions.height10),
-                          Text(
-                            'No car wash services in cart',
+                    // Header Row with items count and remove all
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(Dimensions.width15),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey.shade200,
+                          width: 1,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius15),
+                      ),
+                      child: GenericHeaderRow(
+                        headingChild: Row(
+                          children: [
+                            Text(
+                              'Your items',
+                              style: TextStyle(
+                                fontSize: Dimensions.font20 / 1.1,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            SizedBox(width: Dimensions.width10),
+                            Text(
+                              '$totalItems ${totalItems == 1 ? 'item' : 'items'}',
+                              style: TextStyle(
+                                fontSize: Dimensions.font16 / 1.5,
+                                color: Colors.grey.shade600,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                        actionButtonChild: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _showClearAllConfirmationDialog(controller);
+                          },
+                          child: Text(
+                            'Remove all',
                             style: TextStyle(
-                              fontSize: Dimensions.font16,
-                              color: Colors.grey.shade600,
+                              fontSize: Dimensions.font16 / 1.3,
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Poppins',
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
-            ),
 
-            // Footer with totals and clear all button
-            if (cartItems.isNotEmpty) ...[
-              Divider(),
-              SizedBox(height: Dimensions.height10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Total Items: ${controller.totalCarWashItems}',
-                        style: TextStyle(
-                          fontSize: Dimensions.font16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(height: Dimensions.height10 / 2),
-                      Text(
-                        'Total Amount: R${controller.totalCarWashAmount}',
-                        style: TextStyle(
-                          fontSize: Dimensions.font16,
-                          fontWeight: FontWeight.w600,
-                          color: LiveColors.standardBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close cart dialog
-                      _showClearAllConfirmationDialog(controller);
-                    },
-                    child: Text(
-                      'Clear All',
-                      style: TextStyle(
-                        fontSize: Dimensions.font16,
-                        color: Colors.red,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    SizedBox(height: Dimensions.height20),
+
+                    // Cart Items List
+                    Expanded(
+                      child: cartItems.isNotEmpty
+                          ? Column(
+                              children: [
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: cartItems.length,
+                                    itemBuilder: (context, index) {
+                                      final item = cartItems[index];
+                                      return Column(
+                                        children: [
+                                          _buildCartItemCard(
+                                              controller,
+                                              item,
+                                              index,
+                                              () => setState(
+                                                  () {}) // Refresh function
+                                              ),
+                                          if (index < cartItems.length - 1)
+                                            Divider(
+                                              color: Colors.grey.shade200,
+                                              height: 1,
+                                              thickness: 0.5,
+                                            ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+
+                                // Spacer before total
+                                SizedBox(height: Dimensions.height20),
+
+                                // Total Section
+                                Container(
+                                  padding: EdgeInsets.all(Dimensions.width15),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(
+                                        Dimensions.radius15),
+                                    border: Border.all(
+                                        color: Colors.blue.withOpacity(0.2)),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total Amount',
+                                        style: TextStyle(
+                                          fontSize: Dimensions.font16,
+                                          fontWeight: FontWeight.w600,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                      Text(
+                                        'R${totalAmount.toStringAsFixed(2).replaceAll('.', ',')}',
+                                        style: TextStyle(
+                                          fontSize: Dimensions.font16 * 1.1,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.blue,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade100,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.local_car_wash,
+                                      size: 40,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ),
+                                  SizedBox(height: Dimensions.height20),
+                                  Text(
+                                    'No car wash services',
+                                    style: TextStyle(
+                                      fontSize: Dimensions.font16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade600,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  SizedBox(height: Dimensions.height10),
+                                  Text(
+                                    'Add services to see them here',
+                                    style: TextStyle(
+                                      fontSize: Dimensions.font16 / 1.2,
+                                      color: Colors.grey.shade500,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
-
-            SizedBox(height: Dimensions.height20),
-            Container(
-              width: double.infinity,
-              height: Dimensions.bottomHeightBar / 2.2,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
-                  backgroundColor: LiveColors.accent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(Dimensions.radius15),
-                  ),
-                ),
-                child: Text(
-                  'Close',
-                  style: TextStyle(
-                    fontSize: Dimensions.font16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
+// Updated cart item card with reactivity
   Widget _buildCartItemCard(
-      CarWashController controller, Map<String, dynamic> item, int index) {
+    CarWashController controller,
+    Map<String, dynamic> item,
+    int index,
+    VoidCallback refreshCallback, // Add this callback
+  ) {
     final imagePath = item['image'] ?? 'assets/image/car_placeholder.png';
     final vehicleType = item['vehicleType'] ?? 'Vehicle';
     final washType = item['washType'] ?? 'Wash Type';
     final price = item['price'] ?? 0;
     final quantity = item['quantity'] ?? 0;
     final itemId = item['id'];
+    final description = item['description'] ?? '';
 
     return Container(
-      margin: EdgeInsets.only(bottom: Dimensions.height10),
-      padding: EdgeInsets.all(Dimensions.width10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Dimensions.radius15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.symmetric(vertical: Dimensions.height15),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Vehicle Image
           Container(
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(Dimensions.radius20 / 2),
-              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(Dimensions.radius20 / 2),
+              borderRadius: BorderRadius.circular(12),
               child: Image.asset(
                 imagePath,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius:
-                          BorderRadius.circular(Dimensions.radius20 / 2),
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.directions_car,
-                          color: Colors.grey.shade400,
-                          size: 24,
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'No Image',
-                          style: TextStyle(
-                            fontSize: Dimensions.font16 / 1.3,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
+                    child: Icon(
+                      Icons.directions_car,
+                      color: Colors.grey.shade400,
+                      size: 30,
                     ),
                   );
                 },
@@ -349,17 +401,30 @@ class _CarWashViewState extends State<CarWashView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Price and vehicle type
+                // Vehicle Type and Price
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Expanded(
+                      child: Text(
+                        vehicleType,
+                        style: TextStyle(
+                          fontSize: Dimensions.font16,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     Text(
-                      'R$price',
+                      'R${price.toStringAsFixed(0)},00',
                       style: TextStyle(
-                        fontSize: Dimensions.font16 * 1.1,
-                        fontWeight: FontWeight.w600,
+                        fontSize: Dimensions.font16,
+                        fontWeight: FontWeight.w700,
                         fontFamily: 'Poppins',
-                        color: LiveColors.standardBlue,
+                        color: Colors.black, // Changed from blue to black
                       ),
                     ),
                   ],
@@ -367,131 +432,151 @@ class _CarWashViewState extends State<CarWashView> {
 
                 SizedBox(height: Dimensions.height10 / 2),
 
-                // Vehicle name
-                Text(
-                  vehicleType,
-                  style: TextStyle(
-                    fontSize: Dimensions.font16 / 1.1,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Poppins',
-                    color: Colors.black,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                SizedBox(height: Dimensions.height10 / 4),
-
-                // Wash type
+                // Wash Type (Full text, no ellipsis)
                 Text(
                   washType,
                   style: TextStyle(
                     fontSize: Dimensions.font16 / 1.2,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
                     fontFamily: 'Poppins',
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
 
                 SizedBox(height: Dimensions.height10),
 
-                // Bottom row with more info and quantity controls
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        _showServiceDetails(context, vehicleType, washType,
-                            price, item['description'] ?? '');
-                      },
-                      child: Text(
-                        'More info',
+                // Description if available
+                if (description.isNotEmpty)
+                  Column(
+                    children: [
+                      Text(
+                        description,
                         style: TextStyle(
-                          fontSize: Dimensions.font16 / 1.2,
-                          color: LiveColors.accent,
-                          fontWeight: FontWeight.w500,
+                          fontSize: Dimensions.font16 / 1.3,
+                          color: Colors.grey.shade600,
                           fontFamily: 'Poppins',
-                          decoration: TextDecoration.underline,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: Dimensions.height10),
+                    ],
+                  ),
+
+                // Quantity Controls
+                Container(
+                  width: 120,
+                  height: Dimensions.height30 * 1.2,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius:
+                        BorderRadius.circular(Dimensions.radius20 / 2),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Decrement Button
+                      GestureDetector(
+                        onTap: () {
+                          if (quantity == 1) {
+                            // Show remove confirmation
+                            _showRemoveItemDialog(
+                                controller, itemId, vehicleType, washType,
+                                onRemove: () {
+                              refreshCallback(); // Refresh the bottom sheet
+                            });
+                          } else {
+                            controller.updateCarWashQuantity(
+                                itemId, quantity - 1);
+                            controller.update();
+                            refreshCallback(); // Refresh the bottom sheet
+                          }
+                        },
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          child: Icon(
+                            Icons.remove,
+                            color: Colors.white,
+                            size: Dimensions.iconSize16,
+                          ),
                         ),
                       ),
-                    ),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: Dimensions.height45 * 1.4, // Fixed max width
-                      ),
-                      height: Dimensions.height30,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius:
-                            BorderRadius.circular(Dimensions.radius20 / 2),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Decrement Button
-                          GestureDetector(
-                            onTap: () {
-                              if (quantity == 1) {
-                                Navigator.of(context)
-                                    .pop(); // Close cart dialog
-                                _showRemoveItemDialog(
-                                    controller, itemId, vehicleType, washType);
-                              } else {
-                                controller.updateCarWashQuantity(
-                                    itemId, quantity - 1);
-                                controller.update(); // Force UI rebuild
-                              }
-                            },
-                            child: Container(
-                              width: 28,
-                              height: 28,
-                              child: Icon(
-                                Icons.remove,
-                                color: Colors.white,
-                                size: Dimensions.iconSize16,
-                              ),
-                            ),
-                          ),
 
-                          Container(
-                            constraints: BoxConstraints(
-                              minWidth: 20, // Ensure minimum width
-                            ),
-                            child: Text(
-                              quantity.toString(),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                fontSize: Dimensions.font16 / 1.1,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
+                      // Quantity
+                      Container(
+                        constraints: BoxConstraints(minWidth: 20),
+                        child: Text(
+                          quantity.toString(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: Dimensions.font16,
                           ),
-
-                          // Increment Button
-                          GestureDetector(
-                            onTap: () {
-                              controller.updateCarWashQuantity(
-                                  itemId, quantity + 1);
-                              controller.update(); // Force UI rebuild
-                            },
-                            child: Container(
-                              width: 28,
-                              height: 28,
-                              child: Icon(
-                                Icons.add,
-                                color: Colors.white,
-                                size: Dimensions.iconSize16,
-                              ),
-                            ),
-                          ),
-                        ],
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                  ],
+
+                      // Increment Button
+                      GestureDetector(
+                        onTap: () {
+                          controller.updateCarWashQuantity(
+                              itemId, quantity + 1);
+                          controller.update();
+                          refreshCallback(); // Refresh the bottom sheet
+                        },
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          child: Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: Dimensions.iconSize16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Updated remove item dialog to accept refresh callback
+  void _showRemoveItemDialog(
+    CarWashController controller,
+    String itemId,
+    String vehicleType,
+    String washType, {
+    VoidCallback? onRemove,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Remove Item'),
+        content: Text('Remove $vehicleType - $washType from cart?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.removeFromCarWashCart(itemId);
+              controller.update();
+              Navigator.of(context).pop();
+              onRemove?.call(); // Call refresh callback
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: Text(
+              'Remove',
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -600,47 +685,6 @@ class _CarWashViewState extends State<CarWashView> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showRemoveItemDialog(CarWashController controller, int itemId,
-      String vehicleType, String washType) {
-    bool isLoading = false;
-
-    showModalBottomSheet(
-      backgroundColor: Colors.transparent,
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return CarWashBottomSheet(
-            headerText: 'Remove Service?',
-            description:
-                '$vehicleType - $washType\n\nThis service will be removed from your cart.',
-            action: 'Remove',
-            isMiniaturized: false,
-            isLoading: isLoading,
-            onTap: () async {
-              setState(() => isLoading = true);
-              await Future.delayed(Duration(milliseconds: 500));
-
-              controller.removeCarWashItem(itemId);
-              controller.update(); // Force UI rebuild
-
-              setState(() => isLoading = false);
-              Navigator.of(context).pop(); // Close remove dialog
-
-              // Show success feedback
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Service removed from cart'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-          );
-        },
       ),
     );
   }

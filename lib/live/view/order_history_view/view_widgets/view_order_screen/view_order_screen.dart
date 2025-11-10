@@ -83,7 +83,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
     Navigator.of(context).pop();
   }
 
-  void _showDetailsBottomSheet() {
+  void _showDetailsBottomSheet(final Map<String, dynamic> order) {
     final items = _getSafeItemsList(_selectedServiceType);
     final paymentMethod = widget.order['paymentMethod'] ?? 'Unknown';
     final paymentInfo = _getPaymentMethodInfo(paymentMethod);
@@ -333,26 +333,31 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
                           children: [
                             // Payment Image
                             if (paymentInfo != null)
-                              Container(
-                                width: 40,
-                                height: 40,
-                                margin:
-                                    EdgeInsets.only(right: Dimensions.width10),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: Image.asset(
-                                  paymentInfo['image'],
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.payment,
-                                      size: 20,
-                                      color: Colors.grey.shade400,
-                                    );
-                                  },
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  margin: EdgeInsets.only(
+                                      right: Dimensions.width10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: Image.asset(
+                                    height: 40,
+                                    width: 40,
+                                    paymentInfo['image'],
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(
+                                        Icons.payment,
+                                        size: 20,
+                                        color: Colors.grey.shade400,
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
 
@@ -401,7 +406,12 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
               right: 20,
               child: FloatingActionButton(
                 onPressed: () {
-                  _openSupportChat(context, widget.order);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => OrderSupportChat(order: order),
+                    ),
+                  );
                 },
                 backgroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
@@ -494,7 +504,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
                 fontWeight: FontWeight.w500,
                 fontFamily: 'Poppins',
               ),
-              maxLines: 2,
+              maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -558,14 +568,36 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
 
 // Fix the support chat method
   void _openSupportChat(BuildContext context, Map<String, dynamic> order) {
-    Navigator.of(context).pop(); // Close the bottom sheet first
-    final homeViewController =
-        Provider.of<HomeViewController>(context, listen: false);
-    // Navigate to support chat
-    homeViewController.onIndependentPageNavigation(
-      context,
-      OrderSupportChat(order: order),
-    );
+    try {
+      // Close the bottom sheet first
+      Navigator.of(context).pop();
+
+      // Small delay to ensure bottom sheet is fully closed
+      Future.delayed(Duration(milliseconds: 300), () {
+        final homeViewController =
+            Provider.of<HomeViewController>(context, listen: false);
+
+        // Navigate to support chat
+        homeViewController.onIndependentPageNavigation(
+          context,
+          OrderSupportChat(order: order),
+        );
+      });
+    } catch (e) {
+      print('Error opening support chat: $e');
+
+      // Fallback: try regular navigation
+      try {
+        Navigator.of(context).pop(); // Ensure bottom sheet is closed
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => OrderSupportChat(order: order),
+          ),
+        );
+      } catch (e2) {
+        print('Fallback navigation also failed: $e2');
+      }
+    }
   }
 
   @override
@@ -624,7 +656,8 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
                       selectedServiceType: _selectedServiceType,
                       onServiceTypeChanged: _onServiceTypeChanged,
                       order: widget.order,
-                      onViewDetails: _showDetailsBottomSheet,
+                      onViewDetails: () =>
+                          _showDetailsBottomSheet(widget.order),
                       onShowServicesDialog: _toggleServicesDialog,
                     ),
                     SizedBox(
@@ -934,52 +967,6 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
     return Colors.grey.shade600;
   }
 
-  bool _hasDeliveryInstructions() {
-    final instructions = widget.order['deliveryInstructions'] ?? {};
-    return instructions.isNotEmpty;
-  }
-
-  Widget _buildInstructionsContent() {
-    final instructions = widget.order['deliveryInstructions'] ?? {};
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (instructions['leaveAtDoor'] == true)
-          _buildInstructionItem('Leave at door'),
-        if (instructions['dontRingBell'] == true)
-          _buildInstructionItem("Don't ring bell"),
-        if (instructions['callWhenArrive'] == true)
-          _buildInstructionItem('Call when arriving'),
-        if (instructions['additionalNotes'] != null &&
-            instructions['additionalNotes'].isNotEmpty)
-          Text(
-            instructions['additionalNotes'],
-            style: TextStyle(
-              fontSize: Dimensions.font16 / 1.1,
-              fontFamily: 'Poppins',
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildInstructionItem(String text) {
-    return Row(
-      children: [
-        Icon(Icons.check_circle, color: Colors.green, size: 16),
-        SizedBox(width: 8),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: Dimensions.font16 / 1.1,
-            fontFamily: 'Poppins',
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildDetailSection({required String title, required Widget content}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1038,6 +1025,116 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
         ),
       );
     }
+  }
+
+  Widget _buildInstructionsContent() {
+    final instructions = widget.order['deliveryInstructions'] ?? {};
+    final List<Widget> instructionWidgets = [];
+
+    // Check for specific instructions and exclude placeholder messages
+    if (instructions['leaveAtDoor'] == true) {
+      instructionWidgets.add(_buildInstructionItem('Leave at door'));
+    }
+    if (instructions['dontRingBell'] == true) {
+      instructionWidgets.add(_buildInstructionItem("Don't ring bell"));
+    }
+    if (instructions['callWhenArrive'] == true) {
+      instructionWidgets.add(_buildInstructionItem('Call when arriving'));
+    }
+
+    // Check additionalNotes and exclude if it's the placeholder message
+    final additionalNotes = instructions['additionalNotes']?.toString().trim();
+    if (additionalNotes != null &&
+        additionalNotes.isNotEmpty &&
+        !_isPlaceholderMessage(additionalNotes)) {
+      instructionWidgets.add(Padding(
+        padding: EdgeInsets.only(
+            top: instructionWidgets.isNotEmpty ? Dimensions.height10 : 0),
+        child: Text(
+          additionalNotes,
+          style: TextStyle(
+            fontSize: Dimensions.font16 / 1.4,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade700,
+            fontFamily: 'Poppins',
+          ),
+        ),
+      ));
+    }
+
+    // If no valid instructions, show a message
+    if (instructionWidgets.isEmpty) {
+      return Text(
+        'No special instructions provided',
+        style: TextStyle(
+          fontSize: Dimensions.font16 / 1.4,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey.shade500,
+          fontFamily: 'Poppins',
+          fontStyle: FontStyle.italic,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: instructionWidgets,
+    );
+  }
+
+  bool _isPlaceholderMessage(String message) {
+    final placeholderMessages = [
+      'Any other delivery notes? Add them here!',
+      'Any other delivery notes? Add them here',
+      'Additional delivery notes',
+      'Add delivery notes here',
+      'Enter delivery instructions',
+      // Add any other placeholder messages you want to filter out
+    ];
+
+    return placeholderMessages.any((placeholder) =>
+        message.toLowerCase().contains(placeholder.toLowerCase()));
+  }
+
+// Also update the _hasDeliveryInstructions to use the same logic
+  bool _hasDeliveryInstructions() {
+    final instructions = widget.order['deliveryInstructions'] ?? {};
+
+    // Check boolean flags
+    if (instructions['leaveAtDoor'] == true ||
+        instructions['dontRingBell'] == true ||
+        instructions['callWhenArrive'] == true) {
+      return true;
+    }
+
+    // Check additionalNotes and exclude placeholder
+    final additionalNotes = instructions['additionalNotes']?.toString().trim();
+    if (additionalNotes != null &&
+        additionalNotes.isNotEmpty &&
+        !_isPlaceholderMessage(additionalNotes)) {
+      return true;
+    }
+
+    return false;
+  }
+
+// Keep the instruction item builder for the checkbox items
+  Widget _buildInstructionItem(String text) {
+    return Row(
+      children: [
+        Icon(Icons.check_circle, color: Colors.green, size: 16),
+        SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: Dimensions.font16 / 1.4,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade700,
+            fontFamily: 'Poppins',
+          ),
+        ),
+      ],
+    );
   }
 
   // Helper methods

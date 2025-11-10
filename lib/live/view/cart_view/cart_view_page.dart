@@ -97,7 +97,9 @@ class CartViewPage extends StatelessWidget {
                     ),
               // Checkout Button
               _cartList.length != 0
-                  ? CallCheckout(
+                  ?
+// In CartViewPage, update the onTap logic:
+                  CallCheckout(
                       totalCartAmount: _totalAmount,
                       onTap: () {
                         if (user == null) {

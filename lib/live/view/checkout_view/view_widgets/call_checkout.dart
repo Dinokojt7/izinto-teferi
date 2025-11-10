@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/view/checkout_view/checkout_page.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,8 @@ class CallCheckout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isMinimumMet = totalCartAmount >= 150;
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -36,11 +39,19 @@ class CallCheckout extends StatelessWidget {
                     text: 'R${totalCartAmount.toString()},00*'),
               ),
               actionButtonChild: CartActionButton(
-                  isCartCheckoutButton: true,
-                  backgroundColor: LiveColors.cartBlue,
-                  isActive: true,
-                  description: 'Checkout',
-                  onTap: onTap),
+                isCartCheckoutButton: true,
+                backgroundColor: isMinimumMet
+                    ? LiveColors.cartBlue
+                    : LiveColors.standardBlue.withOpacity(0.05),
+                isActive: isMinimumMet,
+                description: 'Checkout',
+                onTap: isMinimumMet
+                    ? onTap
+                    : () {
+                        GenericSnackBar().showCustomSnackBar(null, context,
+                            'Basket total must be at least R150.00', false);
+                      },
+              ),
             ),
           ),
         ),

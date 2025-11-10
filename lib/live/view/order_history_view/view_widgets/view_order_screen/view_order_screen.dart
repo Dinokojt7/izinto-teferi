@@ -32,9 +32,13 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
   @override
   void initState() {
     super.initState();
-    setState(() {
+    // Apply system settings immediately when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemNavigation().applyCustomSystemChromeSettings(
-          Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+          Colors.white.withOpacity(0.95),
+          Brightness.dark,
+          Colors.white,
+          Brightness.dark);
     });
     _initializeServiceTypes();
   }

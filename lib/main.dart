@@ -58,6 +58,7 @@ import 'controllers/pet_care_specialty_controller.dart';
 import 'controllers/user_data_controller.dart';
 import 'firebase_options.dart';
 import 'live/utilities/generic_system_navigation.dart';
+import 'live/utilities/system_navigaton_observer.dart';
 import 'live/view/address_view/controller/address_dropdown_controller.dart';
 import 'live/view/auth_view/controller/phone_auth_view_controller.dart';
 import 'live/view/cart_view/controller/cart_actions_controller.dart';
@@ -269,6 +270,9 @@ class MyApp extends StatelessWidget {
                                     ],
                                     child: GetMaterialApp(
                                       debugShowCheckedModeBanner: false,
+                                      navigatorObservers: [
+                                        SystemNavigationObserver()
+                                      ],
                                       title: 'Izinto',
                                       home: Wrapper(),
                                       theme: ThemeData(

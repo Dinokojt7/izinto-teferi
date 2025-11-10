@@ -1,12 +1,15 @@
 // Updated OrderHistoryItem.dart
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
+import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_order_screen.dart';
+import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/service_type_row.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../utilities/colors.dart';
+import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/buttons/save_button.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 import '../../order_support/order_support_chat.dart';
@@ -27,6 +30,7 @@ class OrderHistoryItem extends StatefulWidget {
 class _OrderHistoryItemState extends State<OrderHistoryItem> {
   bool _isLoading = false;
 
+  // In OrderHistoryItem class
   Future<void> _handleViewButtonPress() async {
     if (_isLoading) return;
 
@@ -35,9 +39,9 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
     });
 
     try {
-      await _showOrderDetails(context, widget.order);
+      await _openOrderDetails(context, widget.order);
     } catch (e) {
-      print('Error showing order details: $e');
+      print('Error opening order details: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -45,6 +49,22 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
         });
       }
     }
+  }
+
+  Future<void> _openOrderDetails(
+      BuildContext context, Map<String, dynamic> order) async {
+    final homeViewController =
+        Provider.of<HomeViewController>(context, listen: false);
+
+    // Navigate to ViewOrderScreen
+    homeViewController.onIndependentPageNavigation(
+      context,
+      ViewOrderScreen(
+        order: order,
+        orderNumber: order['orderId']?.toString() ?? 'N/A',
+        isFromCheckout: false,
+      ),
+    );
   }
 
   @override
@@ -83,8 +103,7 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.width30 / 1.2,
-                vertical: Dimensions.height20),
+                horizontal: Dimensions.width30, vertical: Dimensions.height20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -106,7 +125,7 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
 
                 // Address Section - Reduced height
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: EdgeInsets.symmetric(horizontal: 6.0),
                   child: Container(
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(
@@ -152,83 +171,11 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
                 SizedBox(height: Dimensions.height10 / 2),
 
                 // Image, item service provider and view button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Image stack
-                    Container(
-                      height: 60,
-                      width: 60,
-                      child: Stack(
-                        children: _buildStackedImages(items, context),
-                      ),
-                    ),
-
-                    // Provider name with flexible width and wrapping
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: Dimensions.width10),
-                        child: Text(
-                          items.isNotEmpty
-                              ? (items[0]['name']?.toString() ?? 'Izinto')
-                              : 'Izinto',
-                          style: TextStyle(
-                            fontSize: Dimensions.font16 / 1.3,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Poppins',
-                            color: Colors.black,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-
-                    // View Button with InkWell
-                    Container(
-                      height: Dimensions.height30 * 1.3,
-                      width: Dimensions.width30 * 3,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius:
-                            BorderRadius.circular(Dimensions.radius15),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _isLoading ? null : _handleViewButtonPress,
-                          borderRadius:
-                              BorderRadius.circular(Dimensions.radius15 * 1.3),
-                          splashColor: Colors.white.withOpacity(0.3),
-                          highlightColor: Colors.white.withOpacity(0.2),
-                          child: Center(
-                            child: _isLoading
-                                ? SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                    ),
-                                  )
-                                : Text(
-                                    'View',
-                                    style: TextStyle(
-                                      fontSize: Dimensions.font16 / 1.3,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                ServiceTypeRow(
+                  items: items,
+                  status: status,
+                  onTap: _handleViewButtonPress,
+                  isLoading: _isLoading,
                 ),
               ],
             ),

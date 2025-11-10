@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:izinto/live/auxiliery_classes/generic_app_bar.dart';
-import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen.dart';
+import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_order_screen.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:lottie/lottie.dart';

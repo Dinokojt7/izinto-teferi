@@ -24,12 +24,17 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
   final TextEditingController _messageController = TextEditingController();
   late ScrollController _scrollController;
   late String _chatRoomId;
+  bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _chatRoomId = 'order_${widget.order['orderId']}_support';
+    _hasText = _messageController.text.isNotEmpty;
+
+    // Add listener to text controller for real-time color changes
+    _messageController.addListener(_onTextChanged);
 
     // Mark messages as read when opening chat
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -39,9 +44,18 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
     });
   }
 
+  void _onTextChanged() {
+    setState(() {
+      _hasText = _messageController.text.trim().isNotEmpty;
+    });
+  }
+
   Future<void> _sendMessage() async {
     final message = _messageController.text.trim();
     if (message.isEmpty) return;
+
+    // Dismiss keyboard if it's open
+    FocusScope.of(context).unfocus();
 
     final controller =
         Provider.of<OrderSupportController>(context, listen: false);
@@ -50,17 +64,22 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
     _messageController.clear();
 
     // Scroll to bottom
-    _scrollController.animateTo(
-      0,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
-    final controller = Provider.of<OrderSupportController>(context);
+    final controller =
+        Provider.of<OrderSupportController>(context, listen: false);
 
     return Scaffold(
       backgroundColor: Colors.white.withOpacity(0.97),
@@ -75,10 +94,9 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
           // Custom App Bar
           _buildChatHeader(),
 
-          // Chat Messages
+          // Chat Messages - Get stream directly without listening to controller state
           Expanded(
-            child: // In OrderSupportChat, update the StreamBuilder:
-                StreamBuilder<QuerySnapshot>(
+            child: StreamBuilder<QuerySnapshot>(
               stream: controller.getMessagesStream(widget.order['orderId']),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -93,10 +111,12 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
                   );
                 }
 
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !_hasText &&
+                    !snapshot.hasData) {
                   return Center(
                     child: CircularProgressIndicator(
-                      color: LiveColors.accent,
+                      color: Colors.black,
                     ),
                   );
                 }
@@ -116,7 +136,7 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
 
                 return ListView.builder(
                   controller: _scrollController,
-                  reverse: true,
+                  reverse: false,
                   padding: EdgeInsets.all(Dimensions.width15),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
@@ -130,8 +150,13 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
             ),
           ),
 
-          // Message Input
-          _buildMessageInput(controller),
+          // Message Input - Only listen to isLoading changes using Selector
+          Selector<OrderSupportController, bool>(
+            selector: (_, controller) => controller.isLoading,
+            builder: (context, isLoading, child) {
+              return _buildMessageInput(isLoading);
+            },
+          ),
         ],
       ),
     );
@@ -189,31 +214,6 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
                     ),
                   ),
                 ],
-              ),
-            ),
-
-            // Status Badge
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.width10,
-                vertical: Dimensions.height10 / 2,
-              ),
-              decoration: BoxDecoration(
-                color: LiveColors.accent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: LiveColors.accent.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                _getStatusText(widget.order['status']),
-                style: TextStyle(
-                  fontSize: Dimensions.font16 / 1.3,
-                  color: LiveColors.accent,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Poppins',
-                ),
               ),
             ),
           ],
@@ -283,78 +283,122 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
           ),
         ],
 
-        // Message Bubble
-        Align(
-          alignment:
-              isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            margin: EdgeInsets.only(bottom: Dimensions.height10),
-            child: Column(
-              crossAxisAlignment: isUserMessage
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                // Message Bubble
-                Container(
-                  padding: EdgeInsets.all(Dimensions.width15),
-                  decoration: BoxDecoration(
-                    color: isUserMessage
-                        ? LiveColors.accent.withOpacity(0.9)
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                      bottomLeft: isUserMessage
-                          ? Radius.circular(16)
-                          : Radius.circular(4),
-                      bottomRight: isUserMessage
-                          ? Radius.circular(4)
-                          : Radius.circular(16),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
+        // Message Row with Avatar
+        Row(
+          mainAxisAlignment:
+              isUserMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Avatar for received messages (left side)
+            if (!isUserMessage) ...[
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: LiveColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.support_agent, color: Colors.white, size: 16),
+              ),
+              SizedBox(width: 8),
+            ],
+
+            // Message Bubble
+            Expanded(
+              child: Align(
+                alignment: isUserMessage
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  ),
+                  margin: EdgeInsets.only(bottom: Dimensions.height10),
+                  child: Column(
+                    crossAxisAlignment: isUserMessage
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    children: [
+                      // Message Bubble
+                      Container(
+                        padding: EdgeInsets.all(Dimensions.width15),
+                        decoration: BoxDecoration(
+                          color: isUserMessage
+                              ? Colors.grey.shade100
+                              : Colors.grey.shade100,
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
+                            bottomLeft: isUserMessage
+                                ? Radius.circular(16)
+                                : Radius.circular(4),
+                            bottomRight: isUserMessage
+                                ? Radius.circular(4)
+                                : Radius.circular(16),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          message,
+                          style: TextStyle(
+                            fontSize: Dimensions.font16 / 1.1,
+                            color:
+                                isUserMessage ? Colors.black87 : Colors.black87,
+                            fontFamily: 'Poppins',
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+
+                      // Time
+                      SizedBox(height: 4),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          messageTime,
+                          style: TextStyle(
+                            fontSize: Dimensions.font16 / 1.4,
+                            color: Colors.grey.shade500,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: Text(
-                    message,
-                    style: TextStyle(
-                      fontSize: Dimensions.font16 / 1.1,
-                      color: isUserMessage ? Colors.white : Colors.black87,
-                      fontFamily: 'Poppins',
-                      height: 1.4,
-                    ),
-                  ),
                 ),
-
-                // Time
-                SizedBox(height: 4),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    messageTime,
-                    style: TextStyle(
-                      fontSize: Dimensions.font16 / 1.4,
-                      color: Colors.grey.shade500,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+
+            // Avatar for sent messages (right side)
+            if (isUserMessage) ...[
+              SizedBox(width: 8),
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.person, color: Colors.white, size: 16),
+              ),
+            ],
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildMessageInput(OrderSupportController controller) {
+  Widget _buildMessageInput(bool isLoading) {
     return Container(
       padding: EdgeInsets.all(Dimensions.width15),
       decoration: BoxDecoration(
@@ -409,11 +453,11 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: LiveColors.accent,
+              color: _hasText ? Colors.grey.shade600 : Colors.grey.shade300,
             ),
             child: IconButton(
               icon: Icon(Icons.send, color: Colors.white, size: 20),
-              onPressed: controller.isLoading ? null : _sendMessage,
+              onPressed: isLoading ? null : _sendMessage,
               padding: EdgeInsets.all(Dimensions.width10),
               constraints: BoxConstraints(),
             ),
@@ -475,6 +519,7 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
 
   @override
   void dispose() {
+    _messageController.removeListener(_onTextChanged);
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();

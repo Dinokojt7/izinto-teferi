@@ -1,4 +1,6 @@
 // order_support_controller.dart
+
+// order_support_controller.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +12,6 @@ class OrderSupportController extends ChangeNotifier {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
-
-  TextEditingController messageController = TextEditingController();
 
   // Get or create chat room
   Future<String> getOrCreateChatRoom(String orderId) async {
@@ -57,7 +57,7 @@ class OrderSupportController extends ChangeNotifier {
       if (message.trim().isEmpty) return;
 
       _isLoading = true;
-      notifyListeners();
+      notifyListeners(); // Notify only for loading state change
 
       final chatRoomId = await getOrCreateChatRoom(orderId);
 
@@ -72,7 +72,7 @@ class OrderSupportController extends ChangeNotifier {
         'message': message.trim(),
         'timestamp': FieldValue.serverTimestamp(),
         'readBy': [user.uid],
-        'notificationSent': false, // Track if notification was sent
+        'notificationSent': false,
       });
 
       // Update chat room last message
@@ -86,15 +86,29 @@ class OrderSupportController extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      messageController.clear();
+      // Send notification to admin
+      await _sendSupportNotification(orderId, message.trim());
+
       _isLoading = false;
-      notifyListeners();
+      notifyListeners(); // Notify only for loading state change
     } catch (e) {
       _isLoading = false;
-      notifyListeners();
+      notifyListeners(); // Notify only for loading state change
       print('Error sending message: $e');
       rethrow;
     }
+  }
+
+  Stream<QuerySnapshot> getMessagesStream(String orderId) {
+    final chatRoomId = 'order_${orderId}_support';
+
+    // Return all messages ordered by timestamp
+    return _firestore
+        .collection('order_support_chats')
+        .doc(chatRoomId)
+        .collection('messages')
+        .orderBy('timestamp', descending: false)
+        .snapshots();
   }
 
 // Add method to check for unread messages
@@ -162,38 +176,5 @@ class OrderSupportController extends ChangeNotifier {
     } catch (e) {
       print('❌ Error marking messages as read: $e');
     }
-  }
-
-// Listen for new messages and mark them as read automatically
-  Stream<QuerySnapshot> getMessagesStream(String orderId) {
-    final chatRoomId = 'order_${orderId}_support';
-
-    // When new messages arrive, mark them as read
-    _firestore
-        .collection('order_support_chats')
-        .doc(chatRoomId)
-        .collection('messages')
-        .where('readBy', isNotEqualTo: _auth.currentUser?.uid)
-        .snapshots()
-        .listen((snapshot) {
-      for (final doc in snapshot.docs) {
-        doc.reference.update({
-          'readBy': FieldValue.arrayUnion([_auth.currentUser?.uid])
-        });
-      }
-    });
-
-    return _firestore
-        .collection('order_support_chats')
-        .doc(chatRoomId)
-        .collection('messages')
-        .orderBy('timestamp', descending: false)
-        .snapshots();
-  }
-
-  @override
-  void dispose() {
-    messageController.dispose();
-    super.dispose();
   }
 }

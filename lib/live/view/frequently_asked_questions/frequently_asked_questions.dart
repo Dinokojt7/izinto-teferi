@@ -17,12 +17,24 @@ class FrequentlyAskedQuestions extends StatefulWidget {
 }
 
 class _FrequentlyAskedQuestionsState extends State<FrequentlyAskedQuestions> {
+  @override
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white.withOpacity(0.95),
+          Brightness.dark,
+          Colors.white,
+          Brightness.dark);
+    });
+  }
+
   void _applySystemChromeSettings() {
     SystemNavigation().applyCustomSystemChromeSettings(
         Colors.black, Brightness.light, Colors.black, Brightness.light);
   }
 
-  void _handleBackNavigation() {
+  void _handleBackNavigation(BuildContext context) {
     _applySystemChromeSettings();
     Navigator.of(context).pop();
   }
@@ -44,7 +56,7 @@ class _FrequentlyAskedQuestionsState extends State<FrequentlyAskedQuestions> {
               focus.unfocus();
               return;
             }
-            _handleBackNavigation();
+            _handleBackNavigation(context);
           } else {
             _applySystemChromeSettings();
           }
@@ -65,7 +77,7 @@ class _FrequentlyAskedQuestionsState extends State<FrequentlyAskedQuestions> {
                     Stack(
                       children: [
                         GenericAppBar(
-                          onTap: _handleBackNavigation,
+                          onTap: () => _handleBackNavigation(context),
                           backgroundColor: Colors.white,
                           textColor: Colors.black,
                           heading: 'FAQ',

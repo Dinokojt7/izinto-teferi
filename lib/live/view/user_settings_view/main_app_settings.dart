@@ -56,13 +56,6 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Your addresses',
                   onTap: () {
-                    setState(() {
-                      SystemNavigation().applyCustomSystemChromeSettings(
-                          Colors.white,
-                          Brightness.dark,
-                          Colors.white,
-                          Brightness.dark);
-                    });
                     Get.to(
                       () => SavedAddresses(),
                       transition: Transition.native,
@@ -77,11 +70,13 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                   subHeading: 'Edit profile',
                   onTap: () {
                     setState(() {
-                      SystemNavigation().applyCustomSystemChromeSettings(
-                          Colors.white,
-                          Brightness.dark,
-                          Colors.white,
-                          Brightness.dark);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        SystemNavigation().applyCustomSystemChromeSettings(
+                            Colors.white.withOpacity(0.95),
+                            Brightness.dark,
+                            Colors.white,
+                            Brightness.dark);
+                      });
                     });
                     Get.to(
                       () => ProfileView(),
@@ -214,14 +209,6 @@ class _MainAppSettingsState extends State<MainAppSettings> {
                 settingsSection(
                   subHeading: 'Imprint',
                   onTap: () {
-                    setState(() {
-                      SystemNavigation().applyCustomSystemChromeSettings(
-                          Colors.white,
-                          Brightness.dark,
-                          Colors.white,
-                          Brightness.dark);
-                    });
-
                     Get.to(
                       () => LegalDocumentScreen(
                         documentType: 'imprint',

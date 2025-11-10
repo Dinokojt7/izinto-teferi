@@ -34,12 +34,15 @@ class PhoneAuthView extends StatefulWidget {
 
 class _PhoneAuthViewState extends State<PhoneAuthView> {
   @override
-  void initState() {
-    setState(() {
-      SystemNavigation().applyCustomSystemChromeSettings(
-          Colors.white, Brightness.dark, Colors.white, Brightness.dark);
-    });
+  initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white.withOpacity(0.95),
+          Brightness.dark,
+          Colors.white,
+          Brightness.dark);
+    });
   }
 
   @override

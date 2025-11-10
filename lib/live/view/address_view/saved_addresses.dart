@@ -29,6 +29,18 @@ class _SavedAddressesState extends State<SavedAddresses> {
         Colors.black, Brightness.light, Colors.black, Brightness.light);
   }
 
+  @override
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white.withOpacity(0.95),
+          Brightness.dark,
+          Colors.white,
+          Brightness.dark);
+    });
+  }
+
   void _onTap() {
     _applySystemChromeSettings();
     Navigator.of(context).pop();

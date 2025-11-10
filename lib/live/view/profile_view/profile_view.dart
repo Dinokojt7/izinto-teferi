@@ -32,6 +32,15 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white.withOpacity(0.95),
+          Brightness.dark,
+          Colors.white,
+          Brightness.dark);
+    });
+
     _loadUserDataImmediately();
   }
 

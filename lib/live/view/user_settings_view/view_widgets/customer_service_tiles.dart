@@ -55,15 +55,6 @@ class _CustomerServiceTilesState extends State<CustomerServiceTiles> {
                     transition: Transition.native,
                     duration: Duration(milliseconds: 500),
                   );
-                  Future.delayed(const Duration(milliseconds: 510), () async {
-                    setState(() {
-                      SystemNavigation().applyCustomSystemChromeSettings(
-                          Colors.white,
-                          Brightness.dark,
-                          Colors.white,
-                          Brightness.dark);
-                    });
-                  });
                 },
               ),
               SizedBox(

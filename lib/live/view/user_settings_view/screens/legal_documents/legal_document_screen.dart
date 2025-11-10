@@ -35,6 +35,18 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
         Colors.black, Brightness.light, Colors.black, Brightness.light);
   }
 
+  @override
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white.withOpacity(0.95),
+          Brightness.dark,
+          Colors.white,
+          Brightness.dark);
+    });
+  }
+
   void _handleBackNavigation() {
     _applySystemChromeSettings();
     Navigator.of(context).pop();

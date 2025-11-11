@@ -111,7 +111,7 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
                 onTap: () => _handleViewButtonPress(context, latestOrder))
           else
             GenericCenterDialog(
-              emoji: '\u{1F9FA}',
+              emoji: '🪣',
               heading: 'No past orders',
               description:
                   '..yet! View and explore services that are available in your area to get started.',

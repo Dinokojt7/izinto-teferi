@@ -1,4 +1,4 @@
-// Updated OrderHistoryView
+// Updated OrderHistoryView with sliding tabs
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/order_history_item.dart';
 import 'package:provider/provider.dart';
@@ -21,17 +21,39 @@ class OrderHistoryView extends StatefulWidget {
   State<OrderHistoryView> createState() => _OrderHistoryViewState();
 }
 
-class _OrderHistoryViewState extends State<OrderHistoryView> {
-  String _selectedFilter = 'active';
+class _OrderHistoryViewState extends State<OrderHistoryView>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final List<String> _filterTabs = ['active', 'fulfilled', 'closed'];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _filterTabs.length, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final controller =
           Provider.of<OrderHistoryController>(context, listen: false);
       controller.loadUserOrders();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  String _getFilterTitle(String filter) {
+    switch (filter) {
+      case 'active':
+        return 'Active';
+      case 'fulfilled':
+        return 'Fulfilled';
+      case 'closed':
+        return 'Closed';
+      default:
+        return 'Orders';
+    }
   }
 
   @override
@@ -45,15 +67,6 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
         message: 'Log in to see your orders.',
         isSettingView: false,
       );
-    }
-
-    // Filter orders based on selected filter
-    final filteredOrders =
-        _filterOrders(orderController.orders, _selectedFilter);
-
-    String _filterText(String text) {
-      if (text.isEmpty) return text;
-      return text[0].toUpperCase() + text.substring(1).toLowerCase();
     }
 
     return Scaffold(
@@ -71,151 +84,173 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
             removeLeading: true,
           ),
 
-          // Filter Menu
-          _buildFilterMenu(),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              Dimensions.width20,
-              Dimensions.height20,
-              Dimensions.height10,
-              Dimensions.height10,
-            ),
-            child: Row(
-              children: [
-                HeadingStyleText(
-                  text: _filterText(_selectedFilter),
-                  weight: FontWeight.w600,
-                ),
-                SizedBox(
-                  width: Dimensions.width10,
-                ),
-                SmallText(
-                    height: 1.5,
-                    color: Colors.black,
-                    size: Dimensions.font16 / 1.5,
-                    text:
-                        '${filteredOrders.length} ${filteredOrders.length == 1 ? 'item' : 'items'}')
-              ],
-            ),
-          ),
+          // Tab Bar - Always visible when there are orders
+          if (orderController.orders.isNotEmpty) _buildTabBar(),
 
-          if (orderController.isLoading)
-            Expanded(
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: LiveColors.standardBlue,
-                ),
-              ),
-            )
-          else if (filteredOrders.isEmpty)
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                    top: Dimensions.height30, bottom: Dimensions.height20),
-                child: GenericCenterDialog(
-                  emoji: _getEmptyStateEmoji(_selectedFilter),
-                  heading: _getEmptyStateHeading(_selectedFilter),
-                  description: _getEmptyStateDescription(_selectedFilter),
-                  buttonText: 'Browse services',
-                  callBack: () {
-                    final homeViewController =
-                        Provider.of<HomeViewController>(context, listen: false);
-                    homeViewController.changeIndex(0, false);
-                  },
-                ),
-              ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(
-                  horizontal: Dimensions.width20,
-                  vertical: Dimensions.height10,
-                ),
-                itemCount: filteredOrders.length,
-                itemBuilder: (context, index) {
-                  final order = filteredOrders[index];
-                  return OrderHistoryItem(
-                    order: order,
-                    index: index,
-                  );
-                },
-              ),
-            ),
+          // Main Content Area
+          Expanded(
+            child: orderController.orders.isEmpty
+                ? _buildEmptyAllOrdersState()
+                : TabBarView(
+                    controller: _tabController,
+                    children: _filterTabs.map((filter) {
+                      return _buildOrderListForFilter(filter, orderController);
+                    }).toList(),
+                  ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterMenu() {
+  Widget _buildTabBar() {
     return Container(
-      width: double.infinity,
-      height: Dimensions.height30 * 2,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: Dimensions.height10 * 1.1),
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
-          children: [
-            _buildFilterChip('Active', 'active'),
-            SizedBox(width: Dimensions.width10),
-            _buildFilterChip('Fulfilled', 'fulfilled'),
-            SizedBox(width: Dimensions.width10),
-            _buildFilterChip('Closed', 'closed'),
-          ],
-        ),
+      child: Column(
+        children: [
+          TabBar(
+            controller: _tabController,
+            indicatorColor: LiveColors.standardBlue,
+            labelColor: LiveColors.standardBlue,
+            unselectedLabelColor: Colors.grey.shade600,
+            labelStyle: TextStyle(
+              fontSize: Dimensions.font16 / 1.1,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontSize: Dimensions.font16 / 1.1,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Poppins',
+            ),
+            indicatorSize: TabBarIndicatorSize.label,
+            tabs: [
+              Tab(text: 'Active'),
+              Tab(text: 'Fulfilled'),
+              Tab(text: 'Closed'),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, String value) {
-    final isSelected = _selectedFilter == value;
+  Widget _buildOrderListForFilter(
+      String filter, OrderHistoryController orderController) {
+    final filteredOrders = _filterOrders(orderController.orders, filter);
 
-    return GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedFilter = value;
-          });
+    return Column(
+      children: [
+        // Header with count
+        if (filteredOrders.isNotEmpty)
+          _buildFilterHeader(filter, filteredOrders.length),
+
+        // Order List or Empty State
+        Expanded(
+          child: filteredOrders.isEmpty
+              ? _buildEmptyFilterState(filter)
+              : _buildOrderListView(filteredOrders),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterHeader(String filter, int count) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        Dimensions.width20,
+        Dimensions.height20,
+        Dimensions.height10,
+        Dimensions.height10,
+      ),
+      child: Row(
+        children: [
+          HeadingStyleText(
+            text: _getFilterTitle(filter),
+            weight: FontWeight.w600,
+          ),
+          SizedBox(width: Dimensions.width10),
+          SmallText(
+            height: 1.5,
+            color: Colors.black,
+            size: Dimensions.font16 / 1.5,
+            text: '$count ${count == 1 ? 'item' : 'items'}',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderListView(List<Map<String, dynamic>> orders) {
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(
+        horizontal: Dimensions.width20,
+        vertical: Dimensions.height10,
+      ),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        final order = orders[index];
+        return OrderHistoryItem(
+          order: order,
+          index: index,
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyAllOrdersState() {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: Dimensions.height30,
+        bottom: Dimensions.height20,
+      ),
+      child: GenericCenterDialog(
+        emoji: '🪣', // Bucket emoji (perfect for cleaning services)
+        heading: 'No past orders',
+        description:
+            '..yet! View and explore services that are available in your area to get started.',
+        buttonText: 'Browse services',
+        callBack: () {
+          final homeViewController =
+              Provider.of<HomeViewController>(context, listen: false);
+          homeViewController.changeIndex(0, false);
         },
-        child: Container(
-          height: Dimensions.height45 / 1.1,
-          decoration: BoxDecoration(
-            border: isSelected
-                ? Border.all(
-                    width: 1,
-                    color: Colors.grey.withOpacity(0.1),
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(Dimensions.radius30 * 2),
-            color: isSelected
-                ? LiveColors.accent.withOpacity(0.5)
-                : Colors.transparent,
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                vertical: Dimensions.width10 / 2,
-                horizontal: Dimensions.width10),
-            child: Center(
-              //register
-              child: IntegerText(
-                text: label,
-                size: Dimensions.font16 / 1.1,
-                fontWeight: FontWeight.w600,
-                color: Color(0Xff353839),
-              ),
-            ),
-          ),
-        ));
+      ),
+    );
+  }
+
+  Widget _buildEmptyFilterState(String filter) {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: Dimensions.height30,
+        bottom: Dimensions.height20,
+      ),
+      child: GenericCenterDialog(
+        emoji: _getEmptyStateEmoji(filter),
+        heading: _getEmptyStateHeading(filter),
+        description: _getEmptyStateDescription(filter),
+        buttonText: _getEmptyStateButtonText(filter),
+        callBack: () {
+          if (filter == 'active') {
+            final homeViewController =
+                Provider.of<HomeViewController>(context, listen: false);
+            homeViewController.changeIndex(0, false);
+          } else {
+            // For fulfilled/closed tabs, switch to active tab if user wants to browse
+            _tabController.animateTo(0);
+          }
+        },
+      ),
+    );
   }
 
   List<Map<String, dynamic>> _filterOrders(
@@ -248,7 +283,7 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
   String _getEmptyStateEmoji(String filter) {
     switch (filter) {
       case 'active':
-        return '🕒';
+        return '🪣';
       case 'fulfilled':
         return '✅';
       case 'closed':
@@ -276,11 +311,24 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
       case 'active':
         return 'You don\'t have any active orders at the moment. Browse services to get started!';
       case 'fulfilled':
-        return 'Your completed orders will appear here once they\'re fulfilled.';
+        return 'Your completed orders will appear here once they\'re fulfilled. Keep an eye on your active orders!';
       case 'closed':
-        return 'Cancelled or closed orders will appear here.';
+        return 'Cancelled or closed orders will appear here. All your completed orders are looking great!';
       default:
         return '..yet! View and explore services that are available in your area to get started.';
+    }
+  }
+
+  String _getEmptyStateButtonText(String filter) {
+    switch (filter) {
+      case 'active':
+        return 'Browse services';
+      case 'fulfilled':
+        return 'View active orders';
+      case 'closed':
+        return 'View active orders';
+      default:
+        return 'Browse services';
     }
   }
 }

@@ -41,6 +41,15 @@ class _MainScaffoldState extends State<MainScaffold> {
     GlobalKey<NavigatorState>(),
   ];
 
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.black, Brightness.light, Colors.black, Brightness.light);
+    });
+    super.initState();
+  }
+
   void _onBottomNavTapped(int index) {
     final homeController =
         Provider.of<HomeViewController>(listen: false, context);

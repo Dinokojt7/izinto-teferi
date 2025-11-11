@@ -205,20 +205,16 @@ class _CarWashViewState extends State<CarWashView> {
                           ],
                         ),
                         actionButtonChild: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _showClearAllConfirmationDialog(controller);
-                          },
-                          child: Text(
-                            'Remove all',
-                            style: TextStyle(
-                              fontSize: Dimensions.font16 / 1.3,
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _showClearAllConfirmationDialog(controller);
+                            },
+                            child: BlueTextButton(
+                                text: 'Remove all',
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                  _showClearAllConfirmationDialog(controller);
+                                })),
                       ),
                     ),
 

@@ -105,44 +105,42 @@ class CartProductView extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             // Show size badge if this is a size variant
-                            if (isSizeVariant && selectedSize != null)
-                              Container(
-                                margin: EdgeInsets.only(top: 2),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color:
-                                      LiveColors.standardBlue.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  selectedSize,
-                                  style: TextStyle(
-                                    fontSize: Dimensions.font16 / 1.1,
-                                    color: LiveColors.standardBlue,
-                                    fontWeight: FontWeight.w600,
+                            isSizeVariant && selectedSize != null
+                                ? Container(
+                                    margin: EdgeInsets.only(top: 2),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      selectedSize,
+                                      style: TextStyle(
+                                        fontSize: Dimensions.font16 / 1.3,
+                                        color: Colors.blue,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  )
+                                : Padding(
+                                    padding: const EdgeInsets.only(top: 6.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: SmallText(
+                                            height: 1.5,
+                                            color: Colors.black,
+                                            size: Dimensions.font16 / 1.5,
+                                            text: specialty.type ?? '',
+                                            maxLines: 1,
+                                            overFlow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ),
                           ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 2),
-
-                  // Product type
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SmallText(
-                          height: 1.5,
-                          color: Colors.black,
-                          size: Dimensions.font16 / 1.5,
-                          text: specialty.type ?? '',
-                          maxLines: 1,
-                          overFlow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

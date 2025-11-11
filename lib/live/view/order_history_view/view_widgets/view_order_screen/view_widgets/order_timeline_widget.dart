@@ -12,6 +12,8 @@ import 'package:izinto/utils/dimensions.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../../../utilities/colors.dart';
+
 class OrderTimelineWidget extends StatefulWidget {
   final String serviceType;
   final DateTime createdAt;
@@ -110,15 +112,15 @@ class _OrderTimelineWidgetState extends State<OrderTimelineWidget> {
         // Timeline dots and connectors (vertical)
         Column(
           children: [
-            _buildTimelineDot(true, Colors.blue), // Pending - blue
+            _buildTimelineDot(true, LiveColors.accent), // Pending - blue
             _buildVerticalConnector(true),
             _buildTimelineDot(isInProgress || isCompleted,
-                isInProgress ? Colors.orange : Colors.blue),
+                isInProgress ? LiveColors.accent : LiveColors.accent),
             _buildVerticalConnector(isCompleted),
             _buildTimelineDot(
                 isCompleted,
                 isCompleted
-                    ? Colors.green
+                    ? LiveColors.accent
                     : Colors.grey.shade400), // Fulfilled - light grey
           ],
         ),
@@ -135,7 +137,7 @@ class _OrderTimelineWidgetState extends State<OrderTimelineWidget> {
                 time: widget.createdAt,
                 isCompleted: true,
                 isActive: false,
-                statusColor: Colors.blue, // Blue text for pending
+                statusColor: LiveColors.accent, // Blue text for pending
               ),
               SizedBox(height: Dimensions.height20),
               _buildTimelineStep(
@@ -145,7 +147,7 @@ class _OrderTimelineWidgetState extends State<OrderTimelineWidget> {
                 isCompleted: isInProgress || isCompleted,
                 isActive: isInProgress,
                 statusColor: isInProgress
-                    ? Colors.orange
+                    ? LiveColors.accent
                     : Colors.grey.shade700, // Orange when active
               ),
               SizedBox(height: Dimensions.height20),
@@ -156,7 +158,7 @@ class _OrderTimelineWidgetState extends State<OrderTimelineWidget> {
                 isCompleted: isCompleted,
                 isActive: false,
                 statusColor: isCompleted
-                    ? Colors.green
+                    ? LiveColors.accent
                     : Colors.grey.shade600, // Light grey for fulfilled
               ),
             ],
@@ -172,9 +174,9 @@ class _OrderTimelineWidgetState extends State<OrderTimelineWidget> {
       height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color,
+        color: isCompleted ? color : Colors.transparent,
         border: Border.all(
-          color: isCompleted ? color : Colors.grey.shade400,
+          color: LiveColors.accent,
           width: 2,
         ),
       ),
@@ -194,8 +196,9 @@ class _OrderTimelineWidgetState extends State<OrderTimelineWidget> {
       height: 60,
       margin: EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        color:
-            isCompleted ? Colors.blue : Colors.grey.shade300, // Blue connector
+        color: isCompleted
+            ? LiveColors.accent
+            : Colors.grey.shade300, // Blue connector
         borderRadius: BorderRadius.circular(2),
       ),
     );

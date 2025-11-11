@@ -85,7 +85,7 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
       backgroundColor: Colors.white.withOpacity(0.97),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.black,
+        backgroundColor: LiveColors.accent.withOpacity(0.2),
         automaticallyImplyLeading: false,
         toolbarHeight: 0,
       ),

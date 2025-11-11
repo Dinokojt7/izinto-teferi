@@ -271,7 +271,6 @@ class CheckoutViewController extends ChangeNotifier {
     return types.toList();
   }
 
-// In CheckoutViewController - Update submitOrder with better cart clearing
 // In CheckoutViewController - Update submitOrder to include notification
   Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
     try {

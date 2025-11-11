@@ -610,14 +610,11 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
       onPopInvoked: (didPop) {
         if (!didPop) {
           if (widget.isFromCheckout) {
-            _applySystemChromeSettings();
-            homeViewController.changeIndex(0, false);
+            Navigator.of(context).pop();
           } else {
             _applySystemChromeSettings();
             Navigator.of(context).pop();
           }
-        } else {
-          _applySystemChromeSettings();
         }
       },
       child: GestureDetector(

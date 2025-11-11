@@ -91,14 +91,14 @@ class _FavoriteItemViewState extends State<FavoriteItemView> {
                           padding:
                               EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: LiveColors.standardBlue.withOpacity(0.1),
+                            color: Colors.blue.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             selectedSize,
                             style: TextStyle(
                               fontSize: Dimensions.font16 / 1.2,
-                              color: LiveColors.standardBlue,
+                              color: Colors.blue,
                               fontWeight: FontWeight.w500,
                             ),
                           ),

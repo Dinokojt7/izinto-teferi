@@ -48,30 +48,58 @@ class FavoritesView extends StatelessWidget {
       ),
       body: GetBuilder<FavoriteController>(
         builder: (favoriteController) {
-          final favorites = favoriteController.getFavoriteItems();
-          final favoritesCount = favoriteController.favoritesCount;
+          try {
+            final favorites = favoriteController.getFavoriteItems();
+            final favoritesCount = favoriteController.favoritesCount;
 
-          return Column(
-            children: [
-              // App Bar
-              GenericAppBar(
-                heading: 'Favorites',
-                removeLeading: true,
-              ),
-
-              // Content based on favorites availability
-              Expanded(
-                child: _buildFavoritesContent(
-                  context,
-                  favorites,
-                  favoritesCount,
-                  favoriteController,
+            return Column(
+              children: [
+                // App Bar
+                GenericAppBar(
+                  heading: 'Favorites',
+                  removeLeading: true,
                 ),
-              ),
-            ],
-          );
+
+                // Content based on favorites availability
+                Expanded(
+                  child: _buildFavoritesContent(
+                    context,
+                    favorites,
+                    favoritesCount,
+                    favoriteController,
+                  ),
+                ),
+              ],
+            );
+          } catch (e) {
+            print('Error building favorites view: $e');
+            return _buildErrorView();
+          }
         },
       ),
+    );
+  }
+
+  Widget _buildErrorView() {
+    return Column(
+      children: [
+        GenericAppBar(
+          heading: 'Favorites',
+          removeLeading: true,
+        ),
+        Expanded(
+          child: GenericCenterDialog(
+            emoji: '\u{1F914}',
+            heading: 'Something went wrong',
+            description:
+                'There was an error loading your favorites. Please try again.',
+            buttonText: 'Try Again',
+            callBack: () {
+              Get.find<FavoriteController>().update();
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -108,7 +136,7 @@ class FavoritesView extends StatelessWidget {
         _buildHeadingSection(context, favoritesCount, favoriteController),
         SizedBox(height: Dimensions.height10),
 
-        // Favorites list
+        // Favorites list with error boundary
         Expanded(
           child: ListView.builder(
             padding: EdgeInsets.symmetric(
@@ -117,15 +145,46 @@ class FavoritesView extends StatelessWidget {
             ),
             itemCount: favorites.length,
             itemBuilder: (context, index) {
-              final item = favorites[index];
-              return FavoriteItemView(
-                item: item,
-                index: index,
-              );
+              try {
+                final item = favorites[index];
+                if (item == null) {
+                  return _buildErrorItem(index);
+                }
+                return FavoriteItemView(
+                  item: item,
+                  index: index,
+                );
+              } catch (e) {
+                print('Error building favorite item at index $index: $e');
+                return _buildErrorItem(index);
+              }
             },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildErrorItem(int index) {
+    return Container(
+      margin: EdgeInsets.only(bottom: Dimensions.height10),
+      padding: EdgeInsets.all(Dimensions.width15),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.orange),
+          SizedBox(width: Dimensions.width10),
+          Expanded(
+            child: Text(
+              'Unable to load favorite item ${index + 1}',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

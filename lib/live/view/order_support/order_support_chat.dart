@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +27,8 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
   late ScrollController _scrollController;
   late String _chatRoomId;
   bool _hasText = false;
+  final OrderSupportController _supportController =
+      Get.find<OrderSupportController>();
 
   @override
   void initState() {
@@ -32,6 +36,7 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
     _scrollController = ScrollController();
     _chatRoomId = 'order_${widget.order['orderId']}_support';
     _hasText = _messageController.text.isNotEmpty;
+    _supportController.startListeningForAdminMessages(widget.order['orderId']);
 
     // Add listener to text controller for real-time color changes
     _messageController.addListener(_onTextChanged);

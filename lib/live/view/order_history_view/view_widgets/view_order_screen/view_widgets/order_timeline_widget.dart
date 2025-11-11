@@ -146,7 +146,7 @@ class _OrderTimelineWidgetState extends State<OrderTimelineWidget> {
                 time: isInProgress ? now : _calculateInProgressTime(),
                 isCompleted: isInProgress || isCompleted,
                 isActive: isInProgress,
-                statusColor: isInProgress
+                statusColor: isInProgress || isCompleted
                     ? LiveColors.accent
                     : Colors.grey.shade700, // Orange when active
               ),

@@ -348,19 +348,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
         Provider.of<CheckoutViewController>(context, listen: false);
 
     try {
-      print('🔄 Starting order process...');
       final order = await checkoutController.submitOrder(address);
 
-      print('✅ Order successful, navigating to success screen');
       // Navigate directly to success screen
       setState(() {
         SystemNavigation().applyCustomSystemChromeSettings(
             Colors.white, Brightness.dark, Colors.white, Brightness.dark);
       });
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (_) => CashPaymentSuccessScreen(
+              order: order,
+            )),
+            (Route<dynamic> route) => false, // removes everything
+      );
 
-      Get.to(() => CashPaymentSuccessScreen(order: order));
     } catch (error) {
-      print('❌ Order processing error: $error');
       Get.snackbar(
         'Order Failed',
         'Error: ${error.toString()}',

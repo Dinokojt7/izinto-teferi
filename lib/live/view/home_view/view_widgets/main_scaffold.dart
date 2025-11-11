@@ -137,7 +137,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 1.5,
-                      offset: Offset(0, -1), // Shadow at the top of bottom nav
+                      offset: Offset(0, -1),
                     ),
                   ],
                   color: Colors.white,

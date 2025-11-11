@@ -1,6 +1,8 @@
 // order_support_controller.dart
 
 // order_support_controller.dart
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +51,91 @@ class OrderSupportController extends ChangeNotifier {
     }
   }
 
+  StreamSubscription? _messagesSubscription;
+  String? _currentChatRoomId;
+
+  @override
+  void dispose() {
+    _messagesSubscription?.cancel();
+    super.dispose();
+  }
+
+  // Listen for incoming admin messages and trigger notifications
+  void startListeningForAdminMessages(String orderId) {
+    final chatRoomId = 'order_${orderId}_support';
+    _currentChatRoomId = chatRoomId;
+
+    _messagesSubscription = getMessagesStream(orderId).listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        _checkForNewAdminMessages(snapshot.docs);
+      }
+    });
+  }
+
+  Future<void> _checkForNewAdminMessages(
+      List<QueryDocumentSnapshot> docs) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      for (final doc in docs) {
+        final messageData = doc.data() as Map<String, dynamic>;
+        final senderType = messageData['senderType'];
+        final senderId = messageData['senderId'];
+        final notificationSent = messageData['notificationSent'] ?? false;
+        final message = messageData['message'] ?? '';
+
+        // Check if message is from admin AND not from current user AND notification not sent
+        if (senderType == 'admin' &&
+            senderId != user.uid &&
+            !notificationSent) {
+          await _triggerAdminMessageNotification(
+              message, _currentChatRoomId!, doc.id);
+        }
+      }
+    } catch (e) {
+      print('Error checking admin messages: $e');
+    }
+  }
+
+  Future<void> _triggerAdminMessageNotification(
+      String message, String chatRoomId, String messageId) async {
+    try {
+      // Extract orderId from chatRoomId (format: order_XYZ_support)
+      final orderId =
+          chatRoomId.replaceFirst('order_', '').replaceFirst('_support', '');
+
+      // Send notification with actual message content
+      await NotificationService().showSupportNotification(
+        orderId: orderId,
+        title: 'Support - Order $orderId',
+        body: message.length > 50 ? '${message.substring(0, 50)}...' : message,
+        additionalData: {
+          'senderType': 'admin',
+          'message': message,
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
+
+      print('✅ Admin message notification sent for: $orderId');
+
+      // Mark as notified in Firestore to prevent duplicates
+      await _firestore
+          .collection('order_support_chats')
+          .doc(chatRoomId)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+        'notificationSent': true,
+        'notificationSentAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('❌ Error triggering admin notification: $e');
+    }
+  }
+
   // Send message
+// In OrderSupportController - modify sendMessage method
   Future<void> sendMessage(String orderId, String message) async {
     try {
       final user = _auth.currentUser;
@@ -57,7 +143,7 @@ class OrderSupportController extends ChangeNotifier {
       if (message.trim().isEmpty) return;
 
       _isLoading = true;
-      notifyListeners(); // Notify only for loading state change
+      notifyListeners();
 
       final chatRoomId = await getOrCreateChatRoom(orderId);
 
@@ -68,11 +154,11 @@ class OrderSupportController extends ChangeNotifier {
           .collection('messages')
           .add({
         'senderId': user.uid,
-        'senderType': 'user',
+        'senderType': 'user', // This identifies who sent it
         'message': message.trim(),
         'timestamp': FieldValue.serverTimestamp(),
         'readBy': [user.uid],
-        'notificationSent': false,
+        'notificationSent': false, // Admin will handle notification
       });
 
       // Update chat room last message
@@ -86,14 +172,14 @@ class OrderSupportController extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      // Send notification to admin
-      await _sendSupportNotification(orderId, message.trim());
+      // REMOVE this line - don't send notification when user sends message
+      // await _sendSupportNotification(orderId, message.trim());
 
       _isLoading = false;
-      notifyListeners(); // Notify only for loading state change
+      notifyListeners();
     } catch (e) {
       _isLoading = false;
-      notifyListeners(); // Notify only for loading state change
+      notifyListeners();
       print('Error sending message: $e');
       rethrow;
     }

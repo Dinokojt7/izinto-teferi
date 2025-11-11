@@ -21,6 +21,7 @@ import 'package:izinto/helpers/data/repository/pet_care_specialty_repo.dart';
 import 'package:izinto/helpers/data/repository/recommended_specialty_repo.dart';
 import 'package:izinto/helpers/data/repository/subscription_plan_repo.dart';
 import 'package:izinto/helpers/data/repository/tabs_header_repo.dart';
+import 'package:izinto/live/view/order_support/controller/order_support_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/car_specialty_controller.dart';
 import '../controllers/car_wash_support_questions_controller.dart';
@@ -111,7 +112,7 @@ Future<void> init() async {
   // In your main binding file
   Get.lazyPut(() => LegalDocumentsRepo(apiClient: Get.find()));
   Get.lazyPut(() => LegalDocumentsController(legalDocumentsRepo: Get.find()));
-
+  Get.lazyPut(() => OrderSupportController());
   Get.lazyPut(() => CartController(cartRepo: Get.find()));
   Get.lazyPut(() => TabsHeaderController(tabsHeaderRepo: Get.find()));
   Get.lazyPut(() => LaundrySupportQuestionsController(

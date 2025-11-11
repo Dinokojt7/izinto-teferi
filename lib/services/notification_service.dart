@@ -317,6 +317,7 @@ class NotificationService {
   }
 
   // Show support notification
+  // In NotificationService - improve the support notification method
   Future<void> showSupportNotification({
     required String orderId,
     required String title,
@@ -326,6 +327,7 @@ class NotificationService {
     final data = {
       'type': 'order_support',
       'orderId': orderId,
+      'senderType': 'admin', // Important: identify as admin message
       ...?additionalData,
     };
 
@@ -334,6 +336,39 @@ class NotificationService {
       body: body,
       channel: 'support_channel',
       payload: data,
+    );
+
+    print('🔔 Support notification shown: $body');
+  }
+
+// Also update the message handler to be more specific
+  void _handleChatMessage(RemoteMessage message) {
+    final data = message.data;
+    final type = data['type'];
+    final orderId = data['orderId'];
+    final senderType = data['senderType'];
+
+    print('📱 Handling chat message: $data');
+
+    // Only handle admin support messages
+    if (type == 'order_support' && senderType == 'admin') {
+      final messageBody = data['message'] ?? 'You have a new support message';
+
+      // Show local notification (this handles foreground case)
+      _showLocalNotificationForAdminMessage(orderId, messageBody, data);
+
+      // Navigate if needed
+      _navigateToSupportChat(orderId);
+    }
+  }
+
+  Future<void> _showLocalNotificationForAdminMessage(
+      String orderId, String message, Map<String, dynamic> data) async {
+    await showSupportNotification(
+      orderId: orderId,
+      title: 'Support - Order $orderId',
+      body: message.length > 50 ? '${message.substring(0, 50)}...' : message,
+      additionalData: data,
     );
   }
 
@@ -433,23 +468,6 @@ class NotificationService {
       print('🔔 Chat app opened from notification');
       _handleChatMessage(message);
     });
-  }
-
-  void _handleChatMessage(RemoteMessage message) {
-    final data = message.data;
-    final type = data['type'];
-    final orderId = data['orderId'];
-    final senderType = data['senderType'];
-
-    // Only show notification if message is from admin (not from user)
-    if (type == 'order_support' && senderType == 'admin') {
-      _showLocalNotificationFromMessage(message);
-
-      // Navigate to chat if app is in foreground
-      if (message.notification != null) {
-        _navigateToSupportChat(orderId);
-      }
-    }
   }
 
 // Send chat notification (to be called from Firebase Functions)

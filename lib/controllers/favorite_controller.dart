@@ -17,35 +17,47 @@ class FavoriteController extends GetxController {
   }
 
   void _loadFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favoritesJson = prefs.getString('favorites');
-    if (favoritesJson != null) {
-      final Map<String, dynamic> favoritesMap = json.decode(favoritesJson);
-      _favorites.addAll(favoritesMap);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final favoritesJson = prefs.getString('favorites');
+      if (favoritesJson != null) {
+        final Map<String, dynamic> favoritesMap = json.decode(favoritesJson);
+        _favorites.addAll(favoritesMap);
+      }
+    } catch (e) {
+      print('Error loading favorites: $e');
+      _favorites.clear();
     }
   }
 
   void _saveFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favoritesJson = json.encode(_favorites);
-    prefs.setString('favorites', favoritesJson);
-    update();
-  }
-
-  // ✅ Generate unique favorite key that handles size variants
-  String _getFavoriteKey(dynamic item) {
-    if (item is NewSpecialtyModel && item.isSizeVariant == true) {
-      // For size variants: use originalId + selectedSize
-      return '${item.originalId}_${item.selectedSize}';
-    } else {
-      // For regular items: use id
-      return item.id.toString();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final favoritesJson = json.encode(_favorites);
+      prefs.setString('favorites', favoritesJson);
+      update();
+    } catch (e) {
+      print('Error saving favorites: $e');
     }
   }
 
-  // ✅ Check if item is favorite (handles both regular and size variants)
+  // ✅ Generate unique favorite key with null safety
+  String _getFavoriteKey(dynamic item) {
+    if (item is NewSpecialtyModel && item.isSizeVariant == true) {
+      // For size variants: use originalId + selectedSize with null checks
+      final originalId = item.originalId ?? item.id;
+      final size = item.selectedSize ?? 'default';
+      return '${originalId}_$size';
+    } else {
+      // For regular items: use id with fallback
+      final id = item.id?.toString() ?? 'unknown';
+      return id;
+    }
+  }
+
+  // ✅ Check if item is favorite with enhanced null safety
   bool isFavorite(dynamic item) {
-    if (item?.id == null) return false;
+    if (item == null) return false;
 
     final key = _getFavoriteKey(item);
     return _favorites.containsKey(key);
@@ -64,31 +76,79 @@ class FavoriteController extends GetxController {
     return _favorites.keys.any((key) => key.startsWith('${originalId}_'));
   }
 
-  // ✅ Toggle favorite with smart size variant handling
+  // ✅ Toggle favorite with enhanced error handling
   void toggleFavorite(dynamic item) {
-    if (item.id == null) return;
-
-    final key = _getFavoriteKey(item);
-
-    if (_favorites.containsKey(key)) {
-      _favorites.remove(key);
-    } else {
-      // Store the item with its unique key
-      _favorites[key] = item.toJson();
+    if (item == null) {
+      print('Cannot favorite null item');
+      return;
     }
-    _saveFavorites();
+
+    try {
+      final key = _getFavoriteKey(item);
+
+      if (_favorites.containsKey(key)) {
+        _favorites.remove(key);
+      } else {
+        // Safely convert to JSON with error handling
+        final jsonData = _safeConvertToJson(item);
+        if (jsonData != null) {
+          _favorites[key] = jsonData;
+        } else {
+          print('Failed to convert item to JSON: $item');
+          return;
+        }
+      }
+      _saveFavorites();
+    } catch (e) {
+      print('Error toggling favorite: $e');
+    }
   }
 
-  // ✅ Get all favorite items as individual items (no grouping)
-  List<dynamic> getFavoriteItems() {
-    return _favorites.values.map((json) {
-      try {
-        return NewSpecialtyModel.fromJson(json);
-      } catch (e) {
-        // Handle other model types if needed
-        return json;
+  // ✅ Safe JSON conversion helper
+  dynamic _safeConvertToJson(dynamic item) {
+    try {
+      if (item is NewSpecialtyModel) {
+        return item.toJson();
+      } else if (item is Map<String, dynamic>) {
+        return item;
+      } else if (item != null && _hasToJsonMethod(item)) {
+        return item.toJson();
+      } else {
+        return item.toString();
       }
-    }).toList();
+    } catch (e) {
+      print('Error in _safeConvertToJson: $e');
+      return null;
+    }
+  }
+
+  // ✅ Check if object has toJson method
+  bool _hasToJsonMethod(dynamic item) {
+    try {
+      return item.toJson != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ✅ Get all favorite items with error handling
+  List<dynamic> getFavoriteItems() {
+    return _favorites.values
+        .map((json) {
+          try {
+            // Try to parse as NewSpecialtyModel first
+            if (json is Map<String, dynamic>) {
+              return NewSpecialtyModel.fromJson(json);
+            }
+            return json;
+          } catch (e) {
+            print('Error parsing favorite item: $e');
+            // Return the raw JSON if parsing fails
+            return json;
+          }
+        })
+        .where((item) => item != null)
+        .toList();
   }
 
   // ✅ Get count of favorites

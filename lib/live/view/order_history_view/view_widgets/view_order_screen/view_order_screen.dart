@@ -1,5 +1,6 @@
 // view_order_screen.dart
 import 'package:flutter/material.dart';
+import 'package:izinto/live/view/home_view/home_view.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/order_timeline_widget.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/service_type_dropdown.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/services_dialog.dart';
@@ -610,7 +611,13 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
       onPopInvoked: (didPop) {
         if (!didPop) {
           if (widget.isFromCheckout) {
-            Navigator.of(context).pop();
+            _applySystemChromeSettings();
+            homeViewController.changeIndex(0, true);
+
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => HomeView()),
+              (Route<dynamic> route) => false, // removes everything
+            );
           } else {
             _applySystemChromeSettings();
             Navigator.of(context).pop();

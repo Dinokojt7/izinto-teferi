@@ -9,9 +9,10 @@ import '../../../../utils/dimensions.dart';
 import '../../../utilities/colors.dart';
 import 'package:provider/provider.dart';
 
+import '../../../utilities/generic_system_navigation.dart';
 import '../../home_view/controller/home_view_controller.dart';
 
-class CashPaymentSuccessScreen extends StatelessWidget {
+class CashPaymentSuccessScreen extends StatefulWidget {
   final Map<String, dynamic> order;
 
   const CashPaymentSuccessScreen({
@@ -20,12 +21,32 @@ class CashPaymentSuccessScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<CashPaymentSuccessScreen> createState() =>
+      _CashPaymentSuccessScreenState();
+}
+
+class _CashPaymentSuccessScreenState extends State<CashPaymentSuccessScreen> {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   SystemNavigation().applyCustomSystemChromeSettings(
+    //       Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+    // });
+
     final homeViewController =
         Provider.of<HomeViewController>(context, listen: false);
-    final orderId = order['orderId'] ?? 'N/A';
-    final totalAmount = order['totalAmount'] ?? 0;
-    final serviceTypes = order['serviceTypes'] ?? [];
+    final orderId = widget.order['orderId'] ?? 'N/A';
+    final totalAmount = widget.order['totalAmount'] ?? 0;
+    final serviceTypes = widget.order['serviceTypes'] ?? [];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -235,7 +256,7 @@ class CashPaymentSuccessScreen extends StatelessWidget {
                       MaterialPageRoute(
                           builder: (_) => ViewOrderScreen(
                                 orderNumber: '#$orderId',
-                                order: order,
+                                order: widget.order,
                                 isFromCheckout: true,
                               )),
                       (Route<dynamic> route) => false, // removes everything

@@ -48,45 +48,70 @@ class Wrapper extends StatefulWidget {
 }
 
 class _WrapperState extends State<Wrapper> {
+  bool _isInitialLoadComplete = false;
+  bool _hasProfileData = false;
+  bool _hasAddressData = false;
+
   Future<void> _loadResources() async {
-    Provider.of<ProfileViewController>(context, listen: false).getData();
+    try {
+      // Load profile data first and wait for it to complete
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getData();
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getAddresses();
 
-    Provider.of<ProfileViewController>(context, listen: false).getAddresses();
-    await Get.find<RecommendedSpecialtyController>()
-        .getRecommendedSpecialtyList();
-    await Get.find<CartController>().getCartHistoryList();
-    await Get.find<NewCartController>().getCartData();
-    await Get.find<TemperatureController>();
-    await Get.find<SizeSelectionController>();
-    await Get.find<FavoriteController>();
+      // Check what data we actually have
+      final profileController =
+          Provider.of<ProfileViewController>(context, listen: false);
+      _hasProfileData = profileController.firstName.isNotEmpty &&
+          profileController.lastName.isNotEmpty &&
+          profileController.emailAddress.isNotEmpty &&
+          profileController.phoneNumber.isNotEmpty;
 
-    await Get.find<RecommendationController>();
-    await Get.find<PopularSpecialtyController>().getPopularSpecialtyList();
-    await Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList();
-    await Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList();
-    await Get.find<CarpetCareSpecialtyController>()
-        .getCarpetCareSpecialtyList();
-    await Get.find<PetCareSpecialtyController>().getPetCareSpecialtyList();
-    await Get.find<CarSpecialtyController>().getCarSpecialtyList();
-    await Get.find<TabsHeaderController>().getTabsHeaderList();
-    await Get.find<LaundrySupportQuestionsController>()
-        .getLaundrySupportQuestions();
-    await Get.find<LegalDocumentsController>().getLegalDocuments();
-    await Get.find<HomeItemsController>().getHomeItemsList();
-    await Get.find<CarWashSupportQuestionsController>()
-        .getCarWashSupportQuestionsList();
-    await Get.find<CartRepo>().migrateOldCartToNew();
+      _hasAddressData = profileController.savedAddresses.isNotEmpty;
 
-    await Get.find<SubscriptionPlansController>().getSubscriptionPlansList();
-    await Get.find<PhoneAuthMethods>();
+      // Load other resources in parallel (non-blocking)
+      await Future.wait([
+        Get.find<RecommendedSpecialtyController>()
+            .getRecommendedSpecialtyList(),
+        Get.find<CartController>().getCartHistoryList(),
+        Get.find<NewCartController>().getCartData(),
+        Get.find<FavoriteController>().onInit(),
+        Get.find<PopularSpecialtyController>().getPopularSpecialtyList(),
+        Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList(),
+        Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList(),
+        Get.find<CarpetCareSpecialtyController>().getCarpetCareSpecialtyList(),
+        Get.find<PetCareSpecialtyController>().getPetCareSpecialtyList(),
+        Get.find<CarSpecialtyController>().getCarSpecialtyList(),
+        Get.find<TabsHeaderController>().getTabsHeaderList(),
+        Get.find<LaundrySupportQuestionsController>()
+            .getLaundrySupportQuestions(),
+        Get.find<LegalDocumentsController>().getLegalDocuments(),
+        Get.find<HomeItemsController>().getHomeItemsList(),
+        Get.find<CarWashSupportQuestionsController>()
+            .getCarWashSupportQuestionsList(),
+        Get.find<CartRepo>().migrateOldCartToNew(),
+        Get.find<SubscriptionPlansController>().getSubscriptionPlansList(),
+      ] as Iterable<Future>);
 
-    FlutterNativeSplash.remove();
+      setState(() {
+        _isInitialLoadComplete = true;
+      });
+
+      FlutterNativeSplash.remove();
+    } catch (e) {
+      print('Error loading resources: $e');
+      // Even if there's an error, mark load as complete to avoid infinite loading
+      setState(() {
+        _isInitialLoadComplete = true;
+      });
+      FlutterNativeSplash.remove();
+    }
   }
 
   @override
   void initState() {
     super.initState();
-
     _loadResources();
   }
 
@@ -94,23 +119,23 @@ class _WrapperState extends State<Wrapper> {
   void didChangeDependencies() {
     var navBarColor =
         Provider.of<HomeViewController>(context).navigationBarColor;
-    SystemNavigation().applyCustomSystemChromeSettings(navBarColor,
-        Brightness.light, Colors.black.withOpacity(0.001), Brightness.light);
-
+    SystemNavigation().applyCustomSystemChromeSettings(
+      navBarColor,
+      Brightness.light,
+      Colors.black.withOpacity(0.001),
+      Brightness.light,
+    );
     super.didChangeDependencies();
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
 
     return Consumer<ProfileViewController>(
       builder: (context, profileController, child) {
-        // Show loader while initial data is being loaded
-        if (user != null &&
-            profileController.firstName.isEmpty &&
-            profileController.isLoading) {
+        // Show loading screen until initial load is complete
+        if (!_isInitialLoadComplete) {
           return _buildLoadingScreen();
         }
 
@@ -118,7 +143,7 @@ class _WrapperState extends State<Wrapper> {
           return const PhoneAuthView();
         }
 
-        // At this point, we should have user data loaded via getData()
+        // Now we know data is loaded, make the routing decision
         final hasBasicInfo = profileController.firstName.isNotEmpty &&
             profileController.lastName.isNotEmpty &&
             profileController.emailAddress.isNotEmpty &&
@@ -126,7 +151,7 @@ class _WrapperState extends State<Wrapper> {
 
         final hasAddresses = profileController.savedAddresses.isNotEmpty;
 
-        // Decision tree
+        // Decision tree - only show these screens if data is actually missing
         if (!hasBasicInfo) {
           return const ProfileView();
         } else if (!hasAddresses) {

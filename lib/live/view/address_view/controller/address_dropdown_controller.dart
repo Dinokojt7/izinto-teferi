@@ -401,7 +401,8 @@ class MainAddressViewController extends ChangeNotifier {
 
   void _handleSaveSuccess(BuildContext context) {
     if (_navigationSource == 'guest') {
-      // For guest access - navigate to HomeView without snackbar
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.black, Brightness.light, Colors.black, Brightness.light);
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => HomeView()),
         (Route<dynamic> route) => false,

@@ -47,6 +47,9 @@ class HomeViewController extends ChangeNotifier {
       notifyListeners();
     } else {
       _isLoadingIndicator = true;
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.black, Brightness.light, Colors.black, Brightness.light);
+
       notifyListeners();
       await Future.delayed(const Duration(seconds: 2), () async {
         _currentIndex = index;

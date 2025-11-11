@@ -611,8 +611,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
       onPopInvoked: (didPop) {
         if (!didPop) {
           if (widget.isFromCheckout) {
-            _applySystemChromeSettings();
-            homeViewController.changeIndex(0, true);
+            homeViewController.changeIndex(0, false);
 
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => HomeView()),

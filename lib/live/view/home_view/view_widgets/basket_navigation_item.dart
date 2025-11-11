@@ -23,7 +23,8 @@ class BasketNavigationItem extends StatelessWidget {
           children: [
             Stack(
               children: [
-                homeController.selectedIndex == 2
+                homeController.selectedIndex == 2 &&
+                        homeController.selectedIndex != 0
                     ? Image.asset(
                         'assets/icons/bucket-selected.png',
                         width: 30.0,

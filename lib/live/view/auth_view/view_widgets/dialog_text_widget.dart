@@ -1,8 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../utilities/colors.dart';
+import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/text_widgets/heading_style_text.dart';
+import '../../user_settings_view/screens/legal_documents/legal_document_screen.dart';
 
 class DialogTextWidget extends StatefulWidget {
   final FontWeight fontWeight;
@@ -37,7 +41,25 @@ class _DialogTextWidgetState extends State<DialogTextWidget> {
                   color: LiveColors.standardBlue, fontWeight: FontWeight.w600),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  // Handle tap on "terms and conditions"
+                  setState(() {
+                    SystemNavigation().applyCustomSystemChromeSettings(
+                        Colors.white,
+                        Brightness.dark,
+                        Colors.white,
+                        Brightness.dark);
+                  });
+                  Get.to(
+                    () => LegalDocumentScreen(
+                      description:
+                          'Please read these terms carefully before using our services',
+                      documentType: 'terms-of-use',
+                      screenTitle: 'Terms & Conditions',
+                      primaryColor: LiveColors.cartBlue,
+                      lastUpdated: 'June 2025',
+                    ),
+                    transition: Transition.native,
+                    duration: Duration(milliseconds: 500),
+                  );
                 },
             ),
             TextSpan(
@@ -49,7 +71,25 @@ class _DialogTextWidgetState extends State<DialogTextWidget> {
                   color: LiveColors.standardBlue, fontWeight: FontWeight.w600),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  // Handle tap on "privacy policy"
+                  setState(() {
+                    SystemNavigation().applyCustomSystemChromeSettings(
+                        Colors.white,
+                        Brightness.dark,
+                        Colors.white,
+                        Brightness.dark);
+                  });
+                  Get.to(
+                    () => LegalDocumentScreen(
+                      documentType: 'privacy-policy',
+                      screenTitle: 'Privacy Policy',
+                      description:
+                          'How we protect and use your personal information',
+                      primaryColor: LiveColors.cartBlue,
+                      lastUpdated: 'June 2025',
+                    ),
+                    transition: Transition.native,
+                    duration: Duration(milliseconds: 500),
+                  );
                 },
             ),
             TextSpan(text: '.'),

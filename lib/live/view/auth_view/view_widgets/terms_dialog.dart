@@ -28,7 +28,7 @@ class _TermsDialogState extends State<TermsDialog> {
         builder: (context, phoneAuthController, child) {
       void _handleTap() {
         if (!phoneAuthController.isTermsAccepted) {
-          phoneAuthController.onShowTermsDialog();
+          // phoneAuthController.onShowTermsDialog();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
@@ -112,6 +112,7 @@ class _TermsDialogState extends State<TermsDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Checkbox(
+                              activeColor: Colors.black,
                               value: phoneAuthController.isTermsAccepted,
                               onChanged: (bool? value) {
                                 phoneAuthController.acceptTerms(value ?? false);

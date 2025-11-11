@@ -30,7 +30,7 @@ class OrderSummaryDetails extends StatelessWidget {
             height: Dimensions.height15 * 1.1,
           ),
           LineItems(
-            itemName: 'Delivery fee',
+            itemName: 'Transport fee',
             updatedAmount: serviceFee,
             isTotal: false,
             isDeliveryItems: true,

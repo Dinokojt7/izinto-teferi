@@ -51,63 +51,96 @@ class PaymentMethodSelector extends StatelessWidget {
                     final method = controller.paymentMethods[index];
                     final isSelected =
                         controller.selectedPaymentMethod == method['type'];
+                    final isCashMethod = method['type'] == 'cash';
+                    final isDisabled =
+                        !isCashMethod; // Disable all non-cash methods
 
                     return GestureDetector(
-                      onTap: () =>
-                          controller.selectPaymentMethod(method['type']),
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: Dimensions.height15),
-                        padding: EdgeInsets.all(Dimensions.width15),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(Dimensions.radius15),
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.black
-                                : Colors.grey.shade300,
-                            width: 1.5,
+                      onTap: isDisabled
+                          ? null
+                          : () =>
+                              controller.selectPaymentMethod(method['type']),
+                      child: Opacity(
+                        opacity: isDisabled ? 0.5 : 1.0,
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: Dimensions.height15),
+                          padding: EdgeInsets.all(Dimensions.width15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radius15),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.black
+                                  : Colors.grey.shade300,
+                              width: 1.5,
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.grey.shade200),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                padding: EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border:
+                                      Border.all(color: Colors.grey.shade200),
+                                ),
+                                child: Image.asset(
+                                  method['image'],
+                                  fit: BoxFit.contain,
+                                  color: isDisabled ? Colors.grey : null,
+                                ),
                               ),
-                              child: Image.asset(
-                                method['image'],
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            SizedBox(width: Dimensions.width15),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  HeadingStyleText(
-                                    text: method['name'],
-                                    weight: FontWeight.w600,
-                                    size: Dimensions.font20 / 1.2,
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    method['description'],
-                                    style: TextStyle(
-                                      fontSize: Dimensions.font16 / 1.1,
-                                      color: Colors.grey.shade600,
-                                      fontFamily: 'Poppins',
+                              SizedBox(width: Dimensions.width15),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    HeadingStyleText(
+                                      text: method['name'],
+                                      weight: FontWeight.w600,
+                                      size: Dimensions.font20 / 1.2,
+                                      color: isDisabled
+                                          ? Colors.grey
+                                          : Colors.black,
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(height: 4),
+                                    Text(
+                                      method['description'],
+                                      style: TextStyle(
+                                        fontSize: Dimensions.font16 / 1.1,
+                                        color: isDisabled
+                                            ? Colors.grey
+                                            : Colors.grey.shade600,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                    if (isDisabled) ...[
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Temporarily unavailable',
+                                        style: TextStyle(
+                                          fontSize: Dimensions.font16 / 1.3,
+                                          color: Colors.orange,
+                                          fontFamily: 'Poppins',
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                              if (isDisabled)
+                                Icon(
+                                  Icons.lock_outline,
+                                  color: Colors.grey,
+                                  size: 20,
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     );

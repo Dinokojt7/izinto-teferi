@@ -35,6 +35,16 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.black, Brightness.light, Colors.black, Brightness.light);
+    });
+
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<ProfileViewController>(
       builder: (context, _profileController, child) {
@@ -219,12 +229,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                           text: 'Order Summary',
                                           weight: FontWeight.w600,
                                         ),
-                                        actionButtonChild: BlueTextButton(
-                                          text: 'Add promo code',
-                                          onTap: () {
-                                            // TODO: Implement promo code functionality
-                                          },
-                                        ),
+                                        // actionButtonChild: BlueTextButton(
+                                        //   text: 'Add promo code',
+                                        //   onTap: () {
+                                        //     // TODO: Implement promo code functionality
+                                        //   },
+                                        // ),
                                       ),
                                       SizedBox(height: Dimensions.height20),
                                       GenericWhiteContainer(

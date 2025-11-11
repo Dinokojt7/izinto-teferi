@@ -99,7 +99,7 @@ class CheckoutViewController extends ChangeNotifier {
   int get serviceFee => 35; // Fixed service fee
   int get optionalTip => selectedTipAmount;
 
-  int get orderTotal => orderSubtotal + serviceFee + optionalTip;
+  int get orderTotal => orderSubtotal + optionalTip;
   bool get isFreeDelivery => true;
 
   // Methods
@@ -313,21 +313,45 @@ class CheckoutViewController extends ChangeNotifier {
     return _selectedPaymentMethod.isNotEmpty;
   }
 
-// Simple and reliable
+// Enhanced notification sending with better error handling
   Future<void> sendOrderNotification(Map<String, dynamic> order) async {
     try {
       final notificationService = NotificationService();
 
+      // Ensure notification service is initialized
+      await notificationService.initialize();
+
+      // Check if notifications are enabled
+      final areEnabled = await notificationService.areNotificationsEnabled();
+      if (!areEnabled) {
+        print('⚠️ Notifications not enabled, requesting permission...');
+        final granted = await notificationService.requestPermission();
+        if (!granted) {
+          print('❌ Notification permission denied by user');
+          return;
+        }
+      }
+
+      // Send the notification with enhanced data
       await notificationService.showOrderNotification(
         orderId: order['orderId'],
         title: 'Order Received! 🎉',
         body:
             'Your order ${order['orderId']} has been received and is being prepared.',
+        additionalData: {
+          'orderId': order['orderId'],
+          'totalAmount': order['totalAmount'],
+          'serviceTypes': order['serviceTypes'],
+          'timestamp': DateTime.now().toIso8601String(),
+        },
       );
 
-      print('✅ Order notification sent');
-    } catch (e) {
+      print(
+          '✅ Order notification sent successfully for order: ${order['orderId']}');
+    } catch (e, stackTrace) {
       print('❌ Error sending order notification: $e');
+      print('Stack trace: $stackTrace');
+      // Don't rethrow - we don't want notification failures to break order creation
     }
   }
 

@@ -1,4 +1,3 @@
-// legal_document_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -30,14 +29,26 @@ class LegalDocumentScreen extends StatefulWidget {
 }
 
 class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
+  late LegalDocumentsController _documentsController;
+  bool _initialLoadAttempted = false;
+
   void _applySystemChromeSettings() {
     SystemNavigation().applyCustomSystemChromeSettings(
         Colors.black, Brightness.light, Colors.black, Brightness.light);
   }
 
   @override
-  initState() {
+  void initState() {
     super.initState();
+    _documentsController = Get.find<LegalDocumentsController>();
+
+    // Load documents when screen first loads, but only once
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_initialLoadAttempted && !_documentsController.isLoaded) {
+        _loadDocuments();
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemNavigation().applyCustomSystemChromeSettings(
           Colors.white.withOpacity(0.95),
@@ -52,8 +63,11 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
     Navigator.of(context).pop();
   }
 
-  void _retryLoading() {
-    Get.find<LegalDocumentsController>().getLegalDocuments();
+  void _loadDocuments() {
+    setState(() {
+      _initialLoadAttempted = true;
+    });
+    _documentsController.getLegalDocuments();
   }
 
   @override
@@ -104,9 +118,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
                 ),
               ),
             ),
-            if (!documentsController.isLoaded &&
-                documentsController.errorMessage.isEmpty)
-              LiveProgressIndicator(),
+            if (documentsController.isLoading) LiveProgressIndicator(),
           ],
         ),
       );
@@ -114,32 +126,40 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
   }
 
   Widget _buildContent(LegalDocumentsController controller) {
-    if (!controller.isLoaded && controller.errorMessage.isEmpty) {
-      return const SizedBox();
+    // Show loading state
+    if (controller.isLoading) {
+      return const SizedBox(); // Progress indicator is shown in the stack
     }
 
-    if (controller.errorMessage.isNotEmpty) {
+    // Show error state if we attempted to load but failed
+    if (_initialLoadAttempted && controller.errorMessage.isNotEmpty) {
       return _buildErrorState(controller);
     }
 
-    return _buildDocumentContent(controller);
+    // Show content if loaded successfully
+    if (controller.isLoaded) {
+      return _buildDocumentContent(controller);
+    }
+
+    // Initial state - show loading or empty state
+    return _buildInitialState();
   }
 
-  Widget _buildErrorState(LegalDocumentsController controller) {
+  Widget _buildInitialState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.error_outline,
+            Icons.description_outlined,
             size: Dimensions.font26 * 2,
             color: Colors.grey.shade400,
           ),
-          SizedBox(height: Dimensions.height20 / 100),
+          SizedBox(height: Dimensions.height20),
           Text(
-            'Unable to Load Document',
+            'Ready to Load Document',
             style: TextStyle(
-              fontSize: Dimensions.font20,
+              fontSize: Dimensions.font20 / 1.2,
               fontFamily: 'Poppins',
               color: Colors.grey.shade600,
               fontWeight: FontWeight.w500,
@@ -147,30 +167,30 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
           ),
           SizedBox(height: Dimensions.height10),
           Text(
-            controller.errorMessage,
+            'Tap the button below to load the ${widget.screenTitle}',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: Dimensions.font16,
+              fontSize: Dimensions.font16 / 1.1,
               fontFamily: 'Poppins',
               color: Colors.grey.shade500,
             ),
           ),
           SizedBox(height: Dimensions.height30),
           ElevatedButton(
-            onPressed: _retryLoading,
+            onPressed: _loadDocuments,
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.primaryColor,
+              backgroundColor: Colors.black,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.width30,
-                vertical: Dimensions.height15,
+                horizontal: Dimensions.width30 * 1.1,
+                vertical: Dimensions.height15 * 1.1,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(Dimensions.radius15),
               ),
             ),
             child: Text(
-              'Try Again',
+              'Load Document',
               style: TextStyle(
                 fontSize: Dimensions.font16,
                 fontFamily: 'Poppins',
@@ -179,6 +199,67 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(LegalDocumentsController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: Dimensions.font26 * 2,
+              color: Colors.grey.shade400,
+            ),
+            SizedBox(height: Dimensions.height20),
+            Text(
+              'Unable to Load Document',
+              style: TextStyle(
+                fontSize: Dimensions.font20 / 1.2,
+                fontFamily: 'Poppins',
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: Dimensions.height10),
+            Text(
+              controller.errorMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: Dimensions.font16 / 1.1,
+                fontFamily: 'Poppins',
+                color: Colors.grey.shade500,
+              ),
+            ),
+            SizedBox(height: Dimensions.height30),
+            ElevatedButton(
+              onPressed: _loadDocuments,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: Dimensions.width30 * 1.1,
+                  vertical: Dimensions.height15 * 1.1,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Dimensions.radius15),
+                ),
+              ),
+              child: Text(
+                'Try Again',
+                style: TextStyle(
+                  fontSize: Dimensions.font16,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -196,7 +277,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
               size: Dimensions.font26 * 2,
               color: Colors.grey.shade400,
             ),
-            SizedBox(height: Dimensions.height20 / 100),
+            SizedBox(height: Dimensions.height20),
             Text(
               '${widget.screenTitle} Not Available',
               style: TextStyle(
@@ -212,6 +293,29 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
                 fontSize: Dimensions.font16 / 1.1,
                 fontFamily: 'Poppins',
                 color: Colors.grey.shade500,
+              ),
+            ),
+            SizedBox(height: Dimensions.height30),
+            ElevatedButton(
+              onPressed: _loadDocuments,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: Dimensions.width30 * 1.1,
+                  vertical: Dimensions.height15 * 1.1,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Dimensions.radius15),
+                ),
+              ),
+              child: Text(
+                'Reload',
+                style: TextStyle(
+                  fontSize: Dimensions.font16,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -241,7 +345,7 @@ class _LegalDocumentScreenState extends State<LegalDocumentScreen> {
             );
           }).toList(),
 
-          SizedBox(height: Dimensions.height20 / 100 * 2),
+          SizedBox(height: Dimensions.height20 * 2),
 
           // Contact Footer
           _buildContactFooter(controller),

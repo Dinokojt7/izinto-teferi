@@ -111,7 +111,7 @@ class PaymentMethodSelector extends StatelessWidget {
                                     Text(
                                       method['description'],
                                       style: TextStyle(
-                                        fontSize: Dimensions.font16 / 1.1,
+                                        fontSize: Dimensions.font16 / 1.2,
                                         color: isDisabled
                                             ? Colors.grey
                                             : Colors.grey.shade600,

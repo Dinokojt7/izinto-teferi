@@ -1,10 +1,9 @@
-// Updated OrderHistoryView with sliding tabs
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/order_history_item.dart';
+import 'package:izinto/live/view/order_history_view/view_widgets/order_tab.dart';
 import 'package:provider/provider.dart';
 import '../../../models/user.dart';
 import '../../../utils/dimensions.dart';
-import '../../../widgets/texts/integers_and_doubles.dart';
 import '../../../widgets/texts/small_text.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';
 import '../../utilities/colors.dart';
@@ -26,10 +25,17 @@ class _OrderHistoryViewState extends State<OrderHistoryView>
   late TabController _tabController;
   final List<String> _filterTabs = ['active', 'fulfilled', 'closed'];
 
+  // Track current index for reactive updates
+  int _currentIndex = 0;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _filterTabs.length, vsync: this);
+
+    // Add listener to track both programmatic and swipe changes
+    _tabController.addListener(_handleTabChange);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final controller =
           Provider.of<OrderHistoryController>(context, listen: false);
@@ -37,8 +43,17 @@ class _OrderHistoryViewState extends State<OrderHistoryView>
     });
   }
 
+  void _handleTabChange() {
+    if (_tabController.index != _currentIndex) {
+      setState(() {
+        _currentIndex = _tabController.index;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
   }
@@ -105,6 +120,7 @@ class _OrderHistoryViewState extends State<OrderHistoryView>
 
   Widget _buildTabBar() {
     return Container(
+      padding: EdgeInsets.symmetric(vertical: Dimensions.height15 / 2),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -116,28 +132,30 @@ class _OrderHistoryViewState extends State<OrderHistoryView>
         ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           TabBar(
+            dividerHeight: 0.0,
             controller: _tabController,
-            indicatorColor: LiveColors.standardBlue,
-            labelColor: LiveColors.standardBlue,
-            unselectedLabelColor: Colors.grey.shade600,
-            labelStyle: TextStyle(
-              fontSize: Dimensions.font16 / 1.1,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Poppins',
-            ),
-            unselectedLabelStyle: TextStyle(
-              fontSize: Dimensions.font16 / 1.1,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Poppins',
-            ),
-            indicatorSize: TabBarIndicatorSize.label,
-            tabs: [
-              Tab(text: 'Active'),
-              Tab(text: 'Fulfilled'),
-              Tab(text: 'Closed'),
-            ],
+            indicator: BoxDecoration(), // Remove default indicator
+            indicatorColor: Colors.transparent,
+            labelColor: Colors.transparent,
+            unselectedLabelColor: Colors.transparent,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            tabs: _filterTabs.asMap().entries.map((entry) {
+              final index = entry.key;
+              final filter = entry.value;
+              return Tab(
+                child: OrderTab(
+                  title: _getFilterTitle(filter),
+                  isActive: _currentIndex == index,
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -214,7 +232,7 @@ class _OrderHistoryViewState extends State<OrderHistoryView>
         bottom: Dimensions.height20,
       ),
       child: GenericCenterDialog(
-        emoji: '🪣', // Bucket emoji (perfect for cleaning services)
+        emoji: '🪣',
         heading: 'No past orders',
         description:
             '..yet! View and explore services that are available in your area to get started.',
@@ -245,7 +263,6 @@ class _OrderHistoryViewState extends State<OrderHistoryView>
                 Provider.of<HomeViewController>(context, listen: false);
             homeViewController.changeIndex(0, false);
           } else {
-            // For fulfilled/closed tabs, switch to active tab if user wants to browse
             _tabController.animateTo(0);
           }
         },

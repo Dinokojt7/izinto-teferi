@@ -57,17 +57,6 @@ class _HomeViewState extends State<HomeView> {
     final user = Provider.of<UserModel?>(context);
     final homeViewController =
         Provider.of<HomeViewController>(context, listen: false);
-
-    // Ensure we're on the first tab when coming from checkout
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (homeViewController.currentIndex != 0) {
-        homeViewController.changeIndex(0, true);
-      }
-    });
-
-    // Apply system chrome settings on every build to ensure consistency
-    _applySystemChromeSettings();
-
     final _isLockScreen = homeViewController.isLogOutLoading;
 
     // Apply system chrome settings on every build to ensure consistency

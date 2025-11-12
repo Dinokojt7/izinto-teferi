@@ -50,28 +50,26 @@ class Wrapper extends StatefulWidget {
 
 class _WrapperState extends State<Wrapper> {
   bool _isInitialLoadComplete = false;
-  bool _hasProfileData = false;
-  bool _hasAddressData = false;
+  bool _isProfileDataLoaded = false;
 
-  Future<void> _loadResources() async {
+  Future<void> _loadProfileData() async {
     try {
-      // Load profile data first and wait for it to complete
       await Provider.of<ProfileViewController>(context, listen: false)
           .getData();
       await Provider.of<ProfileViewController>(context, listen: false)
           .getAddresses();
+      setState(() {
+        _isProfileDataLoaded = true;
+      });
+    } catch (e) {
+      setState(() {
+        _isProfileDataLoaded = true;
+      });
+    }
+  }
 
-      // Check what data we actually have
-      final profileController =
-          Provider.of<ProfileViewController>(context, listen: false);
-      _hasProfileData = profileController.firstName.isNotEmpty &&
-          profileController.lastName.isNotEmpty &&
-          profileController.emailAddress.isNotEmpty &&
-          profileController.phoneNumber.isNotEmpty;
-
-      _hasAddressData = profileController.savedAddresses.isNotEmpty;
-
-      // Load other resources in parallel (non-blocking)
+  Future<void> _loadOtherResources() async {
+    try {
       await Future.wait([
         Get.find<RecommendedSpecialtyController>()
             .getRecommendedSpecialtyList(),
@@ -95,6 +93,33 @@ class _WrapperState extends State<Wrapper> {
         Get.find<CartRepo>().migrateOldCartToNew(),
         Get.find<SubscriptionPlansController>().getSubscriptionPlansList(),
       ] as Iterable<Future>);
+    } catch (e) {}
+  }
+
+  Future<void> _loadGuestAddress() async {
+    try {
+      final addressController =
+          Provider.of<MainAddressViewController>(context, listen: false);
+      await addressController.loadGuestAddressFromLocalStorage();
+    } catch (e) {}
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    try {
+      // Load guest address first (fast operation)
+      await _loadGuestAddress();
+
+      // Load profile data first (critical for routing)
+      await _loadProfileData();
+
+      // Then load other resources in background (non-critical)
+      _loadOtherResources();
 
       setState(() {
         _isInitialLoadComplete = true;
@@ -102,19 +127,12 @@ class _WrapperState extends State<Wrapper> {
 
       FlutterNativeSplash.remove();
     } catch (e) {
-      print('Error loading resources: $e');
-      // Even if there's an error, mark load as complete to avoid infinite loading
       setState(() {
         _isInitialLoadComplete = true;
+        _isProfileDataLoaded = true;
       });
       FlutterNativeSplash.remove();
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadResources();
   }
 
   @override
@@ -132,26 +150,21 @@ class _WrapperState extends State<Wrapper> {
 
   @override
   Widget build(BuildContext context) {
-    // In your main app or home screen initialization
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final addressController =
-          Provider.of<MainAddressViewController>(context, listen: false);
-      await addressController.loadGuestAddressFromLocalStorage();
-    });
     final user = Provider.of<UserModel?>(context);
 
+    // Show loading screen until everything is ready
+    if (!_isInitialLoadComplete || (user != null && !_isProfileDataLoaded)) {
+      return _buildLoadingScreen();
+    }
+
+    // Unauthenticated users go directly to auth
+    if (user == null) {
+      return const PhoneAuthView();
+    }
+
+    // Authenticated users - determine routing based on profile data
     return Consumer<ProfileViewController>(
       builder: (context, profileController, child) {
-        // Show loading screen until initial load is complete
-        if (!_isInitialLoadComplete) {
-          return _buildLoadingScreen();
-        }
-
-        if (user == null) {
-          return const PhoneAuthView();
-        }
-
-        // Now we know data is loaded, make the routing decision
         final hasBasicInfo = profileController.firstName.isNotEmpty &&
             profileController.lastName.isNotEmpty &&
             profileController.emailAddress.isNotEmpty &&

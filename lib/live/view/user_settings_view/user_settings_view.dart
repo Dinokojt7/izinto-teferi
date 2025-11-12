@@ -245,6 +245,7 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
           height: Dimensions.height45 * 1.5,
           width: Dimensions.screenWidth / 2.2,
           child: Card(
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius:
                     BorderRadius.circular(LiveDimensions.radius30 * 2),
@@ -276,12 +277,10 @@ class TabsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(LiveDimensions.radius30 * 2),
       ),
       child: TabBar(
         labelPadding: EdgeInsets.symmetric(horizontal: 8.0),
-        indicator: BoxDecoration(),
         physics: AlwaysScrollableScrollPhysics(),
         indicatorColor:
             //isSpecialtiesLoaded

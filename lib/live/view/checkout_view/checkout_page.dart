@@ -366,7 +366,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ),
           ),
         ),
-        (Route<dynamic> route) => false, // removes everything
+        (Route<dynamic> route) => false,
       );
     } catch (error) {
       GenericSnackBar().showCustomSnackBar(

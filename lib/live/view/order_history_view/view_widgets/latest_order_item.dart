@@ -3,6 +3,7 @@ import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../utils/dimensions.dart';
+import '../../../utilities/service_type_utils.dart';
 import '../../../widgets/buttons/save_button.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 
@@ -17,15 +18,10 @@ class LatestOrderItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = _getFirstItemImage(order);
     final totalAmount = order['totalAmount'] ?? 0;
     final status = order['status'] ?? 'pending';
-    final createdAt = order['createdAt'] != null
-        ? _formatTimestamp(order['createdAt'])
-        : 'Unknown date';
     final orderId = order['orderId'] ?? 'N/A';
     final items = order['items'] ?? [];
-    final serviceTypes = order['serviceTypes'] ?? [];
     final address = _getAddress(order);
 
     return Center(
@@ -71,56 +67,17 @@ class LatestOrderItem extends StatelessWidget {
                     _buildStatusBadge(status),
                   ],
                 ),
-                SizedBox(
-                  height: Dimensions.height10,
-                ),
-                // Image and Service Type
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 60,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          // Stacked images container
-                          Container(
-                            width: 120, // Enough width to show the stack effect
-                            child: Stack(
-                              children: _buildStackedImages(items, context),
-                            ),
-                          ),
+                SizedBox(height: Dimensions.height10),
 
-                          // Optional: Add a "+X more" text if there are many items
-                          if (items.length > 3)
-                            Padding(
-                              padding:
-                                  EdgeInsets.only(left: Dimensions.width10),
-                              child: Text(
-                                '+${items.length - 3} more',
-                                style: TextStyle(
-                                  fontSize: Dimensions.font16 / 1.3,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: Dimensions.width10),
-                  ],
-                ),
+                // Image and Service Type Row
+                _buildImageAndServiceTypeRow(items),
                 SizedBox(height: Dimensions.width10),
 
                 // Address Section
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
-                    width:
-                        double.infinity, // Ensures it takes full width safely
+                    width: double.infinity,
                     padding: EdgeInsets.symmetric(
                       horizontal: Dimensions.width15,
                       vertical: Dimensions.height20 * 1.1,
@@ -144,7 +101,6 @@ class LatestOrderItem extends StatelessWidget {
                         ),
                         SizedBox(width: Dimensions.width10 / 2),
                         Flexible(
-                          // Prevent text overflow
                           child: Text(
                             address,
                             style: TextStyle(
@@ -173,23 +129,23 @@ class LatestOrderItem extends StatelessWidget {
                         style: TextStyle(
                           fontSize: Dimensions.font16 / 1.2,
                           color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w400, // Lighter weight
+                          fontWeight: FontWeight.w400,
                           fontFamily: 'Poppins',
                         ),
                       ),
 
-                      // Price - same font weight as orderId
+                      // Price
                       SmallBlackText(
                         size: Dimensions.font20 / 1.1,
                         font: 'Poppins',
                         text: 'R$totalAmount,00',
-                        fontWeight: FontWeight.w600, // Same as orderId
+                        fontWeight: FontWeight.w600,
                       ),
                     ],
                   ),
                 ),
 
-                // Track Order Button
+                // View Button
                 SaveButton(
                   isActive: true,
                   description: 'View',
@@ -204,6 +160,176 @@ class LatestOrderItem extends StatelessWidget {
     );
   }
 
+  // New method for image and service type row
+  Widget _buildImageAndServiceTypeRow(List<dynamic> items) {
+    final serviceTypes = _getAllServiceTypes(items);
+    final displayText = serviceTypes.join(', ');
+
+    return Container(
+      height: 60,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Stacked service type images
+          Container(
+            width: 120,
+            child: Stack(
+              children: _buildServiceTypeImages(serviceTypes),
+            ),
+          ),
+
+          SizedBox(width: Dimensions.width15),
+
+          // Service types text
+          Expanded(
+            child: Text(
+              displayText.isNotEmpty ? displayText : 'Various Services',
+              style: TextStyle(
+                fontSize: Dimensions.font16 / 1.3,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Poppins',
+                color: Colors.black,
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          // Show "+X more" if there are many service types
+          if (serviceTypes.length > 3)
+            Padding(
+              padding: EdgeInsets.only(left: Dimensions.width10),
+              child: Text(
+                '+${serviceTypes.length - 3} more',
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.4,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Get all service types from items
+  List<String> _getAllServiceTypes(List<dynamic> items) {
+    final Set<String> serviceTypes = {};
+
+    for (final item in items) {
+      try {
+        if (item is Map<String, dynamic>) {
+          final provider = item['provider']?.toString();
+          if (provider != null && provider.isNotEmpty) {
+            final serviceType =
+                ServiceTypeUtils.getServiceTypeFromProvider(provider);
+            if (serviceType.isNotEmpty) {
+              serviceTypes.add(serviceType);
+            }
+          }
+        }
+      } catch (e) {
+        print('Error getting service type: $e');
+      }
+    }
+
+    return serviceTypes.toList();
+  }
+
+  // Build service type images
+  List<Widget> _buildServiceTypeImages(List<String> serviceTypes) {
+    final List<Widget> stackedWidgets = [];
+    final int displayCount = serviceTypes.length > 3 ? 3 : serviceTypes.length;
+
+    for (int i = 0; i < displayCount; i++) {
+      final serviceType = serviceTypes[i];
+      final imagePath = ServiceTypeUtils.getServiceTypeImage(serviceType);
+      final double offset = i * 15.0;
+
+      stackedWidgets.add(
+        Positioned(
+          left: offset,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: Offset(1, 2),
+                ),
+              ],
+              border: Border.all(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey.shade100,
+                    child: Icon(
+                      Icons.category,
+                      size: 20,
+                      color: Colors.grey.shade400,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // If no service types found, show a default placeholder
+    if (stackedWidgets.isEmpty) {
+      stackedWidgets.add(
+        Positioned(
+          left: 0,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: Offset(1, 2),
+                ),
+              ],
+              border: Border.all(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.shopping_bag,
+              size: 24,
+              color: Colors.grey.shade400,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return stackedWidgets;
+  }
+
+  // Original stacked images method (kept for reference but not used in new layout)
   List<Widget> _buildStackedImages(List<dynamic> items, BuildContext context) {
     final List<Widget> stackedWidgets = [];
     final int displayCount = items.length > 3 ? 3 : items.length;
@@ -211,9 +337,7 @@ class LatestOrderItem extends StatelessWidget {
     for (int i = 0; i < displayCount; i++) {
       final item = items[i];
       final imageUrl = _getItemImage(item);
-
-      // Calculate offset for stacking effect
-      final double offset = i * 12.0; // Adjust this value for more/less overlap
+      final double offset = i * 12.0;
 
       stackedWidgets.add(
         Positioned(
@@ -223,9 +347,7 @@ class LatestOrderItem extends StatelessWidget {
               _showFullImageList(context, items);
             },
             child: Transform.rotate(
-              angle: i == 0
-                  ? 0
-                  : (i % 2 == 0 ? -0.05 : 0.05), // Slight rotation for realism
+              angle: i == 0 ? 0 : (i % 2 == 0 ? -0.05 : 0.05),
               child: Container(
                 width: 60,
                 height: 60,
@@ -282,7 +404,6 @@ class LatestOrderItem extends StatelessWidget {
     return stackedWidgets;
   }
 
-// Helper method to get image from individual item
   String? _getItemImage(dynamic item) {
     try {
       if (item is Map<String, dynamic>) {
@@ -296,7 +417,6 @@ class LatestOrderItem extends StatelessWidget {
     }
   }
 
-// Method to show full horizontal image list
   void _showFullImageList(BuildContext context, List<dynamic> items) {
     showModalBottomSheet(
       context: context,
@@ -314,7 +434,6 @@ class LatestOrderItem extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Drag handle
             Container(
               width: 40,
               height: 4,
@@ -324,8 +443,6 @@ class LatestOrderItem extends StatelessWidget {
               ),
             ),
             SizedBox(height: Dimensions.height20),
-
-            // Title
             Text(
               'Order Items',
               style: TextStyle(
@@ -335,8 +452,6 @@ class LatestOrderItem extends StatelessWidget {
               ),
             ),
             SizedBox(height: Dimensions.height20),
-
-            // Horizontal scrollable images
             Expanded(
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -404,7 +519,6 @@ class LatestOrderItem extends StatelessWidget {
     );
   }
 
-// Helper to get item name
   String _getItemName(dynamic item) {
     try {
       if (item is Map<String, dynamic>) {
@@ -414,36 +528,6 @@ class LatestOrderItem extends StatelessWidget {
     } catch (e) {
       return 'Item';
     }
-  }
-
-  Padding buildThumbnail(String? imageUrl) {
-    return Padding(
-      padding: EdgeInsets.only(
-          left: Dimensions.width10, top: Dimensions.height10 / 2),
-      child: Container(
-        height: Dimensions.height45 * 1.1,
-        width: Dimensions.width30 * 2.3,
-        padding: EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(Dimensions.radius20 / 2),
-          border: Border.all(
-            color: Colors.black,
-            width: 1.5,
-          ),
-        ),
-        child: imageUrl != null
-            ? Image.asset(
-                imageUrl,
-                width: 30.0,
-                height: 30.0,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.shopping_bag, size: 24);
-                },
-              )
-            : Icon(Icons.shopping_bag, size: 24),
-      ),
-    );
   }
 
   Widget _buildStatusBadge(String status) {
@@ -515,17 +599,14 @@ class LatestOrderItem extends StatelessWidget {
   String? _getFirstItemImage(Map<String, dynamic> order) {
     try {
       final items = order['items'] as List<dynamic>?;
-
       if (items != null && items.isNotEmpty) {
         final firstItem = items.first;
-
         if (firstItem is Map<String, dynamic>) {
           return firstItem['image'] as String? ??
               firstItem['img'] as String? ??
               firstItem['imageUrl'] as String?;
         }
       }
-
       return null;
     } catch (e) {
       print('Error getting first item image: $e');
@@ -533,23 +614,17 @@ class LatestOrderItem extends StatelessWidget {
     }
   }
 
-  // Address Helper Method
   String _getAddress(Map<String, dynamic> order) {
     try {
       final deliveryAddress = order['deliveryAddress'] as Map<String, dynamic>?;
-
       if (deliveryAddress == null) {
         return 'Address not available';
       }
-
       final street = deliveryAddress['street']?.toString() ?? '';
       final suburb = deliveryAddress['suburb']?.toString() ?? '';
-
-      // Check if street has more than 5 characters
       if (street.length > 20) {
         return street;
       } else {
-        // Use both street and suburb
         if (street.isNotEmpty && suburb.isNotEmpty) {
           return '$street, $suburb';
         } else if (street.isNotEmpty) {

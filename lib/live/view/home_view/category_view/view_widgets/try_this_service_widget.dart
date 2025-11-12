@@ -53,7 +53,7 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
     });
 
     // Simulate loading delay
-    await Future.delayed(Duration(milliseconds: 800));
+    await Future.delayed(Duration(milliseconds: 1000));
 
     setState(() {
       _isLoading = false;
@@ -90,7 +90,7 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
           curve: Curves.easeInOut,
           width: double.maxFinite,
           height: Dimensions.bottomHeightBar * 1.2,
-          padding: EdgeInsets.only(left: Dimensions.width30),
+          padding: EdgeInsets.only(left: Dimensions.width30 / 1.4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.5),
             color: Color(0xff66abf9),
@@ -112,22 +112,44 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
                 child: Container(
                   margin: EdgeInsets.only(right: Dimensions.width30),
                   child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(vertical: Dimensions.height20),
+                    padding: EdgeInsets.symmetric(
+                        vertical: Dimensions.height20 / 1.7),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: SmallText(
-                            overFlow: TextOverflow.ellipsis,
-                            fontWeight: FontWeight.w600,
-                            height: 1.5,
-                            maxLines: 1,
-                            color: Colors.black,
-                            size: Dimensions.font16 / 1.15,
-                            text: 'Get Car Wash',
-                          ),
+                        Row(
+                          children: [
+                            Center(
+                              child: SmallText(
+                                overFlow: TextOverflow.ellipsis,
+                                fontWeight: FontWeight.w600,
+                                maxLines: 1,
+                                color: Colors.black,
+                                size: Dimensions.font16,
+                                text: 'Mobile Car Wash',
+                              ),
+                            ),
+                          ],
+                        ),
+                        Wrap(
+                          children: [
+                            Text(
+                              'Premium mobile car detailing',
+                              style: TextStyle(
+                                fontSize: Dimensions.font16 / 1.3,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Poppins',
+                                color: Colors.black,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.start,
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: Dimensions.height15 / 1.5,
                         ),
                         GestureDetector(
                           onTapDown: _onTapDown,
@@ -143,15 +165,14 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
                                   opacity: _opacityAnimation.value,
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                      vertical: Dimensions.height10,
-                                    ),
+                                        vertical: Dimensions.height10,
+                                        horizontal: Dimensions.width10),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(
                                           Dimensions.radius15),
                                       border: Border.all(
                                           color: Colors.black54, width: 1),
-                                      color: Colors.black54
-                                          .withOpacity(_isLoading ? 0.2 : 0.05),
+                                      color: Colors.black,
                                       boxShadow: _isHovered
                                           ? [
                                               BoxShadow(
@@ -164,49 +185,30 @@ class _TryThisServiceWidgetState extends State<TryThisServiceWidget>
                                           : [],
                                     ),
                                     child: Center(
-                                      child: _isLoading
-                                          ? SizedBox(
-                                              height: Dimensions.font20 / 1.5,
-                                              width: Dimensions.font20 / 1.5,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(Colors.white),
-                                              ),
-                                            )
-                                          : Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                HeadingStyleText(
-                                                  text: 'Wash now',
-                                                  size: Dimensions.font20 / 1.5,
-                                                  family: 'Poppins',
-                                                  weight: FontWeight.w500,
-                                                  color: Colors.white,
-                                                ),
-                                                SizedBox(
-                                                    width:
-                                                        Dimensions.width10 / 2),
-                                                AnimatedContainer(
-                                                  duration: Duration(
-                                                      milliseconds: 300),
-                                                  transform:
-                                                      Matrix4.translationValues(
-                                                          _isHovered ? 4 : 0,
-                                                          0,
-                                                          0),
-                                                  child: Icon(
-                                                    Icons.arrow_forward_rounded,
-                                                    size:
-                                                        Dimensions.font20 / 1.5,
-                                                    color: LiveColors.cartBlue,
+                                        child: _isLoading
+                                            ? SizedBox(
+                                                height: Dimensions.font20 / 1.1,
+                                                width: Dimensions.font20 / 1.1,
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(1.0),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    strokeWidth: 2.5,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                                Color>(
+                                                            Colors.white),
                                                   ),
                                                 ),
-                                              ],
-                                            ),
-                                    ),
+                                              )
+                                            : HeadingStyleText(
+                                                text: 'Wash now',
+                                                size: Dimensions.font20 / 1.6,
+                                                family: 'Poppins',
+                                                weight: FontWeight.w600,
+                                                color: Colors.white,
+                                              )),
                                   ),
                                 ),
                               );

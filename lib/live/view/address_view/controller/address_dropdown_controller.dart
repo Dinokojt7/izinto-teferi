@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../services/map_function.dart';
 import '../../../models/rudimentary_address_model.dart';
@@ -96,7 +99,7 @@ class MainAddressViewController extends ChangeNotifier {
   // Loader Management
   Future<void> setInitialLoader() async {
     _startAddressSearch = true;
-    await _disposeSearchAddressLoader();
+    await disposeSearchAddressLoader();
     notifyListeners();
   }
 
@@ -109,7 +112,7 @@ class MainAddressViewController extends ChangeNotifier {
     await requestLocationPermission();
     isGuestAccess
         ? await setInitialLoader()
-        : await _disposeSearchAddressLoader();
+        : await disposeSearchAddressLoader();
     disposeDialog();
     notifyListeners();
   }
@@ -119,7 +122,7 @@ class MainAddressViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _disposeSearchAddressLoader() async {
+  Future<void> disposeSearchAddressLoader() async {
     _isAddressDialogLoading = false;
     _isSaveAddressButtonLoading = false;
     notifyListeners();
@@ -136,7 +139,7 @@ class MainAddressViewController extends ChangeNotifier {
     await _profileController.resetAddressDetailsFields();
     _label = '';
     await setIsLoading();
-    await _disposeSearchAddressLoader();
+    await disposeSearchAddressLoader();
     notifyListeners();
     await Get.to(
       () => SaveAddress(addressLabel: _autocompletePlace),
@@ -401,8 +404,6 @@ class MainAddressViewController extends ChangeNotifier {
 
   void _handleSaveSuccess(BuildContext context) {
     if (_navigationSource == 'guest') {
-      SystemNavigation().applyCustomSystemChromeSettings(
-          Colors.black, Brightness.light, Colors.black, Brightness.light);
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => HomeView()),
         (Route<dynamic> route) => false,
@@ -429,6 +430,177 @@ class MainAddressViewController extends ChangeNotifier {
     );
   }
 
+  // Add to MainAddressViewController class
+
+// Local storage keys
+  static const String _guestAddressKey = 'guest_address';
+  static const String _guestLocationKey = 'guest_location';
+
+// Guest address persistence methods
+  Future<void> saveGuestAddressToLocalStorage() async {
+    try {
+      final Map<String, dynamic> guestAddress = {
+        'street': _street,
+        'suburb': _suburb,
+        'zipCode': _zipCode,
+        'town': _town,
+        'country': _country,
+        'latitude': _latitude,
+        'longitude': _longitude,
+        'address': _address,
+        'savedAt': DateTime.now().toIso8601String(),
+      };
+
+      final Map<String, dynamic> guestLocation = {
+        'latitude': _latitude,
+        'longitude': _longitude,
+      };
+
+      // Save to local storage (using shared_preferences or similar)
+      await _saveToLocalStorage(_guestAddressKey, guestAddress);
+      await _saveToLocalStorage(_guestLocationKey, guestLocation);
+    } catch (e) {}
+  }
+
+  Future<void> loadGuestAddressFromLocalStorage() async {
+    try {
+      final Map<String, dynamic>? savedAddress =
+          await _getFromLocalStorage(_guestAddressKey);
+
+      if (savedAddress != null) {
+        _street = savedAddress['street'] ?? '';
+        _suburb = savedAddress['suburb'] ?? '';
+        _zipCode = savedAddress['zipCode'] ?? '';
+        _town = savedAddress['town'] ?? '';
+        _country = savedAddress['country'] ?? 'South Africa';
+        _latitude = savedAddress['latitude'];
+        _longitude = savedAddress['longitude'];
+        _address = savedAddress['address'] ?? '';
+
+        // Validate the loaded address
+        if (_latitude != null && _longitude != null) {
+          _isValidAddress = _isWithinRadius(_latitude!, _longitude!);
+          _searchStatusText = _isValidAddress
+              ? '\u{1F60E} Yay we\'re available in your area!'
+              : '\u{1F494} Oops! we\'re not available in this area!';
+          _hasData = true;
+        }
+
+        notifyListeners();
+      }
+    } catch (e) {}
+  }
+
+  Future<void> clearGuestAddress() async {
+    await _removeFromLocalStorage(_guestAddressKey);
+    await _removeFromLocalStorage(_guestLocationKey);
+
+    // Reset address fields
+    _street = '';
+    _suburb = '';
+    _zipCode = '';
+    _town = '';
+    _country = 'South Africa';
+    _latitude = null;
+    _longitude = null;
+    _address = '';
+    _hasData = false;
+    _isValidAddress = false;
+
+    notifyListeners();
+  }
+
+// Helper methods for local storage (you'll need to implement these based on your storage solution)
+  Future<void> _saveToLocalStorage(String key, dynamic value) async {
+    // Example using shared_preferences - install package: shared_preference
+    final prefs = await SharedPreferences.getInstance();
+    if (value is String) {
+      await prefs.setString(key, value);
+    } else if (value is Map<String, dynamic>) {
+      await prefs.setString(key, json.encode(value));
+    }
+
+    // For now, using a simple Map in memory (will reset on app restart)
+    // In production, use shared_preferences or hive for persistence
+    _localStorage[key] = value;
+  }
+
+  Future<Map<String, dynamic>?> _getFromLocalStorage(String key) async {
+    // Example using shared_preferences
+
+    final prefs = await SharedPreferences.getInstance();
+    final String? data = prefs.getString(key);
+    if (data != null) {
+      return Map<String, dynamic>.from(json.decode(data));
+    }
+    return null;
+
+    // For memory storage
+    return _localStorage[key];
+  }
+
+  Future<void> _removeFromLocalStorage(String key) async {
+    // Example using shared_preferences
+    /*
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove(key);
+  */
+
+    // For memory storage
+    _localStorage.remove(key);
+  }
+
+// Temporary in-memory storage (replace with actual persistence)
+  final Map<String, dynamic> _localStorage = {};
+
+// Update the existing saveGuestAddress method
+  Future<void> saveGuestAddress(BuildContext context) async {
+    try {
+      final addressController =
+          Provider.of<MainAddressViewController>(context, listen: false);
+
+      // Validate required fields
+      if (addressController.street.isEmpty) {
+        _showErrorSnackBar(context, 'Street address is required');
+        return;
+      }
+
+      // Save to local storage for persistence
+      await saveGuestAddressToLocalStorage();
+
+      // Create new address from the form data
+      final Map<String, dynamic> newAddress = {
+        'street': addressController.street,
+        'zip': addressController.zipCode,
+        'suburb': addressController.suburb,
+        'Town': addressController.town,
+        'Country': addressController.country,
+        'label': addressController.label.isNotEmpty
+            ? addressController.label
+            : 'Home',
+        'selected': true,
+        'additional info': addressController.additionalInfo,
+        'latitude': _latitude,
+        'longitude': _longitude,
+        'isGuestAddress': true,
+      };
+
+      _newAddress = newAddress;
+
+      print('Guest address saved successfully: $_street, $_town');
+      _handleSaveSuccess(context);
+    } catch (error) {
+      print('Error saving guest address: $error');
+      _showErrorSnackBar(context, 'Failed to add address: $error');
+    }
+  }
+
+// Add a method to check if guest has saved address
+  Future<bool> hasGuestAddress() async {
+    final savedAddress = await _getFromLocalStorage(_guestAddressKey);
+    return savedAddress != null && savedAddress['street'] != null;
+  }
+
   @override
   void dispose() {
     additionalDetailsController.dispose();
@@ -436,7 +608,7 @@ class MainAddressViewController extends ChangeNotifier {
 
     // Clear async loaders if running
     if (_startAddressSearch) {
-      _disposeSearchAddressLoader();
+      disposeSearchAddressLoader();
     }
 
     super.dispose();

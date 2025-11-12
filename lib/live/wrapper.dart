@@ -18,6 +18,7 @@ import 'package:izinto/controllers/subscription_plans_controller.dart';
 import 'package:izinto/controllers/tabs_header.dart';
 import 'package:izinto/controllers/temperature_controller.dart';
 import 'package:izinto/live/utilities/colors.dart';
+import 'package:izinto/live/view/address_view/controller/address_dropdown_controller.dart';
 import 'package:izinto/live/view/auth_view/phone_auth_view.dart';
 import 'package:izinto/live/view/cart_view/cart_view_page.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
@@ -77,6 +78,7 @@ class _WrapperState extends State<Wrapper> {
         Get.find<CartController>().getCartHistoryList(),
         Get.find<NewCartController>().getCartData(),
         Get.find<FavoriteController>().onInit(),
+        Get.find<RecommendationController>().getRecommendedItems(),
         Get.find<PopularSpecialtyController>().getPopularSpecialtyList(),
         Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList(),
         Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList(),
@@ -130,6 +132,12 @@ class _WrapperState extends State<Wrapper> {
 
   @override
   Widget build(BuildContext context) {
+    // In your main app or home screen initialization
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final addressController =
+          Provider.of<MainAddressViewController>(context, listen: false);
+      await addressController.loadGuestAddressFromLocalStorage();
+    });
     final user = Provider.of<UserModel?>(context);
 
     return Consumer<ProfileViewController>(

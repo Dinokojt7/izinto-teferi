@@ -80,9 +80,9 @@ Future<void> init() async {
   Get.lazyPut(() => NewCartController(cartRepo: Get.find()));
   Get.lazyPut(() =>
       NewRecommendedSpecialtyController(recommendedSpecialtyRepo: Get.find()));
-
   //controller
   Get.lazyPut(() => AuthController(authRepo: Get.find()));
+
   Get.lazyPut(() =>
       RecommendedSpecialtyController(recommendedSpecialtyRepo: Get.find()));
   Get.lazyPut(

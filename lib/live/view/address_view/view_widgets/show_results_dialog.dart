@@ -1,11 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/address_view/edit_address.dart';
 import 'package:izinto/live/view/address_view/save_address.dart';
+import 'package:izinto/live/view/home_view/home_view.dart';
 import 'package:izinto/live/view/user_settings_view/opening_hours.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../models/user.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/buttons/blue_text_button.dart';
@@ -29,6 +32,9 @@ class ShowResultsDialog extends StatelessWidget {
       final _searchStatusText = controller.searchStatusText;
       final _isWithinRadius = controller.isValidAddress;
       var _isLoading = controller.isAddressDialogLoading;
+
+      final user = Provider.of<UserModel?>(context);
+      final _hasUser = user != null;
 
       return Padding(
         padding: EdgeInsets.fromLTRB(
@@ -104,9 +110,18 @@ class ShowResultsDialog extends StatelessWidget {
                         textSize: Dimensions.font20 / 1.4,
                         text:
                             _isWithinRadius ? 'Next' : 'Browse available areas',
+                        // In ShowResultsDialog, update the onTap handler:
                         onTap: () async {
-                          if (_isWithinRadius) {
+                          if (_isWithinRadius && _hasUser) {
                             await controller.setSaveButtonLoaderOff(context);
+                          } else if (_isWithinRadius) {
+                            await controller.setIsLoading();
+
+                            // Save address to persistent storage for guest users
+                            await _saveAddress(context, controller);
+
+                            await controller.disposeSearchAddressLoader();
+                            await Get.to(() => HomeView());
                           } else {
                             await controller.setIsLoading();
                             await Get.to(() => OpeningHours(),
@@ -125,5 +140,23 @@ class ShowResultsDialog extends StatelessWidget {
         ),
       );
     });
+  }
+
+  Future<void> _saveAddress(
+      BuildContext context, MainAddressViewController addressController) async {
+    try {
+      // This should update local state immediately and then sync with Firebase
+      await addressController.saveGuestAddress(context);
+      // No need to call saveNewAddress separately - it's handled in saveSelectedAddress
+    } catch (e) {
+      print('Error saving address: $e');
+      // Show error message to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save address: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

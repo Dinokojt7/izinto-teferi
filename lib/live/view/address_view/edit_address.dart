@@ -302,25 +302,26 @@ class _EditAddressState extends State<EditAddress> {
               },
             ),
             SizedBox(height: Dimensions.height20 * 1.2),
-            GestureDetector(
-              onTap: () {
-                if (isLastAddress) {
-                  GenericSnackBar().showCustomSnackBar(null, context,
-                      'You cannot delete your only address', false);
-                } else {
-                  _showDeleteConfirmation(context, widget.index);
-                }
-              },
-              child: HeadingStyleText(
-                text: 'Delete address',
-                size: Dimensions.font16,
-                family: 'Poppins',
-                weight: FontWeight.w600,
-                color: isLastAddress
-                    ? Colors.grey.shade400
-                    : LiveColors.standardRed,
+            if (!isLastAddress)
+              GestureDetector(
+                onTap: () {
+                  if (isLastAddress) {
+                    GenericSnackBar().showCustomSnackBar(null, context,
+                        'Unfortunately this is your only address.', false);
+                  } else {
+                    _showDeleteConfirmation(context, widget.index);
+                  }
+                },
+                child: HeadingStyleText(
+                  text: 'Delete address',
+                  size: Dimensions.font16,
+                  family: 'Poppins',
+                  weight: FontWeight.w600,
+                  color: isLastAddress
+                      ? Colors.grey.shade400
+                      : LiveColors.standardRed,
+                ),
               ),
-            ),
           ],
         ),
       ),

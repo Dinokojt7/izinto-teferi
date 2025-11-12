@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/auxiliery_classes/generic_app_bar.dart';
+import 'package:izinto/live/utilities/generic_snackbar.dart';
+import 'package:izinto/live/utilities/screen_wrappers.dart';
 import 'package:izinto/live/view/address_view/saved_addresses.dart';
 import 'package:izinto/live/view/checkout_view/controller/checkout_view_controller.dart';
 import 'package:izinto/live/view/checkout_view/view_widgets/checkout_page_address.dart';
@@ -357,20 +359,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
       });
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-            builder: (_) => CashPaymentSuccessScreen(
+          builder: (context) => LightThemeScreen(
+            routeName: 'CashPaymentSuccessScreen',
+            child: CashPaymentSuccessScreen(
               order: order,
-            )),
-            (Route<dynamic> route) => false, // removes everything
+            ),
+          ),
+        ),
+        (Route<dynamic> route) => false, // removes everything
       );
-
     } catch (error) {
-      Get.snackbar(
-        'Order Failed',
-        'Error: ${error.toString()}',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: Duration(seconds: 5),
-      );
+      GenericSnackBar().showCustomSnackBar(
+          null, context, 'Error: ${error.toString()}', true);
     }
   }
 }

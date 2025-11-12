@@ -149,6 +149,24 @@ class FirebaseAuthMethods {
     }
   }
 
+  //CHECK USER DOC IN FIREBASE
+  Future<bool> checkUserDocumentExists() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      return docSnapshot.exists;
+    } catch (e) {
+      print('Error checking user document: $e');
+      return false;
+    }
+  }
+
   //EMAIL VERIFICATION
   Future<dynamic> sendEmailVerification(BuildContext context) async {
     try {
@@ -162,9 +180,7 @@ class FirebaseAuthMethods {
       showSnackBar(context, e.message!);
     }
   }
-  // GOOGLE SIGN IN - Updated approach
 
-//
 //  GOOGLE SIGN IN - Updated using official example pattern
   Future<dynamic> signInWithGoogle(
       BuildContext context, bool termsAccepted) async {
@@ -214,9 +230,10 @@ class FirebaseAuthMethods {
         final _uniquePromoCode = firstName[0] +
             (lastName.isNotEmpty ? lastName[0] : "U") +
             generateRandomNumber();
-
+        final bool _hasFirebaseDocument = await checkUserDocumentExists();
         // Handle new vs existing user
-        if (userCredential.additionalUserInfo!.isNewUser) {
+        if (userCredential.additionalUserInfo!.isNewUser ||
+            !_hasFirebaseDocument) {
           await DatabaseService(uid: user?.uid).updateUserData(
             firstName,
             lastName,

@@ -14,7 +14,7 @@ class SystemNavigationManager {
 
   // Define themes
   static const SystemUiOverlayStyle _homeViewTheme = SystemUiOverlayStyle(
-    statusBarColor: Colors.black,
+    statusBarColor: Colors.transparent,
     statusBarBrightness: Brightness.light,
     statusBarIconBrightness: Brightness.light,
     systemNavigationBarColor: Colors.black,
@@ -42,7 +42,8 @@ class SystemNavigationManager {
 
   // Routes that should use LIGHT theme (white bars, dark icons)
   final List<String> _lightThemeRoutes = [
-    'PhoneAuthView',
+    'CashPaymentSuccessScreen'
+        'PhoneAuthView',
     'ProfileView',
     'LegalDocumentScreen',
     'FrequentlyAskedQuestions',

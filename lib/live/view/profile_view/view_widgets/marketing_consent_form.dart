@@ -43,6 +43,7 @@ class MarketingConsentForm extends StatelessWidget {
                       ),
                     ),
                     child: Checkbox(
+                      activeColor: Colors.black,
                       value: isSelected,
                       onChanged: (bool? value) {
                         if (isEmailMarketing) {

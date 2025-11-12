@@ -142,7 +142,6 @@ class NewCartController extends GetxController {
     cartRepo.clearCart();
 
     update();
-    print('🛒 Cart cleared completely - local state and shared preferences');
   }
 
 // Also add a method to check if cart is empty (for debugging)

@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
 
 import '../../../../controllers/cart_controller.dart';
 import '../../../utilities/generic_snackbar.dart';
@@ -708,9 +709,8 @@ class ProfileViewController extends ChangeNotifier {
   ];
 
   Future<void> removeUserData() async {
-    final cart = await Get.find<CartController>();
-    cart.clear();
-    cart.clearCartHistory();
+    final cartController = await Get.find<NewCartController>();
+    cartController.clear();
     _firstName = '';
     _lastName = '';
     _emailAddress = '';
@@ -842,8 +842,20 @@ class ProfileViewController extends ChangeNotifier {
                     null, sheetContext, 'Account deleted successfully', true);
               });
             } else {
-              GenericSnackBar().showCustomSnackBar(
-                  null, sheetContext, 'Error deleting account', false);
+              User? user = _auth.currentUser;
+
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user?.uid)
+                  .delete();
+              await _auth.signOut();
+              Navigator.pushAndRemoveUntil(
+                sheetContext,
+                MaterialPageRoute(builder: (context) => PhoneAuthView()),
+                (route) => false,
+              );
+
+              await removeUserData();
             }
           },
         );

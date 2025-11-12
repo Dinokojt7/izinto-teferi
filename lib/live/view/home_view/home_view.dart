@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 import '../../../controllers/cart_controller.dart';
 import '../../../models/user.dart';
 import '../../utilities/generic_system_navigation.dart';
+import '../../utilities/system_navigation_manager.dart';
+import '../address_view/controller/address_dropdown_controller.dart';
 import '../cart_view/cart_view_page.dart';
 import '../checkout_view/checkout_page.dart';
 import '../profile_view/controller/profile_view_controller.dart';
@@ -32,71 +34,61 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+
     _streamUserInfo = _referenceUserInfo.snapshots();
 
-    // Apply system chrome settings immediately when HomeView loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _applySystemChromeSettings();
+      // Gracefully activate HomeView without collisions
+      SystemNavigationManager().setHomeViewActive(true);
+      SystemNavigationManager().setCurrentRoute('HomeView');
     });
   }
 
-  void _applySystemChromeSettings() {
-    SystemNavigation().applyCustomSystemChromeSettings(
-        Colors.black, Brightness.light, Colors.black, Brightness.light);
-  }
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Apply system chrome settings whenever dependencies change
-    _applySystemChromeSettings();
+  void dispose() {
+    SystemNavigationManager().setHomeViewActive(false);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
-    final homeViewController =
-        Provider.of<HomeViewController>(context, listen: false);
-    final _isLockScreen = homeViewController.isLogOutLoading;
 
-    // Apply system chrome settings on every build to ensure consistency
-    _applySystemChromeSettings();
+    // Single application point in build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigationManager().setCurrentRoute('HomeView');
+    });
 
     if (user != null) {
       return StreamBuilder<QuerySnapshot>(
         stream: _streamUserInfo,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasError) {
-            print(
-              snapshot.error.toString(),
-            );
-            Center(
-              child: Text(
-                (snapshot.error.toString()),
-              ),
-            );
+            return Center(child: Text(snapshot.error.toString()));
           }
           if (snapshot.connectionState == ConnectionState.active) {
-            QuerySnapshot querySnapshot = snapshot.data;
             return MainScaffold();
           }
-
-          return Scaffold(
-            body: Container(
-              height: double.maxFinite,
-              color: Colors.white,
-              child: Center(
-                child: LiveProgressIndicator(
-                  hasOwnDialog: true,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          );
+          return _buildLoadingScreen();
         },
       );
     } else {
       return MainScaffold();
     }
+  }
+
+  Widget _buildLoadingScreen() {
+    return Scaffold(
+      body: Container(
+        height: double.maxFinite,
+        color: Colors.white,
+        child: Center(
+          child: LiveProgressIndicator(
+            hasOwnDialog: true,
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -11,6 +11,7 @@ import '../../../../utils/dimensions.dart';
 import '../../../auxiliery_classes/live_progress_indicator.dart';
 import '../../../utilities/colors.dart';
 import '../../../utilities/generic_system_navigation.dart';
+import '../../../utilities/system_navigation_manager.dart';
 import '../../cart_view/cart_view_page.dart';
 import '../../checkout_view/checkout_page.dart';
 import '../../order_history_view/order_history_view.dart';
@@ -31,8 +32,8 @@ class MainScaffold extends StatefulWidget {
   State<MainScaffold> createState() => _MainScaffoldState();
 }
 
+// main_scaffold.dart
 class _MainScaffoldState extends State<MainScaffold> {
-  /// Use GlobalKeys for each navigator to handle nested navigation
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
@@ -43,53 +44,61 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      SystemNavigation().applyCustomSystemChromeSettings(
-          Colors.black, Brightness.light, Colors.black, Brightness.light);
-    });
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigationManager().setCurrentRoute('MainScaffold');
+    });
   }
 
-  void _onBottomNavTapped(int index) {
-    final homeController =
-        Provider.of<HomeViewController>(listen: false, context);
-    homeController.onTapNav(index);
+  Widget _buildNavigator(BuildContext context, GlobalKey<NavigatorState> key,
+      Widget child, String routeName) {
+    return Navigator(
+      key: key,
+      onGenerateRoute: (routeSettings) {
+        return MaterialPageRoute(
+          builder: (context) {
+            // Apply theme when nested screen builds
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              SystemNavigationManager().setCurrentRoute(routeName);
+            });
+            return child;
+          },
+        );
+      },
+    );
   }
 
-  /// Main pages for BottomNavigationBar
   List<Widget> _pages(BuildContext context, bool hasUser) {
     if (hasUser) {
       return [
-        _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
-        _buildNavigator(context, _navigatorKeys[1], OrderHistoryView()),
-        _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
-        _buildNavigator(context, _navigatorKeys[3], FavoritesView()),
-        _buildNavigator(context, _navigatorKeys[4], UserSettingsView()),
+        _buildNavigator(
+            context, _navigatorKeys[0], LightThemeHome(), 'LightThemeHome'),
+        _buildNavigator(
+            context, _navigatorKeys[1], OrderHistoryView(), 'OrderHistoryView'),
+        _buildNavigator(
+            context, _navigatorKeys[2], CartViewPage(), 'CartViewPage'),
+        _buildNavigator(
+            context, _navigatorKeys[3], FavoritesView(), 'FavoritesView'),
+        _buildNavigator(
+            context, _navigatorKeys[4], UserSettingsView(), 'UserSettingsView'),
       ];
     } else {
       return [
-        _buildNavigator(context, _navigatorKeys[0], LightThemeHome()),
+        _buildNavigator(
+            context, _navigatorKeys[0], LightThemeHome(), 'LightThemeHome'),
         OrderHistoryView(),
-        _buildNavigator(context, _navigatorKeys[2], CartViewPage()),
+        _buildNavigator(
+            context, _navigatorKeys[2], CartViewPage(), 'CartViewPage'),
         FavoritesView(),
         UserSettingsView(),
       ];
     }
   }
 
-  Widget _buildNavigator(
-      BuildContext context, GlobalKey<NavigatorState> key, Widget child) {
-    SystemNavigation().applyCustomSystemChromeSettings(
-        Colors.black, Brightness.light, Colors.black, Brightness.light);
-
-    return Navigator(
-      key: key,
-      onGenerateRoute: (routeSettings) {
-        return MaterialPageRoute(
-          builder: (context) => child,
-        );
-      },
-    );
+  void _onBottomNavTapped(int index) {
+    final homeController =
+        Provider.of<HomeViewController>(listen: false, context);
+    homeController.onTapNav(index);
   }
 
   void _handlePopInvoked(bool didPop) async {

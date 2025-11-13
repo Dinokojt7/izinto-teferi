@@ -26,73 +26,63 @@ class CarWashAddToCart extends StatelessWidget {
     return Container(
       height: Dimensions.height45 * 1.05,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: isActive && !isLoading ? onAddToCart : null,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
-              margin: EdgeInsets.all(2),
+            onTap: onAddToCart,
+            child: AnimatedContainer(
+              duration: Duration(seconds: 1),
+              width: 35,
+              height: 35,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(Dimensions.radius15),
-                color: LiveColors.accent,
-                border: Border.all(color: Colors.grey.shade400, width: 2),
+                color: Colors.black,
+                border: Border.all(
+                  color: Colors.black,
+                ),
               ),
               child: Center(
-                child: isLoading
-                    ? SizedBox(
-                        width: Dimensions.height20,
-                        height: Dimensions.height20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.black),
-                        ),
-                      )
-                    : HeadingStyleText(
-                        text: 'Add to Cart',
-                        size: Dimensions.font20 / 1.5,
-                        family: 'Poppins',
-                        weight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
+                child: Text(
+                  '+',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: Dimensions.font20,
+                      fontFamily: 'Poppins'),
+                ),
               ),
             ),
           ),
           GestureDetector(
             onTap: hasSelection ? onClearSelection : null,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: Dimensions.width20 / 2),
-              margin: EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(Dimensions.radius15),
-                  bottomLeft: Radius.circular(Dimensions.radius15),
-                  topRight: Radius.circular(Dimensions.radius20 * 3),
-                  bottomRight: Radius.circular(Dimensions.radius20 * 3),
+            child: Stack(
+              children: [
+                Image.asset(
+                  'assets/icons/bucket.png',
+                  width: 40.0,
+                  height: 40.0,
                 ),
-                border: Border.all(color: Colors.grey.shade400, width: 2),
-                color: LiveColors.accent,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width: Dimensions.height45 / 1.2,
-                  height: Dimensions.height45 / 1.2,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: HeadingStyleText(
-                      text: itemCount,
-                      size: Dimensions.font20 / 1.5,
-                      family: 'Poppins',
-                      weight: FontWeight.w600,
-                      color: Colors.black,
+                Positioned(
+                  top: 0.0,
+                  right: 0.0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade500,
+                      borderRadius: BorderRadius.circular(Dimensions.radius30),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5),
+                      child: HeadingStyleText(
+                        size: Dimensions.font20 / 1.1,
+                        color: Colors.white,
+                        text: itemCount,
+                        family: 'Poppins',
+                        weight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ],

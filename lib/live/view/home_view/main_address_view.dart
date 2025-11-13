@@ -81,7 +81,7 @@ class _MainAddressViewState extends State<MainAddressView> {
                 }
 
                 return GestureDetector(
-                  onTap: () async {
+                  onTap: () {
                     if (user == null) {
                       GenericSnackBar().showCustomSnackBar(() {
                         ScaffoldMessenger.of(context).removeCurrentSnackBar();

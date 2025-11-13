@@ -15,10 +15,14 @@ import 'package:izinto/live/widgets/icons/back_arrow.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 
 import '../../../../models/new_specialty_model.dart';
+import '../../../../models/user.dart';
 import '../../../../widgets/texts/small_text.dart';
+import '../../../utilities/generic_snackbar.dart';
 import '../../../widgets/generic_header_row.dart';
 import '../../../widgets/top_nortch.dart';
 import '../../address_view/controller/address_dropdown_controller.dart';
+import '../../address_view/saved_addresses.dart';
+import '../../auth_view/phone_auth_view.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
 import '../controller/home_view_controller.dart';
 
@@ -120,14 +124,6 @@ class _CarWashViewState extends State<CarWashView> {
     setState(() {
       _isAddingToCart = false;
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Car wash added to cart!'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   void _showCartDetailsDialog(CarWashController controller) {
@@ -733,8 +729,7 @@ class _CarWashViewState extends State<CarWashView> {
             Provider.of<MainAddressViewController>(context, listen: false);
 
         ///Here's a list of addresses from the controller
-        final _profileController =
-            Provider.of<ProfileViewController>(context, listen: false);
+        final _profileController = Provider.of<ProfileViewController>(context);
         final List<dynamic> _addresses = _profileController.savedAddresses;
 
         ///Here's the selection of currently active address///
@@ -817,6 +812,10 @@ class _CarWashViewState extends State<CarWashView> {
   }
 
   Padding buildAppBar(BuildContext context, String street, String suburb) {
+    final user = Provider.of<UserModel?>(context);
+
+    final homeViewController =
+        Provider.of<HomeViewController>(context, listen: false);
     return Padding(
       padding: EdgeInsets.symmetric(
           horizontal: Dimensions.width10 / 2, vertical: Dimensions.height30),
@@ -832,40 +831,77 @@ class _CarWashViewState extends State<CarWashView> {
                   Navigator.of(context).pop();
                 },
               ),
-              Row(
-                children: [
-                  Icon(
-                    size: Dimensions.iconSize24 / 1.1,
-                    Icons.location_on_rounded,
-                    color: LiveColors.accent.withOpacity(0.7),
-                  ),
-                  SizedBox(
-                    width: Dimensions.width20 / 4,
-                  ),
-                  HeadingStyleText(
-                    text: street,
-                    size: Dimensions.font20 / 1.5,
-                    family: 'Poppins',
-                    weight: FontWeight.w600,
-                  ),
-                  SizedBox(
-                    width: Dimensions.width10,
-                  ),
-                  HeadingStyleText(
-                      text: suburb,
-                      size: Dimensions.font20 / 1.5,
-                      family: 'Poppins',
-                      weight: FontWeight.w300,
-                      color: Colors.black),
-                ],
+              SizedBox(width: Dimensions.width20 * 1.2),
+              Expanded(
+                // ← Add this to constrain the middle section
+                child: Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, // Center the location
+                  children: [
+                    Icon(
+                      size: Dimensions.iconSize24 / 1.1,
+                      Icons.location_on_rounded,
+                      color: Colors.black,
+                    ),
+                    SizedBox(width: Dimensions.width20 / 4),
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: HeadingStyleText(
+                              text: street,
+                              size: Dimensions.font20 / 1.5,
+                              family: 'Poppins',
+                              weight: FontWeight.w600,
+                              maxLines: 1,
+                              overFlow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(width: Dimensions.width10),
+                          Flexible(
+                            child: HeadingStyleText(
+                              text: suburb,
+                              size: Dimensions.font20 / 1.5,
+                              family: 'Poppins',
+                              weight: FontWeight.w300,
+                              color: Colors.black,
+                              maxLines: 1,
+                              overFlow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              Icon(
-                MdiIcons.magnify,
-                color: Colors.black12.withOpacity(0.8),
-                size: 26,
+              GestureDetector(
+                onTap: () async {
+                  if (user == null) {
+                    GenericSnackBar().showCustomSnackBar(() {
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                      homeViewController.onIndependentPageNavigation(
+                          context, PhoneAuthView());
+                    }, context, 'Please login to continue', false);
+                  } else {
+                    Get.to(
+                      () => SavedAddresses(),
+                      transition: Transition.circularReveal,
+                      duration: Duration(milliseconds: 500),
+                    );
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Icon(
+                    MdiIcons.magnify,
+                    color: Colors.black12.withOpacity(0.8),
+                    size: 26,
+                  ),
+                ),
               ),
             ],
-          ),
+          )
         ],
       ),
     );
@@ -1206,7 +1242,7 @@ class _CarWashViewState extends State<CarWashView> {
 
     return Image.asset(
       imagePath,
-      height: Dimensions.screenHeight * 0.3,
+      height: Dimensions.screenHeight * 0.2,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
         if (!_failedImageIndices.contains(index)) {
@@ -1439,7 +1475,7 @@ class _CarWashViewState extends State<CarWashView> {
                           color: isSelected
                               ? LiveColors.accent
                               : Colors.grey.shade300,
-                          width: 1,
+                          width: isSelected ? 1.5 : 1,
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -1560,14 +1596,16 @@ class _CarWashViewState extends State<CarWashView> {
                             vertical: Dimensions.height10,
                           ),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.black : Colors.white,
+                            color: isSelected
+                                ? LiveColors.whiteTextColor
+                                : Colors.white,
                             borderRadius:
                                 BorderRadius.circular(Dimensions.radius20 * 3),
                             border: Border.all(
                               color: isSelected
                                   ? LiveColors.accent
                                   : Colors.grey.shade300,
-                              width: isSelected ? 0 : 1,
+                              width: isSelected ? 1.5 : 1,
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -1582,10 +1620,8 @@ class _CarWashViewState extends State<CarWashView> {
                             size: Dimensions.font20 / 1.4,
                             family: 'Poppins',
                             weight: FontWeight.w600,
-                            color: isSelected
-                                ? Colors.white
-                                : Colors
-                                    .black, // Text color changes with container
+                            color: Colors
+                                .black, // Text color changes with container
                             align: TextAlign.center,
                             maxLines: 2,
                             overFlow: TextOverflow.ellipsis,

@@ -29,17 +29,18 @@ class _UserSettingsViewState extends State<UserSettingsView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    // Add a listener to the TabController
-    _tabController.addListener(() {
-      // Check the current tab index
-      Provider.of<UserSettingsController>(context, listen: false)
-          .getActiveTab(_tabController.index);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tabController.addListener(() {
+        Provider.of<UserSettingsController>(context, listen: false)
+            .getActiveTab(_tabController.index);
+      });
     });
   }
 
   @override
   void dispose() {
-    _tabController; // Dispose the TabController
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -47,55 +48,60 @@ class _UserSettingsViewState extends State<UserSettingsView>
   Widget build(BuildContext context) {
     return Consumer<ProfileViewController>(
       builder: (context, _profileController, child) {
-        final user = Provider.of<UserModel?>(context);
-        if (user == null) {
-          return NoUserPage(
-            title: 'Settings',
-            message: 'Please sign in to get started.',
-            isSettingView: true,
-          );
-        } else {
-          return NestedScrollView(
-            headerSliverBuilder:
-                (BuildContext context, bool innerBoxIsScrolled) {
-              return [
-                SliverPersistentHeader(
-                  delegate: CustomSliverAppBarDelegate(
-                    expandedHeight: 190,
-                    tabController: _tabController,
+        try {
+          final user = Provider.of<UserModel?>(context);
+          if (user == null) {
+            return NoUserPage(
+              title: 'Settings',
+              message: 'Please sign in to get started.',
+              isSettingView: true,
+            );
+          } else {
+            return NestedScrollView(
+              headerSliverBuilder:
+                  (BuildContext context, bool innerBoxIsScrolled) {
+                return [
+                  SliverPersistentHeader(
+                    delegate: CustomSliverAppBarDelegate(
+                      expandedHeight: 190,
+                      tabController: _tabController,
+                    ),
+                    pinned: true,
                   ),
-                  pinned: true,
+                ];
+              },
+              body: Container(
+                color: Colors.white.withOpacity(0.975),
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    SingleChildScrollView(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: [
+                          CustomerServiceView(
+                              promoCode: _profileController.promoCode),
+                          // Additional widgets can go here if necessary
+                        ],
+                      ),
+                    ),
+                    SingleChildScrollView(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: [
+                          MainAppSettings(),
+                          // Additional widgets can go here if necessary
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ];
-            },
-            body: Container(
-              color: Colors.white.withOpacity(0.975),
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      children: [
-                        CustomerServiceView(
-                            promoCode: _profileController.promoCode),
-                        // Additional widgets can go here if necessary
-                      ],
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      children: [
-                        MainAppSettings(),
-                        // Additional widgets can go here if necessary
-                      ],
-                    ),
-                  ),
-                ],
               ),
-            ),
-          );
+            );
+          }
+        } catch (e) {
+          print('Error in UserSettingsView: $e');
+          return Center();
         }
       },
     );
@@ -170,7 +176,7 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return Consumer<ProfileViewController>(
       builder: (context, _profileController, child) {
         return AppBar(
-          backgroundColor: Colors.black.withOpacity(opacity),
+          backgroundColor: Colors.black,
           toolbarHeight: 200,
           elevation: 0,
           title: Column(
@@ -189,13 +195,19 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
                     top: Dimensions.height15,
                     left: Dimensions.width10,
                     right: Dimensions.width10,
-                    // bottom: Dimensions.height45,
                   ),
-                  child: ProfileBigText(
-                    size: Dimensions.height20 * 2,
-                    text1: '${_profileController.firstName} ',
-                    text2: '${_profileController.lastName}',
-                  ),
+                  child: _profileController.firstName == null ||
+                          _profileController.lastName == null
+                      ? ProfileBigText(
+                          size: Dimensions.height20 * 2,
+                          text1: 'Hello ',
+                          text2: 'Welcome',
+                        )
+                      : ProfileBigText(
+                          size: Dimensions.height20 * 2,
+                          text1: '${_profileController.firstName!} ',
+                          text2: '${_profileController.lastName!}',
+                        ),
                 ),
               ),
               Opacity(
@@ -204,18 +216,16 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
                   children: [
                     SizedBox(height: 5.0),
                     HeadingStyleText(
-                      text: 'Wallet: R0,00',
+                      text: _profileController.walletBalance > 0
+                          ? 'Wallet: R${_profileController.walletBalance},00'
+                          : 'Wallet: R0,00',
                       size: Dimensions.font20 / 1.3,
                       family: 'Poppins',
                       color: Colors.white,
                       weight: FontWeight.w300,
                       align: TextAlign.center,
                     ),
-                    Container(
-                      height: Dimensions.height30,
-                      width: Dimensions.screenWidth / 2.5,
-                      color: Colors.black.withOpacity(0.7),
-                    ),
+                    SizedBox(height: Dimensions.height30),
                   ],
                 ),
               ),
@@ -280,6 +290,7 @@ class TabsSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(LiveDimensions.radius30 * 2),
       ),
       child: TabBar(
+        dividerHeight: 0,
         labelPadding: EdgeInsets.symmetric(horizontal: 8.0),
         physics: AlwaysScrollableScrollPhysics(),
         indicatorColor:

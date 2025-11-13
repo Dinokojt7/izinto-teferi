@@ -88,46 +88,39 @@ class CheckoutViewController extends ChangeNotifier {
     } catch (e) {}
   }
 
-  // Toggle wallet usage
+// Update toggleWalletUsage to handle payment method state properly
   void toggleWalletUsage() {
     if (_isWalletApplied) {
       // Remove wallet discount
       _isWalletApplied = false;
       _walletDiscount = 0;
+
+      // If we were using wallet as primary payment, clear it
+      if (_selectedPaymentMethod == 'wallet') {
+        _selectedPaymentMethod = '';
+      }
     } else {
-      // Apply wallet discount (up to available balance, but not more than order total)
+      // Apply wallet discount
       _isWalletApplied = true;
-      int maxApplicableAmount = orderSubtotal + optionalTip - _promoDiscount;
-      _walletDiscount = _availableWalletBalance > maxApplicableAmount
-          ? maxApplicableAmount
+      final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
+      _walletDiscount = _availableWalletBalance > orderAmount
+          ? orderAmount
           : _availableWalletBalance;
 
-      // If wallet covers entire amount, we can auto-select it as payment method
-      if (_walletDiscount >= (orderSubtotal + optionalTip - _promoDiscount)) {
+      // Only auto-select wallet as payment method if it covers FULL amount
+      if (_walletDiscount >= orderAmount) {
         _selectedPaymentMethod = 'wallet';
+      } else {
+        // Partial coverage - ensure payment method is selected if not already
+        // Don't auto-select, let user choose
       }
     }
     notifyListeners();
   }
 
-  bool get isWalletCoveringFullAmount {
-    return _isWalletApplied && _walletDiscount >= orderTotal;
-  }
-
   void selectPaymentMethod(String method) {
     _selectedPaymentMethod = method;
     notifyListeners();
-  }
-
-  String get orderDescription {
-    if (_isWalletApplied && _walletDiscount >= orderTotal) {
-      return 'Paid with wallet - R${_walletDiscount},00';
-    } else if (_isWalletApplied && _walletDiscount > 0) {
-      final remaining = orderTotal - _walletDiscount;
-      return 'Pay R$remaining,00 (Wallet: R${_walletDiscount},00)';
-    } else {
-      return 'Proceed with payment - R$orderTotal,00';
-    }
   }
 
   // Update submitOrder to deduct from wallet
@@ -467,14 +460,51 @@ class CheckoutViewController extends ChangeNotifier {
     return types.toList();
   }
 
+// Update the isFormValid getter to properly handle partial wallet coverage
   bool get isFormValid {
-    if (_isWalletApplied && _walletDiscount >= orderTotal) {
-      // Wallet covers entire amount - no payment method needed
-      return true;
+    final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
+
+    if (_isWalletApplied) {
+      if (_walletDiscount >= orderAmount) {
+        // Wallet covers entire amount - no payment method needed
+        return true;
+      } else {
+        // Wallet covers partial amount - payment method required for remainder
+        return _selectedPaymentMethod.isNotEmpty;
+      }
     } else {
-      // Wallet doesn't cover full amount - payment method required
+      // No wallet used - payment method required
       return _selectedPaymentMethod.isNotEmpty;
     }
+  }
+
+// Update the order description to be more accurate
+  String get orderDescription {
+    final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
+
+    if (_isWalletApplied) {
+      if (_walletDiscount >= orderAmount) {
+        return 'Paid with wallet - R${_walletDiscount},00';
+      } else {
+        final remaining = orderAmount - _walletDiscount;
+        return 'Pay R$remaining,00 (Wallet: R${_walletDiscount},00)';
+      }
+    } else {
+      return 'Proceed with payment - R$orderTotal,00';
+    }
+  }
+
+// Update the helper to be more precise
+  bool get isWalletCoveringFullAmount {
+    final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
+    return _isWalletApplied && _walletDiscount >= orderAmount;
+  }
+
+  bool get isWalletCoveringPartialAmount {
+    final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
+    return _isWalletApplied &&
+        _walletDiscount > 0 &&
+        _walletDiscount < orderAmount;
   }
 
 // Enhanced notification sending with better error handling

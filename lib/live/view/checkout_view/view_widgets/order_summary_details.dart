@@ -139,7 +139,11 @@ class _LineItemsState extends State<LineItems> {
               text: '${isNegative ? '-' : ''}R${widget.updatedAmount.abs()},00',
               size: Dimensions.font20 / 1.25,
               family: 'Poppins',
-              weight: widget.isTotal ? FontWeight.w600 : FontWeight.w300,
+              weight: widget.isTotal
+                  ? FontWeight.w600
+                  : isNegative
+                      ? FontWeight.w600
+                      : FontWeight.w300,
               color: amountColor,
             ),
           ],

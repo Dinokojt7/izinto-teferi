@@ -126,7 +126,7 @@ class PaymentMethodSelector extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: Dimensions.height10),
+                    SizedBox(height: Dimensions.height10 / 2),
                   ],
                 ),
               // In PaymentMethodSelector, add this to the wallet section:
@@ -159,6 +159,7 @@ class PaymentMethodSelector extends StatelessWidget {
                     ),
                   ),
                 ),
+              SizedBox(height: Dimensions.height10 / 2),
 
               Expanded(
                 child: ListView.builder(

@@ -336,11 +336,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 _processOrder(context, selectedAddress);
                               }
                             : () {
-                                GenericSnackBar().showCustomSnackBar(
-                                    null,
-                                    context,
-                                    'Please select a payment method to continue',
-                                    false);
+                                if (_controller.isWalletCoveringPartialAmount &&
+                                    _controller.selectedPaymentMethod.isEmpty) {
+                                  GenericSnackBar().showCustomSnackBar(
+                                      null,
+                                      context,
+                                      'Please select a payment method for the remaining amount',
+                                      false);
+                                } else if (!_controller
+                                        .isWalletCoveringFullAmount &&
+                                    _controller.selectedPaymentMethod.isEmpty) {
+                                  GenericSnackBar().showCustomSnackBar(
+                                      null,
+                                      context,
+                                      'Please select a payment method to continue',
+                                      false);
+                                } else {
+                                  GenericSnackBar().showCustomSnackBar(
+                                      null,
+                                      context,
+                                      'Please complete your order details',
+                                      false);
+                                }
                               },
                       ),
                     ),

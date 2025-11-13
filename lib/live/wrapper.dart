@@ -173,9 +173,9 @@ class _WrapperState extends State<Wrapper> {
         final hasAddresses = profileController.savedAddresses.isNotEmpty;
 
         // Decision tree - only show these screens if data is actually missing
-        if (!hasBasicInfo) {
-          return const ProfileView();
-        } else if (!hasAddresses) {
+        // if (!hasBasicInfo) {
+        //   return const ProfileView();
+        if (!hasAddresses) {
           return const GuestAccess();
         } else {
           return const HomeView();

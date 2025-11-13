@@ -226,17 +226,38 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                       SizedBox(height: Dimensions.height30),
 
                                       // Order Summary
+// In CheckoutPage, update the Order Summary section
                                       GenericHeaderRow(
                                         headingChild: HeadingStyleText(
                                           text: 'Order Summary',
                                           weight: FontWeight.w600,
                                         ),
-                                        // actionButtonChild: BlueTextButton(
-                                        //   text: 'Add promo code',
-                                        //   onTap: () {
-                                        //     // TODO: Implement promo code functionality
-                                        //   },
-                                        // ),
+                                        actionButtonChild: BlueTextButton(
+                                          text: _controller.isPromoCodeValid
+                                              ? 'Remove Promo'
+                                              : 'Add promo code',
+                                          onTap: _controller.isPromoCodeValid
+                                              ? () {
+                                                  _controller.clearPromoCode();
+                                                  // Show removed snackbar
+                                                }
+                                              : () {
+                                                  if (_controller
+                                                          .orderSubtotal <
+                                                      500) {
+                                                    GenericSnackBar()
+                                                        .showCustomSnackBar(
+                                                            null,
+                                                            context,
+                                                            'Minimum order of R500 required for promo codes',
+                                                            false);
+                                                  } else {
+                                                    _controller
+                                                        .showPromoCodeDialog(
+                                                            context);
+                                                  }
+                                                },
+                                        ),
                                       ),
                                       SizedBox(height: Dimensions.height20),
                                       GenericWhiteContainer(
@@ -306,21 +327,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           left: 24.0, top: 15.0, right: 24.0, bottom: 15.0),
                       child: SaveButton(
                         isActive: _controller.isFormValid,
-                        description:
-                            'Proceed with payment - R${_controller.orderTotal},00',
+                        description: _controller
+                            .orderDescription, // Use the new description
+
                         isAuthScreen: false,
                         onTap: _controller.isFormValid
                             ? () {
                                 _processOrder(context, selectedAddress);
                               }
                             : () {
-                                // Optional: Show message when form is not valid
-                                Get.snackbar(
-                                  'Incomplete Information',
-                                  'Please select a payment method to continue.',
-                                  backgroundColor: Colors.orange,
-                                  colorText: Colors.white,
-                                );
+                                GenericSnackBar().showCustomSnackBar(
+                                    null,
+                                    context,
+                                    'Please select a payment method to continue',
+                                    false);
                               },
                       ),
                     ),

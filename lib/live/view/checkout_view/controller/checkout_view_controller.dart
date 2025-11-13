@@ -4,15 +4,210 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:izinto/live/utilities/colors.dart';
+import 'package:izinto/live/utilities/generic_snackbar.dart';
 import '../../../../controllers/new_cart_controller.dart';
 import '../../../../models/new_cart_model.dart';
 import '../../../../models/new_specialty_model.dart';
 import '../../../../services/notification_service.dart';
+import '../../../../utils/dimensions.dart';
+import '../../../widgets/buttons/save_button.dart';
+import '../../../widgets/text_widgets/heading_style_text.dart';
+import '../../profile_view/controller/profile_view_controller.dart';
 
 class CheckoutViewController extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  bool _isWalletApplied = false;
+  bool get isWalletApplied => _isWalletApplied;
+  int _walletDiscount = 0;
+  int get walletDiscount => _walletDiscount;
+  int _availableWalletBalance = 0;
+  int get availableWalletBalance => _availableWalletBalance;
+
+  // Update order total calculation
+  int get orderTotal {
+    int total = orderSubtotal + optionalTip - _promoDiscount - _walletDiscount;
+    return total < 0 ? 0 : total; // Ensure total doesn't go negative
+  }
+// In CheckoutViewController, update the loadWalletBalance method:
+
+// Load wallet balance from profile controller
+  void loadWalletBalance() {
+    try {
+      // Since ProfileViewController is a ChangeNotifier (Provider),
+      // we need to access it differently
+      // Remove this Get.find() approach:
+      // final profileController = Get.find<ProfileViewController>();
+
+      // Instead, we'll get the wallet balance directly from Firebase
+      // or access it through the context when needed
+      _loadWalletBalanceFromFirebase();
+    } catch (e) {
+      print('Error loading wallet balance: $e');
+      _availableWalletBalance = 0;
+    }
+  }
+
+  Future<void> _loadWalletBalanceFromFirebase() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          _availableWalletBalance = (userDoc.data()?['wallet'] ?? 0).toInt();
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      _availableWalletBalance = 0;
+    }
+  }
+
+// Also update the _deductFromWallet method:
+  Future<void> _deductFromWallet(int amount) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final newBalance = _availableWalletBalance - amount;
+
+        // Update in Firebase
+        await _firestore.collection('users').doc(user.uid).update({
+          'wallet': newBalance,
+          'lastWalletDeduction': FieldValue.serverTimestamp(),
+        });
+
+        // Update local state
+        _availableWalletBalance = newBalance;
+
+        // If ProfileViewController is in the widget tree, we could notify it too
+        // But for now, just update our local state
+      }
+    } catch (e) {}
+  }
+
+  // Toggle wallet usage
+  void toggleWalletUsage() {
+    if (_isWalletApplied) {
+      // Remove wallet discount
+      _isWalletApplied = false;
+      _walletDiscount = 0;
+    } else {
+      // Apply wallet discount (up to available balance, but not more than order total)
+      _isWalletApplied = true;
+      int maxApplicableAmount = orderSubtotal + optionalTip - _promoDiscount;
+      _walletDiscount = _availableWalletBalance > maxApplicableAmount
+          ? maxApplicableAmount
+          : _availableWalletBalance;
+
+      // If wallet covers entire amount, we can auto-select it as payment method
+      if (_walletDiscount >= (orderSubtotal + optionalTip - _promoDiscount)) {
+        _selectedPaymentMethod = 'wallet';
+      }
+    }
+    notifyListeners();
+  }
+
+  bool get isWalletCoveringFullAmount {
+    return _isWalletApplied && _walletDiscount >= orderTotal;
+  }
+
+  void selectPaymentMethod(String method) {
+    _selectedPaymentMethod = method;
+    notifyListeners();
+  }
+
+  String get orderDescription {
+    if (_isWalletApplied && _walletDiscount >= orderTotal) {
+      return 'Paid with wallet - R${_walletDiscount},00';
+    } else if (_isWalletApplied && _walletDiscount > 0) {
+      final remaining = orderTotal - _walletDiscount;
+      return 'Pay R$remaining,00 (Wallet: R${_walletDiscount},00)';
+    } else {
+      return 'Proceed with payment - R$orderTotal,00';
+    }
+  }
+
+  // Update submitOrder to deduct from wallet
+  Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
+    try {
+      _isLoadingIndicator = true;
+      notifyListeners();
+
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final cartController = Get.find<NewCartController>();
+      final order = await createOrderObject(address);
+
+      // Add promo code info to order if applicable
+      if (_isPromoCodeValid && _enteredPromoCode.isNotEmpty) {
+        order['promoCodeUsed'] = _enteredPromoCode;
+        order['promoDiscount'] = _promoDiscount;
+
+        // Reward the promo code owner
+        await _rewardPromoCodeOwner(_enteredPromoCode);
+      }
+
+      // Add wallet usage info to order if applicable
+      if (_isWalletApplied && _walletDiscount > 0) {
+        order['walletUsed'] = _walletDiscount;
+        order['walletBalanceBefore'] = _availableWalletBalance;
+        order['walletBalanceAfter'] = _availableWalletBalance - _walletDiscount;
+
+        // Deduct from user's wallet
+        await _deductFromWallet(_walletDiscount);
+      }
+
+      // Save to Firestore
+      await _firestore.collection('orders').doc(order['orderId']).set(order);
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('orders')
+          .doc(order['orderId'])
+          .set(order);
+
+      // Clear discounts after successful order
+      clearPromoCode();
+      clearWalletUsage();
+
+      // Send notification
+      await sendOrderNotification(order);
+
+      cartController.clear();
+      _isLoadingIndicator = false;
+      notifyListeners();
+
+      return order;
+    } catch (error, stackTrace) {
+      _isLoadingIndicator = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  // Clear wallet usage
+  void clearWalletUsage() {
+    _isWalletApplied = false;
+    _walletDiscount = 0;
+    notifyListeners();
+  }
+
+  // Update the existing clearPromoCode to also handle wallet if needed
+  void clearPromoCode() {
+    _enteredPromoCode = '';
+    _isPromoCodeValid = false;
+    _promoDiscount = 0;
+    notifyListeners();
+  }
+
+  // Initialize wallet when controller is created
+  CheckoutViewController() {
+    loadWalletBalance();
+  }
 
   // Primary state
   bool _isLoadingIndicator = false;
@@ -99,7 +294,6 @@ class CheckoutViewController extends ChangeNotifier {
   int get serviceFee => 35; // Fixed service fee
   int get optionalTip => selectedTipAmount;
 
-  int get orderTotal => orderSubtotal + optionalTip;
   bool get isFreeDelivery => true;
 
   // Methods
@@ -126,11 +320,6 @@ class CheckoutViewController extends ChangeNotifier {
       // Select new tip
       _selectedTipIndex = index;
     }
-    notifyListeners();
-  }
-
-  void selectPaymentMethod(String method) {
-    _selectedPaymentMethod = method;
     notifyListeners();
   }
 
@@ -209,8 +398,15 @@ class CheckoutViewController extends ChangeNotifier {
           'callWhenArrive': _shouldCallWhenArrive,
           'additionalNotes': _deliveryNote,
         },
-        'paymentMethod': _selectedPaymentMethod,
-        'paymentStatus': 'pending',
+// In createOrderObject, update payment info:
+        'paymentMethod': _isWalletApplied && _walletDiscount >= orderTotal
+            ? 'wallet'
+            : _selectedPaymentMethod,
+        'paymentStatus': _isWalletApplied && _walletDiscount >= orderTotal
+            ? 'paid'
+            : 'pending',
+        'walletPayment': _isWalletApplied,
+        'walletAmount': _walletDiscount,
         'serviceTypes': _getServiceTypes(cartController.getItems),
       };
 
@@ -271,46 +467,14 @@ class CheckoutViewController extends ChangeNotifier {
     return types.toList();
   }
 
-// In CheckoutViewController - Update submitOrder to include notification
-  Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
-    try {
-      _isLoadingIndicator = true;
-      notifyListeners();
-
-      final user = _auth.currentUser;
-      if (user == null) {
-        throw Exception('User not authenticated');
-      }
-
-      final cartController = Get.find<NewCartController>();
-      final order = await createOrderObject(address);
-
-      // Save to Firestore
-      await _firestore.collection('orders').doc(order['orderId']).set(order);
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('orders')
-          .doc(order['orderId'])
-          .set(order);
-
-      // ✅ CRITICAL: Send order notification after successful order creation
-      await sendOrderNotification(order);
-
-      cartController.clear();
-      _isLoadingIndicator = false;
-      notifyListeners();
-
-      return order;
-    } catch (error, stackTrace) {
-      _isLoadingIndicator = false;
-      notifyListeners();
-      rethrow;
-    }
-  }
-
   bool get isFormValid {
-    return _selectedPaymentMethod.isNotEmpty;
+    if (_isWalletApplied && _walletDiscount >= orderTotal) {
+      // Wallet covers entire amount - no payment method needed
+      return true;
+    } else {
+      // Wallet doesn't cover full amount - payment method required
+      return _selectedPaymentMethod.isNotEmpty;
+    }
   }
 
 // Enhanced notification sending with better error handling
@@ -345,14 +509,229 @@ class CheckoutViewController extends ChangeNotifier {
           'timestamp': DateTime.now().toIso8601String(),
         },
       );
-
-      print(
-          '✅ Order notification sent successfully for order: ${order['orderId']}');
     } catch (e, stackTrace) {
-      print('❌ Error sending order notification: $e');
-      print('Stack trace: $stackTrace');
       // Don't rethrow - we don't want notification failures to break order creation
     }
+  }
+
+  String _enteredPromoCode = '';
+  String get enteredPromoCode => _enteredPromoCode;
+  bool _isPromoCodeValid = false;
+  bool get isPromoCodeValid => _isPromoCodeValid;
+  int _promoDiscount = 0;
+  int get promoDiscount => _promoDiscount;
+  bool _isCheckingPromoCode = false;
+  bool get isCheckingPromoCode => _isCheckingPromoCode;
+
+// Add promo code methods
+  Future<void> validatePromoCode(String code) async {
+    if (code.isEmpty) return;
+
+    _isCheckingPromoCode = true;
+    notifyListeners();
+
+    try {
+      // Check if order meets minimum amount
+      if (orderSubtotal < 500) {
+        _isCheckingPromoCode = false;
+        notifyListeners();
+        throw Exception(
+            'Minimum order amount of R500 required for promo codes');
+      }
+
+      // Check if promo code exists in Firestore
+      final promoDoc =
+          await _firestore.collection('promo_codes').doc(code).get();
+
+      if (promoDoc.exists) {
+        final promoData = promoDoc.data()!;
+        final ownerUserId = promoData['ownerUserId'];
+
+        // Check if user is trying to use their own code
+        final currentUser = _auth.currentUser;
+        if (currentUser != null && ownerUserId == currentUser.uid) {
+          throw Exception('Cannot use your own promo code');
+        }
+
+        _enteredPromoCode = code;
+        _isPromoCodeValid = true;
+        _promoDiscount = 50; // R50 discount
+      } else {
+        throw Exception('Invalid promo code');
+      }
+    } catch (e) {
+      _enteredPromoCode = '';
+      _isPromoCodeValid = false;
+      _promoDiscount = 0;
+      rethrow;
+    } finally {
+      _isCheckingPromoCode = false;
+      notifyListeners();
+    }
+  }
+
+  // Add to CheckoutViewController
+  void showPromoCodeDialog(BuildContext context) {
+    // Check order amount first
+    if (orderSubtotal < 500) {
+      // Show snackbar for minimum amount
+      // You'll need to pass context or use Get.snackbar
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => _buildPromoCodeInputDialog(context),
+    );
+  }
+
+  Widget _buildPromoCodeInputDialog(BuildContext context) {
+    final textController = TextEditingController();
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding:
+              EdgeInsets.symmetric(horizontal: Dimensions.width20 * 1.1),
+          child: Container(
+            height: Dimensions.screenHeight / 2.5,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 0.7,
+                  offset: Offset(0, 1.7),
+                ),
+              ],
+              border: Border.all(
+                width: 0.5,
+                color: Colors.black.withOpacity(0.04),
+              ),
+              borderRadius: BorderRadius.circular(Dimensions.radius15),
+              color: Colors.white,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Dimensions.width30 * 1.2,
+                vertical: Dimensions.height20,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  HeadingStyleText(
+                    text: 'Enter Promo Code',
+                    weight: FontWeight.w600,
+                    size: Dimensions.font26 / 1.2,
+                  ),
+                  SizedBox(height: Dimensions.height10),
+                  HeadingStyleText(
+                    text:
+                        'Enter a friend\'s promo code to get R50 off your order',
+                    size: Dimensions.font20 / 1.3,
+                    family: 'Poppins',
+                    weight: FontWeight.w300,
+                    align: TextAlign.center,
+                  ),
+                  SizedBox(height: Dimensions.height20),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: Dimensions.width15),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextField(
+                      controller: textController,
+                      onChanged: (value) {
+                        setState(() {}); // This triggers UI rebuild
+                      },
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Enter code here',
+                        hintStyle: TextStyle(
+                          fontSize: Dimensions.font16,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: Dimensions.font16 * 1.1,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  SizedBox(height: Dimensions.height20),
+                  if (_isCheckingPromoCode)
+                    CircularProgressIndicator()
+                  else
+                    SaveButton(
+                      isActive: textController.text.trim().isNotEmpty,
+                      description: 'Apply Code',
+                      isAuthScreen: false,
+                      onTap: () async {
+                        final code = textController.text.trim();
+                        if (code.isNotEmpty) {
+                          try {
+                            await validatePromoCode(code);
+                            Navigator.of(context).pop();
+                            // Show success snackbar
+                            GenericSnackBar().showCustomSnackBar(
+                              null,
+                              context,
+                              'Promo code applied! R50 discount added.',
+                              true, // isWiderSnack
+                            );
+                          } catch (e) {
+                            // Show error snackbar
+                            Get.snackbar(
+                              'Error',
+                              e.toString(),
+                              borderRadius: Dimensions.radius15 * 1.3,
+                              borderWidth: 2,
+                              borderColor: Colors.red,
+                              backgroundColor: Colors.white.withOpacity(0.5),
+                              colorText: Colors.black,
+                            );
+                          }
+                        }
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _rewardPromoCodeOwner(String promoCode) async {
+    try {
+      final promoDoc =
+          await _firestore.collection('promo_codes').doc(promoCode).get();
+      if (promoDoc.exists) {
+        final promoData = promoDoc.data()!;
+        final ownerUserId = promoData['ownerUserId'];
+
+        // Update promo code usage stats
+        await _firestore.collection('promo_codes').doc(promoCode).update({
+          'timesUsed': FieldValue.increment(1),
+          'lastUsedAt': FieldValue.serverTimestamp(),
+          'totalRewardsGiven': FieldValue.increment(50),
+          'recentUsers': FieldValue.arrayUnion([_auth.currentUser?.uid]),
+        });
+
+        // Update owner's wallet
+        await _firestore.collection('users').doc(ownerUserId).update({
+          'wallet': FieldValue.increment(50),
+          'lastPromoReward': FieldValue.serverTimestamp(),
+          'totalPromoRewards': FieldValue.increment(50),
+        });
+      }
+    } catch (e) {}
   }
 
   @override

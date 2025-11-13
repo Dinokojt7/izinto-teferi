@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../../utils/dimensions.dart';
 import '../../widgets/buttons/blue_text_button.dart';
+import '../../widgets/buttons/save_button.dart';
 import '../../widgets/generic_center_dialog.dart';
 import '../../widgets/generic_header_row.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
@@ -133,13 +134,15 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
               children: [
                 settingsSection(
                   subHeading: 'Promo codes',
-                  onTap: () {
-                    Provider.of<HomeViewController>(context, listen: false)
-                        .copyPromoCodeToClip(context, widget.promoCode);
-                  },
+                  onTap: _showPromoDialog,
                 ),
                 SizedBox(height: Dimensions.height20),
-                PromoContainer(promoCode: widget.promoCode),
+                GestureDetector(
+                    onTap: () {
+                      Provider.of<HomeViewController>(context, listen: false)
+                          .copyPromoCodeToClip(context, widget.promoCode);
+                    },
+                    child: PromoContainer(promoCode: widget.promoCode)),
                 SizedBox(height: Dimensions.height30),
               ],
             ),
@@ -147,6 +150,85 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
 
           CustomerServiceTiles(),
         ],
+      ),
+    );
+  }
+
+  void _showPromoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => _buildPromoCodeDialog(context),
+    );
+  }
+
+  Widget _buildPromoCodeDialog(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: Dimensions.width20 * 1.1),
+      child: Container(
+        height: Dimensions.screenHeight / 2.5,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(Dimensions.radius15),
+          color: Colors.white,
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: Dimensions.width30 * 1.2,
+            vertical: Dimensions.height20,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              HeadingStyleText(
+                text: 'Share & Earn',
+                weight: FontWeight.w600,
+                size: Dimensions.font26 / 1.2,
+              ),
+              SizedBox(height: Dimensions.height10),
+              HeadingStyleText(
+                text: 'Share this promo code with friends:',
+                size: Dimensions.font20 / 1.3,
+                family: 'Poppins',
+                weight: FontWeight.w400,
+                align: TextAlign.center,
+              ),
+              SizedBox(height: Dimensions.height10),
+              // Your promo code display container
+              Container(
+                padding: EdgeInsets.all(Dimensions.width15),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.promoCode,
+                  style: TextStyle(
+                    fontSize: Dimensions.font20,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+              SizedBox(height: Dimensions.height10),
+              HeadingStyleText(
+                text:
+                    'When they use it at checkout, you\'ll both receive R50 credit towards your next service. Minimum order: R500.',
+                size: Dimensions.font20 / 1.4,
+                family: 'Poppins',
+                weight: FontWeight.w300,
+                align: TextAlign.center,
+              ),
+              SizedBox(height: Dimensions.height20),
+              SaveButton(
+                isActive: true,
+                description: 'Got it!',
+                isAuthScreen: false,
+                onTap: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

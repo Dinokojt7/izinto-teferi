@@ -16,6 +16,55 @@ import '../../../wrapper.dart';
 import '../../auth_view/phone_auth_view.dart';
 
 class ProfileViewController extends ChangeNotifier {
+  // Add wallet field
+  int _walletBalance = 0;
+  int get walletBalance => _walletBalance;
+
+  // Update getData to load wallet balance
+  Future<void> getData() async {
+    User? user = await _firebaseAuth.currentUser;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(user?.uid)
+        .snapshots()
+        .listen((userData) {
+      _firstName = userData['name'] ?? '';
+      _lastName = userData['surname'] ?? '';
+      _emailAddress = userData['email'] ?? '';
+      _promoCode = userData['promo code'] ?? '';
+      _phoneNumber = userData['phone'] ?? '';
+      _isNewUser = userData['isNewUser'] ?? true;
+      _emailMarketingConsent = userData['emailMarketingConsent'] ?? false;
+      _telephoneSurveyConsent = userData['telephoneSurveyConsent'] ?? false;
+      _walletBalance = (userData['wallet'] ?? 0).toInt(); // Load wallet balance
+      enableChanges();
+      notifyListeners();
+    });
+  }
+
+  // Method to update wallet locally (for immediate UI updates)
+  void updateWalletBalance(int newBalance) {
+    _walletBalance = newBalance;
+    notifyListeners();
+  }
+
+  // Method to update wallet in Firebase
+  Future<void> updateWalletInFirebase(int newBalance) async {
+    User? user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'wallet': newBalance,
+        'walletLastUpdated': FieldValue.serverTimestamp(),
+      });
+      _walletBalance = newBalance;
+      notifyListeners();
+    }
+  }
+
+// Rest of your existing code remains the same...
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -861,27 +910,6 @@ class ProfileViewController extends ChangeNotifier {
         );
       },
     );
-  }
-
-  // Update getData to load marketing consents
-  Future<void> getData() async {
-    User? user = await _firebaseAuth.currentUser;
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(user?.uid)
-        .snapshots()
-        .listen((userData) {
-      _firstName = userData['name'] ?? '';
-      _lastName = userData['surname'] ?? '';
-      _emailAddress = userData['email'] ?? '';
-      _promoCode = userData['promo code'] ?? '';
-      _phoneNumber = userData['phone'] ?? '';
-      _isNewUser = userData['isNewUser'] ?? true;
-      _emailMarketingConsent = userData['emailMarketingConsent'] ?? false;
-      _telephoneSurveyConsent = userData['telephoneSurveyConsent'] ?? false;
-      enableChanges();
-      notifyListeners();
-    });
   }
 
   @override

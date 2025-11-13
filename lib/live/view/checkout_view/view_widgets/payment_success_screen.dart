@@ -268,6 +268,10 @@ class _CashPaymentSuccessScreenState extends State<CashPaymentSuccessScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        height: Dimensions.bottomHeightBar / 3,
+      ),
     );
   }
 

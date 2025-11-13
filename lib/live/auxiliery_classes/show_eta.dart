@@ -7,7 +7,7 @@ class ShowEta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HighlightButton(
-      text: '15 min',
+      text: '45 min',
       isViewing: true,
     );
   }

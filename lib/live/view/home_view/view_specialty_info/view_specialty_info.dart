@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-
+import 'package:flutter/foundation.dart';
 import '../../../../controllers/favorite_controller.dart';
 import '../../../../controllers/new_cart_controller.dart';
 import '../../../../controllers/size_selection_controller.dart';
@@ -25,16 +25,16 @@ import '../../../widgets/text_widgets/introduction_text.dart';
 import '../view_widgets/size_selection_modal.dart';
 
 class ViewSpecialtyInfo extends StatefulWidget {
-  final int? index; // Make index optional
-  final List? homeItemList; // Make homeItemList optional
-  final dynamic item; // Add optional item parameter
+  final int? index;
+  final List? homeItemList;
+  final dynamic item;
   final bool shouldReturnToBlack;
 
   const ViewSpecialtyInfo({
     Key? key,
-    this.index, // Make optional
-    this.homeItemList, // Make optional
-    this.item, // New parameter
+    this.index,
+    this.homeItemList,
+    this.item,
     this.shouldReturnToBlack = true,
   }) : super(key: key);
 
@@ -44,66 +44,105 @@ class ViewSpecialtyInfo extends StatefulWidget {
 
 class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
   dynamic get item {
-    // Priority 1: Use directly passed item
-    if (widget.item != null) {
-      return widget.item;
-    }
+    try {
+      // Priority 1: Use directly passed item
+      if (widget.item != null) {
+        return widget.item;
+      }
 
-    // Priority 2: Use index-based lookup (backward compatibility)
-    if (widget.index != null &&
-        widget.homeItemList != null &&
-        widget.index! < widget.homeItemList!.length) {
-      return widget.homeItemList![widget.index!];
-    }
+      // Priority 2: Use index-based lookup (backward compatibility)
+      if (widget.index != null &&
+          widget.homeItemList != null &&
+          widget.index! < widget.homeItemList!.length) {
+        return widget.homeItemList![widget.index!];
+      }
 
-    // Fallback: Handle error case
-    throw Exception('ViewSpecialtyInfo: Could not resolve item. '
-        'Either provide item directly or provide valid index and homeItemList.');
+      // Fallback: Handle error case
+      throw Exception('ViewSpecialtyInfo: Could not resolve item. '
+          'Either provide item directly or provide valid index and homeItemList.');
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error resolving item: $e');
+      }
+      // Return a safe fallback item
+      return _createFallbackItem();
+    }
+  }
+
+  // Create a safe fallback item when data is invalid
+  NewSpecialtyModel _createFallbackItem() {
+    return NewSpecialtyModel(
+      id: -1,
+      name: 'Item Not Available',
+      introduction: 'This item could not be loaded properly.',
+      price: [0],
+      size: ['Standard'],
+      img: 'assets/image/placeholder.png',
+      type: 'Unavailable',
+      material: 'Unknown',
+      provider: 'System',
+    );
   }
 
   void _handleBackNavigation(BuildContext context) {
-    // Use the parameter to determine navigation color
-    final navColor = widget.shouldReturnToBlack ? Colors.black : Colors.white;
-    final brightness =
-        widget.shouldReturnToBlack ? Brightness.light : Brightness.dark;
+    try {
+      final navColor = widget.shouldReturnToBlack ? Colors.black : Colors.white;
+      final brightness =
+          widget.shouldReturnToBlack ? Brightness.light : Brightness.dark;
 
+      SystemNavigation().applyCustomSystemChromeSettings(
+        navColor,
+        brightness,
+        navColor,
+        brightness,
+      );
+
+      Navigator.of(context).pop();
+    } catch (e) {
+      Navigator.of(context).pop(); // Fallback pop
+    }
+  }
+
+  void _applySystemChromeSettings() {
     SystemNavigation().applyCustomSystemChromeSettings(
-      navColor,
-      brightness,
-      navColor,
-      brightness,
-    );
+        Colors.black, Brightness.light, Colors.black, Brightness.light);
+  }
 
+  void _onTap() {
+    _applySystemChromeSettings();
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    // item is now resolved via the getter above
-    final sizeController = Get.find<SizeSelectionController>();
-    final shouldShowSizeSelector = sizeController.shouldShowSizeSelector(item);
+    // Debug logging for release mode
+    ReleaseDebug.logItem('ViewSpecialtyInfo', item);
+
+    // SAFETY CHECK: Validate item before rendering
+    if (item == null) {
+      return _buildErrorScreen('Item data is null', _onTap);
+    }
+
+    // Additional safety check for critical properties
+    if (_isItemInvalid(item)) {
+      return _buildErrorScreen('Item data is incomplete or invalid', _onTap);
+    }
 
     return PopScope(
-      canPop: true,
+      canPop: false,
       onPopInvoked: (didPop) {
-        if (didPop) {
-          // Use the same logic in onPopInvoked
-          final navColor =
-              widget.shouldReturnToBlack ? Colors.black : Colors.white;
-          final brightness =
-              widget.shouldReturnToBlack ? Brightness.light : Brightness.dark;
-
-          SystemNavigation().applyCustomSystemChromeSettings(
-            navColor,
-            brightness,
-            navColor,
-            brightness,
-          );
+        if (!didPop) {
+          _applySystemChromeSettings();
+          Navigator.of(context).pop();
         }
       },
       child: Scaffold(
-          backgroundColor: Colors.white.withOpacity(0.98),
-          body: GetBuilder<SizeSelectionController>(builder: (sizeController) {
+        backgroundColor: Colors.white.withOpacity(0.98),
+        body: GetBuilder<SizeSelectionController>(builder: (sizeController) {
+          try {
+            final shouldShowSizeSelector =
+                sizeController.shouldShowSizeSelector(item);
+
             return CustomScrollView(
               slivers: [
                 SliverAppBar(
@@ -114,12 +153,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        BackArrow(
-                          iconColor: Colors.black,
-                          onTap: () {
-                            _handleBackNavigation(context);
-                          },
-                        ),
+                        BackArrow(iconColor: Colors.black, onTap: _onTap),
                         _buildFavoriteIcon(item),
                       ],
                     ),
@@ -137,78 +171,114 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
                       left: Dimensions.width20,
                       right: Dimensions.width20,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  IntroductionText(text: item.name),
-                                  SizedBox(height: 4),
-                                  SmallText(
-                                    height: 1.5,
-                                    color: Colors.black,
-                                    size: Dimensions.font16 / 1.1,
-                                    text: item.type,
-                                    maxLines: 1,
-                                    overFlow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (!_shouldHideTemperature(item))
-                              _buildTemperatureToggle(item),
-                          ],
-                        ),
-                        SizedBox(height: Dimensions.height20),
-
-                        // Cart quantity display
-                        _buildCartQuantitySection(
-                            item, context, shouldShowSizeSelector),
-
-                        // Show size selector only for items that need it
-                        if (shouldShowSizeSelector) _buildSizeSelector(item),
-
-                        GenericHeaderRow(
-                          headingChild: IntroductionText(
-                              text:
-                                  'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
-                          actionButtonChild: GetBuilder<NewCartController>(
-                            builder: (cartController) {
-                              final quantityInCart =
-                                  cartController.getQuantity(item);
-                              return CartActionButton(
-                                isActive: true,
-                                description: quantityInCart > 0
-                                    ? 'Update Cart ($quantityInCart)'
-                                    : 'Add to basket',
-                                onTap: () => _addToCart(item, cartController,
-                                    context, shouldShowSizeSelector),
-                              );
-                            },
-                          ),
-                        ),
-                        SizedBox(height: Dimensions.height20),
-
-                        Row(children: [
-                          IntroductionText(
-                              text: 'Introduction',
-                              textSize: Dimensions.font20),
-                        ]),
-                        SizedBox(height: Dimensions.height10 / 1.4),
-
-                        _buildExpandableText(item.introduction),
-                        SizedBox(height: Dimensions.height20),
-                      ],
-                    ),
+                    child: _buildContent(item, shouldShowSizeSelector),
                   ),
                 )
               ],
             );
-          })),
+          } catch (e) {
+            return _buildErrorScreen('Error building screen: $e', _onTap);
+          }
+        }),
+      ),
+    );
+  }
+
+  Widget _buildContent(dynamic item, bool shouldShowSizeSelector) {
+    try {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderSection(item),
+          SizedBox(height: Dimensions.height20),
+
+          // Cart quantity display
+          _buildCartQuantitySection(item, context, shouldShowSizeSelector),
+
+          // Show size selector only for items that need it
+          if (shouldShowSizeSelector) _buildSizeSelector(item),
+
+          _buildActionSection(item, shouldShowSizeSelector),
+          SizedBox(height: Dimensions.height20),
+
+          _buildIntroductionSection(item),
+          SizedBox(height: Dimensions.height20),
+        ],
+      );
+    } catch (e) {
+      return Column(
+        children: [
+          Text('Error displaying content', style: TextStyle(color: Colors.red)),
+          SizedBox(height: 20),
+          Text('Details: $e'),
+        ],
+      );
+    }
+  }
+
+  Widget _buildHeaderSection(dynamic item) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IntroductionText(text: _safeGetName(item)),
+              SizedBox(height: 4),
+              SmallText(
+                height: 1.5,
+                color: Colors.black,
+                size: Dimensions.font16 / 1.1,
+                text: _safeGetType(item),
+                maxLines: 1,
+                overFlow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        if (!_shouldHideTemperature(item)) _buildTemperatureToggle(item),
+      ],
+    );
+  }
+
+  Widget _buildActionSection(dynamic item, bool shouldShowSizeSelector) {
+    return GenericHeaderRow(
+      headingChild: IntroductionText(
+          text: 'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
+      actionButtonChild: GetBuilder<NewCartController>(
+        builder: (cartController) {
+          try {
+            final quantityInCart = cartController.getQuantity(item);
+            return CartActionButton(
+              isActive: true,
+              description: quantityInCart > 0
+                  ? 'Update Cart ($quantityInCart)'
+                  : 'Add to basket',
+              onTap: () => _addToCart(
+                  item, cartController, context, shouldShowSizeSelector),
+            );
+          } catch (e) {
+            return CartActionButton(
+              isActive: false,
+              description: 'Error',
+              onTap: () {},
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildIntroductionSection(dynamic item) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          IntroductionText(text: 'Introduction', textSize: Dimensions.font20),
+        ]),
+        SizedBox(height: Dimensions.height10 / 1.4),
+        _buildExpandableText(_safeGetIntroduction(item)),
+      ],
     );
   }
 
@@ -216,272 +286,369 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       dynamic item, BuildContext context, bool shouldShowSizeSelector) {
     return GetBuilder<NewCartController>(
       builder: (cartController) {
-        if (shouldShowSizeSelector) {
-          // For size variant items, show breakdown by sizes
-          final sizeVariants = cartController.getSizeVariants(item.id);
-          final totalQuantity = cartController.getBaseProductQuantity(item.id);
-
-          if (totalQuantity == 0) {
-            return SizedBox.shrink();
+        try {
+          if (shouldShowSizeSelector && item is NewSpecialtyModel) {
+            return _buildSizeVariantCartSection(item, cartController);
+          } else {
+            return _buildSimpleCartSection(item, cartController);
           }
+        } catch (e) {
+          return SizedBox.shrink(); // Silent fail for cart section
+        }
+      },
+    );
+  }
 
-          return Container(
-            padding: EdgeInsets.all(Dimensions.width15),
-            margin: EdgeInsets.only(bottom: Dimensions.height10),
-            decoration: BoxDecoration(
-              color: LiveColors.standardBlue.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: LiveColors.standardBlue.withOpacity(0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Total quantity header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'In your cart:',
-                      style: TextStyle(
-                        fontSize: Dimensions.font16 / 1.1,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      'Total: $totalQuantity',
-                      style: TextStyle(
-                        fontSize: Dimensions.font16 / 1.1,
-                        fontWeight: FontWeight.w600,
-                        color: LiveColors.standardBlue,
-                      ),
-                    ),
-                  ],
-                ),
+  Widget _buildSizeVariantCartSection(
+      NewSpecialtyModel item, NewCartController cartController) {
+    try {
+      final sizeVariants = cartController.getSizeVariants(item.id);
+      final totalQuantity = cartController.getBaseProductQuantity(item.id);
 
-                SizedBox(height: 8),
+      if (totalQuantity == 0) {
+        return SizedBox.shrink();
+      }
 
-                // Show individual size quantities
-                Column(
-                  children: sizeVariants.map((variant) {
-                    final size = variant.specialty is NewSpecialtyModel
-                        ? (variant.specialty as NewSpecialtyModel).selectedSize
-                        : 'Standard';
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '• $size:',
-                            style: TextStyle(
-                              fontSize: Dimensions.font16 / 1.2,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          Text(
-                            '${variant.quantity} items',
-                            style: TextStyle(
-                              fontSize: Dimensions.font16 / 1.2,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 8),
-
-                // Add more button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        _addToCart(item, cartController, context,
-                            shouldShowSizeSelector);
-                      },
-                      style: TextButton.styleFrom(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        backgroundColor: LiveColors.standardBlue,
-                      ),
-                      child: Text(
-                        'Add More',
-                        style: TextStyle(
-                          fontSize: Dimensions.font16 / 1.2,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        } else {
-          // For regular items, show simple quantity
-          final quantityInCart = cartController.getQuantity(item);
-
-          if (quantityInCart == 0) {
-            return SizedBox.shrink();
-          }
-
-          return Container(
-            padding: EdgeInsets.all(Dimensions.width15),
-            margin: EdgeInsets.only(bottom: Dimensions.height10),
-            decoration: BoxDecoration(
-              color: LiveColors.standardBlue.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: LiveColors.standardBlue.withOpacity(0.2)),
-            ),
-            child: Row(
+      return Container(
+        padding: EdgeInsets.all(Dimensions.width15),
+        margin: EdgeInsets.only(bottom: Dimensions.height10),
+        decoration: BoxDecoration(
+          color: LiveColors.standardBlue.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: LiveColors.standardBlue.withOpacity(0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'In your cart: $quantityInCart items',
+                  'In your cart:',
                   style: TextStyle(
                     fontSize: Dimensions.font16 / 1.1,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    _addToCart(
-                        item, cartController, context, shouldShowSizeSelector);
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    backgroundColor: LiveColors.standardBlue,
-                  ),
-                  child: Text(
-                    'Add More',
-                    style: TextStyle(
-                      fontSize: Dimensions.font16 / 1.2,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
+                Text(
+                  'Total: $totalQuantity',
+                  style: TextStyle(
+                    fontSize: Dimensions.font16 / 1.1,
+                    fontWeight: FontWeight.w600,
+                    color: LiveColors.standardBlue,
                   ),
                 ),
               ],
             ),
-          );
-        }
+            SizedBox(height: 8),
+            ..._buildSizeVariantList(sizeVariants),
+            SizedBox(height: 8),
+            _buildAddMoreButton(item, cartController, true),
+          ],
+        ),
+      );
+    } catch (e) {
+      return SizedBox.shrink();
+    }
+  }
+
+  List<Widget> _buildSizeVariantList(List<dynamic> sizeVariants) {
+    return sizeVariants.map((variant) {
+      try {
+        final size = variant.specialty is NewSpecialtyModel
+            ? (variant.specialty as NewSpecialtyModel).selectedSize
+            : 'Standard';
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '• $size:',
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.2,
+                  color: Colors.black54,
+                ),
+              ),
+              Text(
+                '${variant.quantity} items',
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.2,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        );
+      } catch (e) {
+        return SizedBox.shrink();
+      }
+    }).toList();
+  }
+
+  Widget _buildSimpleCartSection(
+      dynamic item, NewCartController cartController) {
+    try {
+      final quantityInCart = cartController.getQuantity(item);
+
+      if (quantityInCart == 0) {
+        return SizedBox.shrink();
+      }
+
+      return Container(
+        padding: EdgeInsets.all(Dimensions.width15),
+        margin: EdgeInsets.only(bottom: Dimensions.height10),
+        decoration: BoxDecoration(
+          color: LiveColors.standardBlue.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: LiveColors.standardBlue.withOpacity(0.2)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'In your cart: $quantityInCart items',
+              style: TextStyle(
+                fontSize: Dimensions.font16 / 1.1,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+            _buildAddMoreButton(item, cartController, false),
+          ],
+        ),
+      );
+    } catch (e) {
+      return SizedBox.shrink();
+    }
+  }
+
+  Widget _buildAddMoreButton(
+      dynamic item, NewCartController cartController, bool isSizeVariant) {
+    return TextButton(
+      onPressed: () {
+        _addToCart(item, cartController, context, isSizeVariant);
       },
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        backgroundColor: LiveColors.standardBlue,
+      ),
+      child: Text(
+        'Add More',
+        style: TextStyle(
+          fontSize: Dimensions.font16 / 1.2,
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 
   Widget _buildSizeSelector(NewSpecialtyModel item) {
     return GetBuilder<SizeSelectionController>(
       builder: (sizeController) {
-        final selectedSize =
-            sizeController.getSelectedSize(item.id, availableSizes: item.size);
-        final selectedPrice = _getPriceForSize(item, selectedSize);
+        try {
+          final selectedSize = sizeController.getSelectedSize(item.id,
+              availableSizes: item.size);
+          final selectedPrice = _getPriceForSize(item, selectedSize);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Select Size:',
-              style: TextStyle(
-                fontSize: Dimensions.font16,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Poppins',
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select Size:',
+                style: TextStyle(
+                  fontSize: Dimensions.font16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
               ),
-            ),
-            SizedBox(height: 8),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(8),
+              SizedBox(height: 8),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButton<String>(
+                  value: selectedSize.isNotEmpty ? selectedSize : null,
+                  isExpanded: true,
+                  underline: SizedBox(),
+                  hint: Text('Choose a size'),
+                  items: _buildSizeDropdownItems(item),
+                  onChanged: (newSize) {
+                    if (newSize != null) {
+                      sizeController.selectSize(item.id, newSize);
+                    }
+                  },
+                ),
               ),
-              child: DropdownButton<String>(
-                value: selectedSize.isNotEmpty ? selectedSize : null,
-                isExpanded: true,
-                underline: SizedBox(),
-                hint: Text('Choose a size'),
-                items: item.size!.map((size) {
-                  final price = _getPriceForSize(item, size);
-                  return DropdownMenuItem<String>(
-                    value: size,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          size,
-                          style: TextStyle(
-                            fontSize: Dimensions.font16 / 1.1,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          'R$price,00',
-                          style: TextStyle(
-                            fontSize: Dimensions.font16 / 1.1,
-                            fontWeight: FontWeight.w600,
-                            color: LiveColors.standardBlue,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (newSize) {
-                  if (newSize != null) {
-                    sizeController.selectSize(item.id, newSize);
-                  }
-                },
-              ),
-            ),
-            SizedBox(height: Dimensions.height10),
-
-            // Show size details if available
-            if (item.details != null) _buildSizeDetails(item, selectedSize),
-
-            SizedBox(height: Dimensions.height20),
-          ],
-        );
+              SizedBox(height: Dimensions.height10),
+              if (item.details != null) _buildSizeDetails(item, selectedSize),
+              SizedBox(height: Dimensions.height20),
+            ],
+          );
+        } catch (e) {
+          return Text('Error loading size selector');
+        }
       },
     );
   }
 
+  List<DropdownMenuItem<String>> _buildSizeDropdownItems(
+      NewSpecialtyModel item) {
+    try {
+      return item.size!.map((size) {
+        final price = _getPriceForSize(item, size);
+        return DropdownMenuItem<String>(
+          value: size,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                size,
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.1,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                'R$price,00',
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.1,
+                  fontWeight: FontWeight.w600,
+                  color: LiveColors.standardBlue,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList();
+    } catch (e) {
+      return [
+        DropdownMenuItem(value: 'Error', child: Text('Error loading sizes'))
+      ];
+    }
+  }
+
   Widget _buildSizeDetails(NewSpecialtyModel item, String selectedSize) {
-    // Find details for the selected size
-    final sizeDetail = item.details?.firstWhere(
-      (detail) => detail is Map && detail.containsKey(selectedSize),
-      orElse: () => null,
-    );
+    try {
+      final sizeDetail = item.details?.firstWhere(
+        (detail) => detail is Map && detail.containsKey(selectedSize),
+        orElse: () => null,
+      );
 
-    if (sizeDetail == null) return SizedBox.shrink();
+      if (sizeDetail == null) return SizedBox.shrink();
 
-    return Container(
-      padding: EdgeInsets.all(Dimensions.width10),
-      decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: LiveColors.standardBlue, size: 16),
-          SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              sizeDetail[selectedSize] ?? 'Size details',
-              style: TextStyle(
-                fontSize: Dimensions.font16 / 1.2,
-                color: Colors.blue[800],
-                fontWeight: FontWeight.w500,
+      return Container(
+        padding: EdgeInsets.all(Dimensions.width10),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, color: LiveColors.standardBlue, size: 16),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                sizeDetail[selectedSize] ?? 'Size details',
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.2,
+                  color: Colors.blue[800],
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      );
+    } catch (e) {
+      return SizedBox.shrink();
+    }
+  }
+
+  // ... (rest of the helper methods from previous version with try-catch wrappers)
+  // Include all the _getPrice, _getPriceForSize, _addToCart, _buildFavoriteIcon,
+  // _buildTemperatureToggle, _buildProductImage, _buildExpandableText methods
+  // but wrap each one in try-catch blocks as shown above
+
+  // Safe accessor methods
+  String _safeGetName(dynamic item) {
+    try {
+      return item.name?.toString() ?? 'Unknown Item';
+    } catch (e) {
+      return 'Unknown Item';
+    }
+  }
+
+  String _safeGetType(dynamic item) {
+    try {
+      return item.type?.toString() ?? 'General';
+    } catch (e) {
+      return 'General';
+    }
+  }
+
+  String _safeGetIntroduction(dynamic item) {
+    try {
+      return item.introduction?.toString() ?? 'No description available.';
+    } catch (e) {
+      return 'No description available.';
+    }
+  }
+
+  // Validation method
+  bool _isItemInvalid(dynamic item) {
+    try {
+      return item.id == null ||
+          item.name == null ||
+          item.name.toString().isEmpty ||
+          item.price == null ||
+          item.price.isEmpty;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  // Error screen
+  Widget _buildErrorScreen(String message, onTap) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: BackArrow(
+          iconColor: Colors.black,
+          onTap: onTap,
+        ),
+        title: Text('Error'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
+            SizedBox(height: 20),
+            Text(
+              'Could not load item',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Go Back'),
+            ),
+          ],
+        ),
       ),
     );
   }

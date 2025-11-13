@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class NewSpecialty {
   late List<NewSpecialtyModel> _specialties;
   List<NewSpecialtyModel> get specialties => _specialties;
@@ -9,9 +11,24 @@ class NewSpecialty {
   NewSpecialty.fromJson(Map<String, dynamic> json) {
     if (json['Specialties'] != null) {
       _specialties = <NewSpecialtyModel>[];
-      json['Specialties'].forEach((v) {
-        _specialties.add(NewSpecialtyModel.fromJson(v));
-      });
+      try {
+        for (var v in json['Specialties']) {
+          if (v is Map<String, dynamic>) {
+            _specialties.add(NewSpecialtyModel.fromJson(v));
+          } else {
+            if (kDebugMode) {
+              print('Warning: Skipping invalid specialty data: $v');
+            }
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error parsing specialties: $e');
+        }
+        _specialties = [];
+      }
+    } else {
+      _specialties = [];
     }
   }
 }
@@ -31,75 +48,197 @@ class NewSpecialtyModel {
   bool? isSelected = false;
 
   // New fields for size selection
-  int? originalId; // Reference to original product ID
-  String? selectedSize; // Currently selected size
-  bool? isSizeVariant; // Whether this is a size variant
+  int? originalId;
+  String? selectedSize;
+  bool? isSizeVariant;
 
-  NewSpecialtyModel(
-      {this.id,
-      this.isSelected,
-      this.name,
-      this.introduction,
-      this.price,
-      this.size,
-      this.img,
-      this.details,
-      this.type,
-      this.material,
-      this.provider,
-      this.time,
-      this.selectedSize,
-      this.originalId,
-      this.isSizeVariant = false});
+  NewSpecialtyModel({
+    this.id,
+    this.isSelected,
+    this.name,
+    this.introduction,
+    this.price,
+    this.size,
+    this.img,
+    this.details,
+    this.type,
+    this.material,
+    this.provider,
+    this.time,
+    this.selectedSize,
+    this.originalId,
+    this.isSizeVariant = false,
+  });
 
-  //  Helper to get display name with size
+  // Helper to get display name with size
   String get displayName {
-    if (isSizeVariant == true &&
-        selectedSize != null &&
-        selectedSize!.isNotEmpty) {
-      return '$name ($selectedSize)';
+    try {
+      if (isSizeVariant == true &&
+          selectedSize != null &&
+          selectedSize!.isNotEmpty) {
+        return '$name ($selectedSize)';
+      }
+      return name ?? 'Unnamed Item';
+    } catch (e) {
+      return 'Unknown Item';
     }
-    return name ?? '';
   }
 
-  //  Helper to check if this is the same base product
+  // Helper to check if this is the same base product
   bool isSameBaseProduct(NewSpecialtyModel other) {
-    if (isSizeVariant == true && other.isSizeVariant == true) {
-      return originalId == other.originalId;
+    try {
+      if (isSizeVariant == true && other.isSizeVariant == true) {
+        return originalId == other.originalId;
+      }
+      return id == other.id;
+    } catch (e) {
+      return false;
     }
-    return id == other.id;
   }
 
   NewSpecialtyModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    introduction = json['introduction'];
+    try {
+      // ID with fallback
+      id = _safeParseInt(json['id']) ?? _generateFallbackId(json);
 
-    if (json['price'] is List) {
-      price = (json['price'] as List).cast<int>();
-    } else if (json['price'] is int) {
-      price = [json['price']];
-    } else {
-      price = [];
+      // Name with fallback
+      name = json['name']?.toString() ?? 'Unknown Item';
+
+      // Introduction with fallback
+      introduction =
+          json['introduction']?.toString() ?? 'No description available';
+
+      // Price handling with comprehensive safety
+      price = _safeParsePriceList(json['price']);
+
+      // Size handling with safety
+      size = _safeParseSizeList(json['size']);
+
+      // Image with fallback
+      img = json['img']?.toString() ?? 'assets/image/placeholder.png';
+
+      // Details with safety
+      details = json['details'] is List ? json['details'] : [];
+
+      // Type with fallback
+      type = json['type']?.toString() ?? 'General';
+
+      // Material with fallback
+      material = json['material']?.toString() ?? 'Standard';
+
+      // Provider with fallback
+      provider = json['provider']?.toString() ?? 'Unknown Provider';
+
+      // Time with fallback
+      time = json['time']?.toString() ?? '';
+
+      // Size variant fields
+      originalId = _safeParseInt(json['originalId']) ?? id;
+      selectedSize = json['selectedSize']?.toString() ?? '';
+      isSizeVariant = json['isSizeVariant'] ?? false;
+
+      // Validation logging in debug mode
+      if (kDebugMode) {
+        _validateAndLog();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating NewSpecialtyModel: $e');
+        print('Problematic JSON: $json');
+      }
+      // Set safe defaults
+      _setSafeDefaults();
     }
+  }
 
-    if (json['size'] is List) {
-      size = (json['size'] as List).cast<String>();
-    } else if (json['size'] is String) {
-      size = [json['size']];
-    } else {
-      size = [];
+  // Safe price list parsing
+  List<int> _safeParsePriceList(dynamic priceData) {
+    try {
+      if (priceData is List) {
+        final List<int> result = [];
+        for (var item in priceData) {
+          final parsed = _safeParseInt(item);
+          if (parsed != null) {
+            result.add(parsed);
+          }
+        }
+        return result.isNotEmpty ? result : [0];
+      } else if (priceData is int) {
+        return [priceData];
+      } else if (priceData is String) {
+        final parsed = int.tryParse(priceData);
+        return [parsed ?? 0];
+      } else if (priceData is double) {
+        return [priceData.toInt()];
+      }
+      return [0];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error parsing price: $e');
+      }
+      return [0];
     }
+  }
 
-    img = json['img'];
-    details = json['details'] is List ? json['details'] : [];
-    type = json['type'];
-    material = json['material'];
-    provider = json['provider'];
-    time = json['time'];
-    originalId = json['originalId'];
-    selectedSize = json['selectedSize'];
-    isSizeVariant = json['isSizeVariant'] ?? false;
+  // Safe size list parsing
+  List<String> _safeParseSizeList(dynamic sizeData) {
+    try {
+      if (sizeData is List) {
+        return sizeData.map((e) => e.toString()).toList();
+      } else if (sizeData is String) {
+        return [sizeData];
+      }
+      return ['Standard'];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error parsing size: $e');
+      }
+      return ['Standard'];
+    }
+  }
+
+  // Safe integer parsing
+  int? _safeParseInt(dynamic value) {
+    try {
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value);
+      if (value is double) return value.toInt();
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Generate fallback ID
+  int _generateFallbackId(Map<String, dynamic> json) {
+    return json.hashCode.abs() % 1000000;
+  }
+
+  // Validation and logging
+  void _validateAndLog() {
+    if (price == null || price!.isEmpty) {
+      print('Warning: Item $id ($name) has no valid price');
+    }
+    if (size == null || size!.isEmpty) {
+      print('Warning: Item $id ($name) has no valid size');
+    }
+    if (img == null || img!.isEmpty) {
+      print('Warning: Item $id ($name) has no image');
+    }
+  }
+
+  // Set safe defaults in case of error
+  void _setSafeDefaults() {
+    id = id ?? _generateFallbackId({});
+    name = name ?? 'Unknown Item';
+    price = price ?? [0];
+    size = size ?? ['Standard'];
+    img = img ?? 'assets/image/placeholder.png';
+    introduction = introduction ?? 'No description available';
+    type = type ?? 'General';
+    material = material ?? 'Standard';
+    provider = provider ?? 'Unknown Provider';
+    details = details ?? [];
   }
 
   Map<String, dynamic> toJson() {
@@ -123,56 +262,125 @@ class NewSpecialtyModel {
 
   // Helper method to get the actual price (respects size selection)
   int get actualPrice {
-    if (selectedSize != null && size != null && price != null) {
-      final sizeIndex = size!.indexOf(selectedSize!);
-      if (sizeIndex != -1 && sizeIndex < price!.length) {
-        return price![sizeIndex];
+    try {
+      if (selectedSize != null && size != null && price != null) {
+        final sizeIndex = size!.indexOf(selectedSize!);
+        if (sizeIndex != -1 && sizeIndex < price!.length) {
+          return price![sizeIndex];
+        }
       }
+      return firstPrice;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting actualPrice: $e');
+      }
+      return firstPrice;
     }
-    return firstPrice;
   }
 
   // Helper method to get first price
-  int get firstPrice => price != null && price!.isNotEmpty ? price![0] : 0;
-
-//  Helper to create a favorite-compatible variant
-  NewSpecialtyModel createFavoriteVariant(String selectedSize) {
-    final priceForSize = _getPriceForSize(this, selectedSize);
-
-    return NewSpecialtyModel(
-      id: _generateSizeVariantId(id, selectedSize),
-      name: name,
-      introduction: introduction,
-      price: [priceForSize],
-      size: [selectedSize],
-      img: img,
-      details: details,
-      type: type,
-      material: material,
-      provider: provider,
-      time: time,
-      originalId: id,
-      selectedSize: selectedSize,
-      isSizeVariant: true,
-    );
+  int get firstPrice {
+    try {
+      return price != null && price!.isNotEmpty ? price![0] : 0;
+    } catch (e) {
+      return 0;
+    }
   }
 
-// Helper method to get price for size
+  // Helper to create a favorite-compatible variant
+  NewSpecialtyModel createFavoriteVariant(String selectedSize) {
+    try {
+      final priceForSize = _getPriceForSize(this, selectedSize);
+
+      return NewSpecialtyModel(
+        id: _generateSizeVariantId(id, selectedSize),
+        name: name,
+        introduction: introduction,
+        price: [priceForSize],
+        size: [selectedSize],
+        img: img,
+        details: details,
+        type: type,
+        material: material,
+        provider: provider,
+        time: time,
+        originalId: id,
+        selectedSize: selectedSize,
+        isSizeVariant: true,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating favorite variant: $e');
+      }
+      // Return a safe fallback
+      return NewSpecialtyModel(
+        id: _generateSizeVariantId(id, selectedSize),
+        name: name ?? 'Unknown',
+        price: [firstPrice],
+        size: [selectedSize],
+        img: img ?? 'assets/image/placeholder.png',
+        originalId: id,
+        selectedSize: selectedSize,
+        isSizeVariant: true,
+      );
+    }
+  }
+
+  // Helper method to get price for size
   static int _getPriceForSize(NewSpecialtyModel item, String size) {
-    if (item.size == null || item.price == null) {
+    try {
+      if (item.size == null || item.price == null) {
+        return item.firstPrice;
+      }
+
+      final sizeIndex = item.size!.indexOf(size);
+      if (sizeIndex != -1 && sizeIndex < item.price!.length) {
+        return item.price![sizeIndex];
+      }
+
+      return item.firstPrice;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting price for size: $e');
+      }
       return item.firstPrice;
     }
-
-    final sizeIndex = item.size!.indexOf(size);
-    if (sizeIndex != -1 && sizeIndex < item.price!.length) {
-      return item.price![sizeIndex];
-    }
-
-    return item.firstPrice;
   }
 
   static int _generateSizeVariantId(int? originalId, String size) {
-    if (originalId == null) return size.hashCode.abs();
-    return (originalId * 1000) + (size.hashCode % 1000).abs();
+    try {
+      if (originalId == null) return size.hashCode.abs();
+      return (originalId * 1000) + (size.hashCode % 1000).abs();
+    } catch (e) {
+      return size.hashCode.abs();
+    }
+  }
+}
+
+// Debug helper class
+class ReleaseDebug {
+  static void logItem(String tag, dynamic item) {
+    try {
+      print('[$tag] Item Type: ${item.runtimeType}');
+      print('[$tag] ID: ${item.id}');
+      print('[$tag] Name: ${item.name}');
+      print('[$tag] Price: ${item.price}');
+      print('[$tag] Size: ${item.size}');
+      print('[$tag] Image: ${item.img}');
+      print('[$tag] Type: ${item.type}');
+      print('[$tag] Material: ${item.material}');
+      print('[$tag] Provider: ${item.provider}');
+
+      // Check for common issues
+      if (item.img == null || item.img.isEmpty) {
+        print('[$tag] ⚠️ WARNING: No image path');
+      }
+      if (item.price == null || item.price.isEmpty) {
+        print('[$tag] ⚠️ WARNING: No price data');
+      }
+    } catch (e) {
+      print('[$tag] ERROR logging item: $e');
+      print('[$tag] Item data: $item');
+    }
   }
 }

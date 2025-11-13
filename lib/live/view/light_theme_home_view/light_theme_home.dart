@@ -57,6 +57,12 @@ class _LightThemeHomeState extends State<LightThemeHome> {
       }
       return Scaffold(
         backgroundColor: Colors.white.withOpacity(0.985),
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.black,
+          automaticallyImplyLeading: false,
+          toolbarHeight: 0,
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [

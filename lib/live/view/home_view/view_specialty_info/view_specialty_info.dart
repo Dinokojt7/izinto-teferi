@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
+import 'package:izinto/controllers/favorite_controller.dart';
+import 'package:izinto/controllers/new_cart_controller.dart';
+import 'package:izinto/controllers/size_selection_controller.dart';
+import 'package:izinto/controllers/temperature_controller.dart';
+import 'package:izinto/live/view/home_view/category_view/view_widgets/add_to_basket.dart';
+import 'package:izinto/models/new_specialty_model.dart';
+import 'package:izinto/models/popular_specialty_model.dart';
+import 'package:izinto/models/recommended_specialty_model.dart';
+import 'package:izinto/utils/dimensions.dart';
+import 'package:izinto/widgets/texts/expandable_text.dart';
+import 'package:izinto/widgets/texts/small_text.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/foundation.dart';
-import '../../../../controllers/favorite_controller.dart';
-import '../../../../controllers/new_cart_controller.dart';
-import '../../../../controllers/size_selection_controller.dart';
-import '../../../../controllers/temperature_controller.dart';
-import '../../../../models/new_specialty_model.dart';
-import '../../../../models/popular_specialty_model.dart';
-import '../../../../models/recommended_specialty_model.dart';
-import '../../../../utils/dimensions.dart';
-import '../../../../widgets/texts/expandable_text.dart';
-import '../../../../widgets/texts/small_text.dart';
+
 import '../../../utilities/colors.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
@@ -22,7 +23,6 @@ import '../../../widgets/expandable_text_widget.dart';
 import '../../../widgets/generic_header_row.dart';
 import '../../../widgets/icons/back_arrow.dart';
 import '../../../widgets/text_widgets/introduction_text.dart';
-import '../view_widgets/size_selection_modal.dart';
 
 class ViewSpecialtyInfo extends StatefulWidget {
   final int? index;
@@ -45,31 +45,25 @@ class ViewSpecialtyInfo extends StatefulWidget {
 class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
   dynamic get item {
     try {
-      // Priority 1: Use directly passed item
       if (widget.item != null) {
         return widget.item;
       }
 
-      // Priority 2: Use index-based lookup (backward compatibility)
       if (widget.index != null &&
           widget.homeItemList != null &&
           widget.index! < widget.homeItemList!.length) {
         return widget.homeItemList![widget.index!];
       }
 
-      // Fallback: Handle error case
-      throw Exception('ViewSpecialtyInfo: Could not resolve item. '
-          'Either provide item directly or provide valid index and homeItemList.');
+      throw Exception('ViewSpecialtyInfo: Could not resolve item.');
     } catch (e) {
       if (kDebugMode) {
         print('Error resolving item: $e');
       }
-      // Return a safe fallback item
       return _createFallbackItem();
     }
   }
 
-  // Create a safe fallback item when data is invalid
   NewSpecialtyModel _createFallbackItem() {
     return NewSpecialtyModel(
       id: -1,
@@ -99,7 +93,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 
       Navigator.of(context).pop();
     } catch (e) {
-      Navigator.of(context).pop(); // Fallback pop
+      Navigator.of(context).pop();
     }
   }
 
@@ -115,15 +109,12 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug logging for release mode
     ReleaseDebug.logItem('ViewSpecialtyInfo', item);
 
-    // SAFETY CHECK: Validate item before rendering
     if (item == null) {
       return _buildErrorScreen('Item data is null', _onTap);
     }
 
-    // Additional safety check for critical properties
     if (_isItemInvalid(item)) {
       return _buildErrorScreen('Item data is incomplete or invalid', _onTap);
     }
@@ -137,7 +128,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white.withOpacity(0.98),
+        backgroundColor: Colors.white.withOpacity(0.97),
         body: GetBuilder<SizeSelectionController>(builder: (sizeController) {
           try {
             final shouldShowSizeSelector =
@@ -180,6 +171,13 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
             return _buildErrorScreen('Error building screen: $e', _onTap);
           }
         }),
+        bottomNavigationBar:
+            GetBuilder<SizeSelectionController>(builder: (sizeController) {
+          final shouldShowSizeSelector =
+              sizeController.shouldShowSizeSelector(item);
+
+          return _buildBottomCartSection(item, context, shouldShowSizeSelector);
+        }),
       ),
     );
   }
@@ -189,18 +187,16 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: Dimensions.height20),
           _buildHeaderSection(item),
           SizedBox(height: Dimensions.height20),
-
-          // Cart quantity display
-          _buildCartQuantitySection(item, context, shouldShowSizeSelector),
-
-          // Show size selector only for items that need it
-          if (shouldShowSizeSelector) _buildSizeSelector(item),
-
-          _buildActionSection(item, shouldShowSizeSelector),
+          Divider(color: Colors.grey.shade300, height: 1),
           SizedBox(height: Dimensions.height20),
-
+          if (shouldShowSizeSelector) _buildSizeSelector(item),
+          _buildPriceAndAddSection(item, shouldShowSizeSelector),
+          SizedBox(height: Dimensions.height20),
+          Divider(color: Colors.grey.shade300, height: 1),
+          SizedBox(height: Dimensions.height20),
           _buildIntroductionSection(item),
           SizedBox(height: Dimensions.height20),
         ],
@@ -229,43 +225,215 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
                 height: 1.5,
                 color: Colors.black,
                 size: Dimensions.font16 / 1.1,
-                text: _safeGetType(item),
+                text: _getDisplayType(item),
                 maxLines: 1,
                 overFlow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
-        if (!_shouldHideTemperature(item)) _buildTemperatureToggle(item),
+        if (_shouldShowTemperature(item)) _buildTemperatureToggle(item),
       ],
     );
   }
 
-  Widget _buildActionSection(dynamic item, bool shouldShowSizeSelector) {
-    return GenericHeaderRow(
-      headingChild: IntroductionText(
-          text: 'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
-      actionButtonChild: GetBuilder<NewCartController>(
-        builder: (cartController) {
-          try {
-            final quantityInCart = cartController.getQuantity(item);
-            return CartActionButton(
-              isActive: true,
-              description: quantityInCart > 0
-                  ? 'Update Cart ($quantityInCart)'
-                  : 'Add to basket',
-              onTap: () => _addToCart(
-                  item, cartController, context, shouldShowSizeSelector),
-            );
-          } catch (e) {
-            return CartActionButton(
-              isActive: false,
-              description: 'Error',
-              onTap: () {},
-            );
-          }
-        },
+  Widget _buildPriceAndAddSection(dynamic item, bool shouldShowSizeSelector) {
+    return GetBuilder<NewCartController>(
+      builder: (cartController) {
+        final totalQuantity =
+            shouldShowSizeSelector && item is NewSpecialtyModel
+                ? cartController.getBaseProductQuantity(item.id)
+                : cartController.getQuantity(item);
+
+        final displayPrice = _getDisplayPrice(item, shouldShowSizeSelector);
+        final totalPrice = displayPrice * totalQuantity;
+
+        return Container(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Price Section
+              IntroductionText(
+                  text:
+                      'R${_getDisplayPrice(item, shouldShowSizeSelector)},00*'),
+
+              // Unified Add to Cart / Quantity Controller
+              GestureDetector(
+                onTap: () {
+                  cartController.addItem(item, 1);
+                },
+                child: AddToBasket(
+                    specialtyList: widget.homeItemList,
+                    index: widget.index,
+                    viewContext: context),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildUnifiedCartButton(dynamic item, NewCartController cartController,
+      int quantity, bool shouldShowSizeSelector) {
+    // Always render the container with same dimensions to prevent layout shifts
+    return Container(
+      height: Dimensions.height30,
+      width: quantity > 0 ? 96 : 120, // Fixed widths to prevent layout shifts
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Dimensions.radius15),
+        color: Colors.black,
       ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Dimensions.radius15),
+          onTap: quantity == 0
+              ? () => _addToCart(
+                  item, cartController, context, shouldShowSizeSelector)
+              : null, // Disable tap when showing quantity controller
+          child: AnimatedSwitcher(
+            duration: Duration(milliseconds: 300),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return ScaleTransition(
+                scale: animation,
+                child: child,
+              );
+            },
+            child: quantity == 0
+                ? _buildAddToCartContent()
+                : _buildQuantityControllerContent(
+                    item, cartController, quantity, shouldShowSizeSelector),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddToCartContent() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: Dimensions.width10),
+        child: Text(
+          'Add to cart',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
+            fontSize: Dimensions.font16 / 1.1,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuantityControllerContent(
+    dynamic item,
+    NewCartController cartController,
+    int quantity,
+    bool shouldShowSizeSelector,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Remove Button
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _handleRemoveItem(
+                item, cartController, quantity, shouldShowSizeSelector),
+            child: Container(
+              height: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(Dimensions.radius15),
+                  bottomLeft: Radius.circular(Dimensions.radius15),
+                ),
+              ),
+              child: Icon(Icons.remove, color: Colors.white, size: 18),
+            ),
+          ),
+        ),
+
+        // Quantity Display
+        Container(
+          constraints: BoxConstraints(minWidth: 30),
+          child: Text(
+            quantity.toString(),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+              fontSize: Dimensions.font16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+
+        // Add Button
+        Expanded(
+          child: GestureDetector(
+            onTap: () => _addToCart(
+                item, cartController, context, shouldShowSizeSelector),
+            child: Container(
+              height: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(Dimensions.radius15),
+                  bottomRight: Radius.circular(Dimensions.radius15),
+                ),
+              ),
+              child: Icon(Icons.add, color: Colors.white, size: 18),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleRemoveItem(
+    dynamic item,
+    NewCartController cartController,
+    int quantity,
+    bool shouldShowSizeSelector,
+  ) {
+    if (quantity == 1) {
+      _showRemoveConfirmationDialog(
+          item, cartController, shouldShowSizeSelector);
+    } else {
+      _removeFromCart(item, cartController, shouldShowSizeSelector);
+    }
+  }
+
+  void _showRemoveConfirmationDialog(
+    dynamic item,
+    NewCartController cartController,
+    bool shouldShowSizeSelector,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Remove Item'),
+          content: Text(
+              'Are you sure you want to remove ${_safeGetName(item)} from your cart?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _removeFromCart(item, cartController, shouldShowSizeSelector);
+              },
+              child: Text(
+                'Remove',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -276,173 +444,88 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
         Row(children: [
           IntroductionText(text: 'Introduction', textSize: Dimensions.font20),
         ]),
-        SizedBox(height: Dimensions.height10 / 1.4),
+        SizedBox(height: Dimensions.height10),
         _buildExpandableText(_safeGetIntroduction(item)),
       ],
     );
   }
 
-  Widget _buildCartQuantitySection(
+  Widget _buildBottomCartSection(
       dynamic item, BuildContext context, bool shouldShowSizeSelector) {
     return GetBuilder<NewCartController>(
       builder: (cartController) {
         try {
-          if (shouldShowSizeSelector && item is NewSpecialtyModel) {
-            return _buildSizeVariantCartSection(item, cartController);
-          } else {
-            return _buildSimpleCartSection(item, cartController);
+          final totalQuantity =
+              shouldShowSizeSelector && item is NewSpecialtyModel
+                  ? cartController.getBaseProductQuantity(item.id)
+                  : cartController.getQuantity(item);
+
+          if (totalQuantity == 0) {
+            return SizedBox.shrink();
           }
-        } catch (e) {
-          return SizedBox.shrink(); // Silent fail for cart section
-        }
-      },
-    );
-  }
 
-  Widget _buildSizeVariantCartSection(
-      NewSpecialtyModel item, NewCartController cartController) {
-    try {
-      final sizeVariants = cartController.getSizeVariants(item.id);
-      final totalQuantity = cartController.getBaseProductQuantity(item.id);
+          final displayPrice = _getDisplayPrice(item, shouldShowSizeSelector);
+          final totalPrice = displayPrice * totalQuantity;
 
-      if (totalQuantity == 0) {
-        return SizedBox.shrink();
-      }
-
-      return Container(
-        padding: EdgeInsets.all(Dimensions.width15),
-        margin: EdgeInsets.only(bottom: Dimensions.height10),
-        decoration: BoxDecoration(
-          color: LiveColors.standardBlue.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: LiveColors.standardBlue.withOpacity(0.2)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+          return Container(
+            padding: EdgeInsets.all(Dimensions.width15),
+            margin: EdgeInsets.symmetric(
+                horizontal: Dimensions.width20, vertical: Dimensions.height10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(Dimensions.radius15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 0.7,
+                  offset: Offset(0, 1.7),
+                ),
+              ],
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'In your cart:',
-                  style: TextStyle(
-                    fontSize: Dimensions.font16 / 1.1,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
+                // Item Count
+                Row(
+                  children: [
+                    Text(
+                      'Items',
+                      style: TextStyle(
+                        fontSize: Dimensions.font16,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    SizedBox(width: Dimensions.width10),
+                    Text(
+                      '$totalQuantity ${totalQuantity == 1 ? 'item' : 'items'}',
+                      style: TextStyle(
+                        fontSize: Dimensions.font16 / 1.2,
+                        color: Colors.grey.shade600,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
                 ),
+
+                // Total Price
                 Text(
-                  'Total: $totalQuantity',
+                  'R$totalPrice,00',
                   style: TextStyle(
-                    fontSize: Dimensions.font16 / 1.1,
-                    fontWeight: FontWeight.w600,
-                    color: LiveColors.standardBlue,
+                    fontSize: Dimensions.font16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                    fontFamily: 'Poppins',
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 8),
-            ..._buildSizeVariantList(sizeVariants),
-            SizedBox(height: 8),
-            _buildAddMoreButton(item, cartController, true),
-          ],
-        ),
-      );
-    } catch (e) {
-      return SizedBox.shrink();
-    }
-  }
-
-  List<Widget> _buildSizeVariantList(List<dynamic> sizeVariants) {
-    return sizeVariants.map((variant) {
-      try {
-        final size = variant.specialty is NewSpecialtyModel
-            ? (variant.specialty as NewSpecialtyModel).selectedSize
-            : 'Standard';
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '• $size:',
-                style: TextStyle(
-                  fontSize: Dimensions.font16 / 1.2,
-                  color: Colors.black54,
-                ),
-              ),
-              Text(
-                '${variant.quantity} items',
-                style: TextStyle(
-                  fontSize: Dimensions.font16 / 1.2,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-        );
-      } catch (e) {
-        return SizedBox.shrink();
-      }
-    }).toList();
-  }
-
-  Widget _buildSimpleCartSection(
-      dynamic item, NewCartController cartController) {
-    try {
-      final quantityInCart = cartController.getQuantity(item);
-
-      if (quantityInCart == 0) {
-        return SizedBox.shrink();
-      }
-
-      return Container(
-        padding: EdgeInsets.all(Dimensions.width15),
-        margin: EdgeInsets.only(bottom: Dimensions.height10),
-        decoration: BoxDecoration(
-          color: LiveColors.standardBlue.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: LiveColors.standardBlue.withOpacity(0.2)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'In your cart: $quantityInCart items',
-              style: TextStyle(
-                fontSize: Dimensions.font16 / 1.1,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-            _buildAddMoreButton(item, cartController, false),
-          ],
-        ),
-      );
-    } catch (e) {
-      return SizedBox.shrink();
-    }
-  }
-
-  Widget _buildAddMoreButton(
-      dynamic item, NewCartController cartController, bool isSizeVariant) {
-    return TextButton(
-      onPressed: () {
-        _addToCart(item, cartController, context, isSizeVariant);
+          );
+        } catch (e) {
+          return SizedBox.shrink();
+        }
       },
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        backgroundColor: LiveColors.standardBlue,
-      ),
-      child: Text(
-        'Add More',
-        style: TextStyle(
-          fontSize: Dimensions.font16 / 1.2,
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
     );
   }
 
@@ -545,19 +628,20 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       return Container(
         padding: EdgeInsets.all(Dimensions.width10),
         decoration: BoxDecoration(
-          color: Colors.blue[50],
+          color: Colors.grey.shade50,
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade300),
         ),
         child: Row(
           children: [
-            Icon(Icons.info_outline, color: LiveColors.standardBlue, size: 16),
+            Icon(Icons.info_outline, color: Colors.grey.shade600, size: 16),
             SizedBox(width: 8),
             Expanded(
               child: Text(
                 sizeDetail[selectedSize] ?? 'Size details',
                 style: TextStyle(
                   fontSize: Dimensions.font16 / 1.2,
-                  color: Colors.blue[800],
+                  color: Colors.grey.shade800,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -569,11 +653,6 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       return SizedBox.shrink();
     }
   }
-
-  // ... (rest of the helper methods from previous version with try-catch wrappers)
-  // Include all the _getPrice, _getPriceForSize, _addToCart, _buildFavoriteIcon,
-  // _buildTemperatureToggle, _buildProductImage, _buildExpandableText methods
-  // but wrap each one in try-catch blocks as shown above
 
   // Safe accessor methods
   String _safeGetName(dynamic item) {
@@ -590,6 +669,17 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
     } catch (e) {
       return 'General';
     }
+  }
+
+  String _getDisplayType(dynamic item) {
+    final type = _safeGetType(item).toLowerCase();
+    final name = _safeGetName(item).toLowerCase();
+
+    if (name.contains('fitted carpet') || type.contains('fitted carpet')) {
+      return 'Per sqm';
+    }
+
+    return _safeGetType(item);
   }
 
   String _safeGetIntroduction(dynamic item) {
@@ -674,7 +764,6 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 
     final sizeIndex = item.size!.indexOf(size);
 
-    // Add bounds checking
     if (sizeIndex == -1) {
       return item.firstPrice;
     }
@@ -683,7 +772,6 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       return item.price![sizeIndex];
     }
 
-    // Fallback: If size index is out of price bounds, use first price
     return item.firstPrice;
   }
 
@@ -695,63 +783,46 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
           sizeController.getSelectedSize(item.id, availableSizes: item.size);
 
       if (selectedSize.isEmpty) {
-        // Show error if no size selected
         GenericSnackBar().showCustomSnackBar(
             null, context, 'Please select a size first', false);
         return;
       }
 
-      // Create unique variant and add to cart
-      _addSizeVariantToCart(item, selectedSize, cartController, context);
+      _addSizeVariantToCart(item, selectedSize, cartController);
     } else {
-      // Add single item directly
       cartController.addItem(item, 1);
-      _showSuccessSnackbar(context, '${item.name} added to cart!');
+    }
+  }
+
+  void _removeFromCart(dynamic item, NewCartController cartController,
+      bool shouldShowSizeSelector) {
+    if (shouldShowSizeSelector && item is NewSpecialtyModel) {
+      final sizeController = Get.find<SizeSelectionController>();
+      final selectedSize =
+          sizeController.getSelectedSize(item.id, availableSizes: item.size);
+
+      if (selectedSize.isEmpty) {
+        return;
+      }
+
+      _removeSizeVariantFromCart(item, selectedSize, cartController);
+    } else {
+      cartController.addItem(item, -1);
     }
   }
 
   void _addSizeVariantToCart(NewSpecialtyModel item, String selectedSize,
-      NewCartController cartController, BuildContext context) {
+      NewCartController cartController) {
     final selectedPrice = _getPriceForSize(item, selectedSize);
-
-    // Create unique cart item with size variant
     final cartItem = _createCartItemWithSize(item, selectedSize, selectedPrice);
-
-    // Add to cart
     cartController.addItem(cartItem, 1);
-
-    _showSuccessSnackbar(context, '$selectedSize ${item.name} added to cart!');
-
-    // Optional: Show confirmation dialog for first addition
-    _showSizeConfirmationDialog(item, selectedSize, selectedPrice, context);
   }
 
-  void _showSizeConfirmationDialog(NewSpecialtyModel item, String selectedSize,
-      int selectedPrice, BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Size Added'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('$selectedSize ${item.name}'),
-            SizedBox(height: 8),
-            Text('R$selectedPrice,00',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 16),
-            Text('You can add different sizes as separate items in your cart.'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
+  void _removeSizeVariantFromCart(NewSpecialtyModel item, String selectedSize,
+      NewCartController cartController) {
+    final selectedPrice = _getPriceForSize(item, selectedSize);
+    final cartItem = _createCartItemWithSize(item, selectedSize, selectedPrice);
+    cartController.addItem(cartItem, -1);
   }
 
   Widget _buildExpandableText(String text) {
@@ -788,20 +859,16 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
         bool isFavorite;
 
         if (shouldShowSizeSelector && item is NewSpecialtyModel) {
-          // For size variant items, check if the CURRENTLY SELECTED size is favorite
           final selectedSize = sizeController.getSelectedSize(item.id,
               availableSizes: item.size);
 
           if (selectedSize.isNotEmpty) {
-            // Check if this specific size variant is favorite
             isFavorite =
                 favoriteController.isSizeVariantFavorite(item.id, selectedSize);
           } else {
-            // No size selected, check if base product has any favorites
             isFavorite = favoriteController.isBaseProductFavorite(item.id);
           }
         } else {
-          // For regular items
           isFavorite = favoriteController.isFavorite(item);
         }
 
@@ -824,7 +891,6 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
     );
   }
 
-// Helper method to handle size variant favorites
   void _handleSizeVariantFavorite(
     NewSpecialtyModel item,
     FavoriteController favoriteController,
@@ -834,7 +900,6 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
         sizeController.getSelectedSize(item.id, availableSizes: item.size);
 
     if (selectedSize.isEmpty) {
-      // Show dialog to select size first
       Get.defaultDialog(
         title: 'Select Size',
         content: Text('Please select a size before adding to favorites.'),
@@ -844,12 +909,16 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       return;
     }
 
-    // Create size variant for favorite
     final favoriteVariant = item.createFavoriteVariant(selectedSize);
     favoriteController.toggleFavorite(favoriteVariant);
   }
 
   Widget _buildTemperatureToggle(dynamic item) {
+    // Disable temperature for car wash items
+    if (_isCarWashItem(item)) {
+      return SizedBox.shrink();
+    }
+
     return GetBuilder<TemperatureController>(
       builder: (tempController) {
         final isHeated = tempController.isItemHeated(item.id);
@@ -887,10 +956,27 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
     );
   }
 
-  bool _shouldHideTemperature(dynamic item) {
+  bool _shouldShowTemperature(dynamic item) {
+    // Disable temperature for car wash items
+    if (_isCarWashItem(item)) {
+      return false;
+    }
+
     final type = item.type?.toLowerCase() ?? '';
     final material = item.material?.toLowerCase() ?? '';
-    return type.contains('gas') || material.contains('deep cleaning');
+    return !(type.contains('gas') || material.contains('deep cleaning'));
+  }
+
+  bool _isCarWashItem(dynamic item) {
+    final type = item.type?.toLowerCase() ?? '';
+    final name = item.name?.toLowerCase() ?? '';
+    final material = item.material?.toLowerCase() ?? '';
+
+    return type.contains('car wash') ||
+        name.contains('car wash') ||
+        material.contains('car wash') ||
+        type.contains('vehicle') ||
+        name.contains('vehicle');
   }
 
   int _getPrice(dynamic item) {
@@ -900,14 +986,12 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
     return 0;
   }
 
-  // Create a copy of the item with selected size and price
   NewSpecialtyModel _createCartItemWithSize(
       NewSpecialtyModel item, String size, int price) {
-    // Generate unique ID by combining original ID with size
     final uniqueId = _generateSizeVariantId(item.id, size);
 
     return NewSpecialtyModel(
-      id: uniqueId, // ✅ Unique ID for cart
+      id: uniqueId,
       name: item.name,
       introduction: item.introduction,
       price: [price],
@@ -918,30 +1002,25 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       material: item.material,
       provider: item.provider,
       time: item.time,
-      originalId: item.id, // ✅ Store original product ID
-      selectedSize: size, // ✅ Store selected size
-      isSizeVariant: true, // ✅ Mark as size variant
+      originalId: item.id,
+      selectedSize: size,
+      isSizeVariant: true,
     );
   }
 
   int _generateSizeVariantId(int? originalId, String size) {
     if (originalId == null) return size.hashCode.abs();
-
-    // Create unique ID: originalId * 1000 + sizeHash
     final sizeHash = size.hashCode;
     final uniqueId = (originalId * 1000) + (sizeHash % 1000).abs();
-
-    // Ensure it's positive and within int range
-    return uniqueId.abs() % 1000000000; // Limit to 9 digits
+    return uniqueId.abs() % 1000000000;
   }
+}
 
-  void _showSuccessSnackbar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: Duration(seconds: 2),
-        backgroundColor: Colors.green,
-      ),
-    );
+// Helper class for release mode debugging
+class ReleaseDebug {
+  static void logItem(String tag, dynamic item) {
+    if (kDebugMode) {
+      print('$tag: ${item?.name} (ID: ${item?.id})');
+    }
   }
 }

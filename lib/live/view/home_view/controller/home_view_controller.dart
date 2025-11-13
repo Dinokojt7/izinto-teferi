@@ -12,6 +12,7 @@ import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../auth_view/phone_auth_view.dart';
 import '../../checkout_view/checkout_page.dart';
+import '../view_widgets/main_scaffold.dart';
 
 class HomeViewController extends ChangeNotifier {
   List carWashDetails = [
@@ -195,5 +196,25 @@ class HomeViewController extends ChangeNotifier {
         );
       },
     );
+  }
+
+  // Add this method to HomeViewController
+  Future<void> navigateToHomeAfterOrder(BuildContext context) async {
+    _isLoadingIndicator = true;
+    notifyListeners();
+
+    // Clear all routes and navigate to home
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => MainScaffold()),
+      (Route<dynamic> route) => false,
+    );
+
+    // Reset index after navigation
+    await Future.delayed(const Duration(milliseconds: 100), () {
+      _currentIndex = 0;
+      _selectedIndex = 0;
+      _isLoadingIndicator = false;
+      notifyListeners();
+    });
   }
 }

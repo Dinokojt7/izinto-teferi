@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:izinto/utils/dimensions.dart';
 
+import '../../widgets/texts/integers_and_doubles.dart';
 import '../utilities/colors.dart';
 
 class ExpandableTextWidget extends StatefulWidget {
@@ -36,9 +37,12 @@ class _ExpandableTextWidgetState extends State<ExpandableTextWidget> {
       text: TextSpan(
         text: widget.text,
         style: TextStyle(
+          fontFamily: 'Poppins',
+          letterSpacing: 0.10,
+          color: Colors.black,
           fontSize: Dimensions.font16 / 1.1,
           height: 1.5,
-          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w300,
         ),
       ),
       maxLines: widget.maxLines,
@@ -86,14 +90,12 @@ class _ExpandableTextWidgetState extends State<ExpandableTextWidget> {
             },
             child: Container(
               margin: EdgeInsets.only(top: 8),
-              child: Text(
-                _isExpanded ? 'Show less' : 'Show more',
-                style: TextStyle(
-                  fontSize: Dimensions.font16 / 1.1,
-                  color: LiveColors.standardBlue,
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
-                ),
+              child: IntegerText(
+                decoration: TextDecoration.underline,
+                text: _isExpanded ? 'Show less' : 'Show more',
+                color: LiveColors.standardBlue,
+                size: Dimensions.font16 / 1.2,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

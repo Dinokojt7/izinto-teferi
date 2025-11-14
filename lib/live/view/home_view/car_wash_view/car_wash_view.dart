@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_add_to_cart.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_bottom_sheet.dart';
+import 'package:izinto/live/widgets/text_widgets/introduction_text.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
@@ -196,7 +197,7 @@ class _CarWashViewState extends State<CarWashView> {
                                               index, () => setState(() {})),
                                           if (index < cartItems.length - 1)
                                             Divider(
-                                              color: Colors.grey.shade200,
+                                              color: Colors.grey.shade400,
                                               height: 1,
                                               thickness: 0.5,
                                             ),
@@ -319,7 +320,7 @@ class _CarWashViewState extends State<CarWashView> {
             height: 70,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: Colors.grey.shade400),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -386,8 +387,8 @@ class _CarWashViewState extends State<CarWashView> {
                   washType,
                   style: TextStyle(
                     fontSize: Dimensions.font16 / 1.2,
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w500,
+                    color: LiveColors.accent,
+                    fontWeight: FontWeight.w600,
                     fontFamily: 'Poppins',
                   ),
                 ),
@@ -1098,11 +1099,7 @@ class _CarWashViewState extends State<CarWashView> {
                 }),
               ),
               GenericHeaderRow(
-                headingChild: HeadingStyleText(
-                  text: 'R$price.00*',
-                  size: Dimensions.font16,
-                  weight: FontWeight.w600,
-                ),
+                headingChild: IntroductionText(text: 'R$price.00*'),
               ),
             ],
           ),
@@ -1154,7 +1151,9 @@ class _CarWashViewState extends State<CarWashView> {
                   child: Stack(
                     children: [
                       Container(
-                        width: Dimensions.screenWidth * 0.8,
+                        width: index > 2
+                            ? Dimensions.screenWidth * 0.95
+                            : Dimensions.screenWidth * 0.8,
                         height: Dimensions.screenHeight / 5.7,
                         margin: EdgeInsets.only(
                           top: Dimensions.height20 * 1.2,

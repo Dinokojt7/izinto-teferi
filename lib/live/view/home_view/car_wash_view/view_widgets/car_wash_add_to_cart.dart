@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:izinto/utils/dimensions.dart';
 import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
@@ -28,31 +29,55 @@ class CarWashAddToCart extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: onAddToCart,
-            child: AnimatedContainer(
-              duration: Duration(seconds: 1),
-              width: 35,
-              height: 35,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(Dimensions.radius15),
-                color: Colors.black,
-                border: Border.all(
+          // Enhanced Add to Cart Button
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                _triggerHapticFeedback(
+                    HapticType.medium); // Choose feedback type
+                onAddToCart();
+              },
+              borderRadius: BorderRadius.circular(Dimensions.radius15),
+              splashColor: LiveColors.accent.withOpacity(0.3),
+              highlightColor: LiveColors.accent.withOpacity(0.1),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(Dimensions.radius15),
                   color: Colors.black,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 3,
+                      spreadRadius: 1,
+                      offset: Offset(0, 1),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4,
+                      spreadRadius: 1,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: Colors.black,
+                    width: 2,
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  '+',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: Dimensions.font20,
-                      fontFamily: 'Poppins'),
+                child: Center(
+                  child: Icon(
+                    Icons.add_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                 ),
               ),
             ),
           ),
+
+          // Bucket with Item Count
           GestureDetector(
             onTap: hasSelection ? onClearSelection : null,
             child: Stack(
@@ -91,4 +116,32 @@ class CarWashAddToCart extends StatelessWidget {
       ),
     );
   }
+
+  void _triggerHapticFeedback([HapticType type = HapticType.light]) {
+    try {
+      switch (type) {
+        case HapticType.light:
+          HapticFeedback.lightImpact();
+          break;
+        case HapticType.medium:
+          HapticFeedback.mediumImpact();
+          break;
+        case HapticType.heavy:
+          HapticFeedback.heavyImpact();
+          break;
+        case HapticType.selection:
+          HapticFeedback.selectionClick();
+          break;
+      }
+    } catch (e) {
+      print('Haptic feedback not available: $e');
+    }
+  }
+}
+
+enum HapticType {
+  light,
+  medium,
+  heavy,
+  selection,
 }

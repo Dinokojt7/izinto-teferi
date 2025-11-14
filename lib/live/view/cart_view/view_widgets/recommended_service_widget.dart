@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
+import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/add_to_basket.dart';
 import 'package:provider/provider.dart';
 
@@ -222,34 +223,78 @@ class BasketButton extends StatelessWidget {
 }
 
 Widget _addToCart(specialtyList, index, viewContext) {
-  final cartActionsController =
-      Provider.of<CartActionsController>(viewContext, listen: false);
   return GetBuilder<NewCartController>(builder: (_cartController) {
-    var specialty = specialtyList![index!];
-    var _quantity = _cartController.getQuantity(specialty);
-    var _isInCart = _quantity > 0;
-    var _productName = specialty.name;
-    return AnimatedContainer(
-      duration: Duration(seconds: 1),
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Dimensions.radius15),
-        color: Colors.black,
-        border: Border.all(
-          color: Colors.black,
+    try {
+      // Safe access to specialty
+      if (specialtyList == null ||
+          index == null ||
+          index >= specialtyList.length) {
+        return _buildAddButton('+'); // Fallback
+      }
+
+      var specialty = specialtyList[index];
+      var _quantity = _cartController.getQuantity(specialty);
+      var _isInCart = _quantity > 0;
+
+      return AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(Dimensions.radius15),
+          color: Colors.black, // Visual feedback
+          border: Border.all(
+            color: Colors.black,
+          ),
+          boxShadow: _isInCart
+              ? [
+                  BoxShadow(
+                    color: LiveColors.accent,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  )
+                ]
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            _isInCart ? '${_quantity}' : '+',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: _isInCart ? Dimensions.font16 : Dimensions.font20,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      // Fallback button if anything goes wrong
+      return _buildAddButton('+');
+    }
+  });
+}
+
+// Helper method for fallback button
+Widget _buildAddButton(String text) {
+  return Container(
+    width: 28,
+    height: 28,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(Dimensions.radius15),
+      color: Colors.black,
+    ),
+    child: Center(
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: Dimensions.font20,
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w600,
         ),
       ),
-      child: _isInCart
-          ? null
-          : Text(
-              _isInCart ? '${_quantity}' : '+',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: Dimensions.font20,
-                  fontFamily: 'Poppins'),
-            ),
-    );
-  });
+    ),
+  );
 }

@@ -268,7 +268,7 @@ class CallCheckout extends StatelessWidget {
                 child: Container(
                   height: Dimensions.height45,
                   decoration: BoxDecoration(
-                    color: LiveColors.standardBlue.withOpacity(0.8),
+                    color: LiveColors.cartBlue,
                     borderRadius: BorderRadius.circular(Dimensions.radius15),
                   ),
                   child: TextButton(

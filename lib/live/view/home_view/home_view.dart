@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import '../../../controllers/cart_controller.dart';
 import '../../../models/user.dart';
 import '../../utilities/generic_system_navigation.dart';
-import '../../utilities/system_navigation_manager.dart';
 import '../address_view/controller/address_dropdown_controller.dart';
 import '../cart_view/cart_view_page.dart';
 import '../checkout_view/checkout_page.dart';
@@ -39,14 +38,11 @@ class _HomeViewState extends State<HomeView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Gracefully activate HomeView without collisions
-      SystemNavigationManager().setHomeViewActive(true);
-      SystemNavigationManager().setCurrentRoute('HomeView');
     });
   }
 
   @override
   void dispose() {
-    SystemNavigationManager().setHomeViewActive(false);
     super.dispose();
   }
 
@@ -55,9 +51,7 @@ class _HomeViewState extends State<HomeView> {
     final user = Provider.of<UserModel?>(context);
 
     // Single application point in build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      SystemNavigationManager().setCurrentRoute('HomeView');
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {});
 
     if (user != null) {
       return StreamBuilder<QuerySnapshot>(

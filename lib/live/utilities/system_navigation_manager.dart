@@ -37,13 +37,14 @@ class SystemNavigationManager {
     'OrderHistoryView',
     'CartViewPage',
     'FavoritesView',
-    'UserSettingsView'
+    'UserSettingsView',
+    'ViewSpecialtyInfo'
   ];
 
   // Routes that should use LIGHT theme (white bars, dark icons)
   final List<String> _lightThemeRoutes = [
-    'CashPaymentSuccessScreen'
-        'PhoneAuthView',
+    'CashPaymentSuccessScreen',
+    'PhoneAuthView',
     'ProfileView',
     'LegalDocumentScreen',
     'FrequentlyAskedQuestions',
@@ -52,19 +53,21 @@ class SystemNavigationManager {
     'ViewOrderScreen',
     'OrderSupportChat',
     'CheckoutPage',
+    'GuestAccess' // ADDED: Guest access should have white bars
   ];
 
   void setHomeViewActive(bool isActive) {
-    if (_isHomeViewActive == isActive) return; // Prevent unnecessary calls
+    if (_isHomeViewActive == isActive) return;
 
     _isHomeViewActive = isActive;
     if (isActive) {
       _safeApplyTheme(_applyHomeViewTheme);
     }
+    // Don't apply light theme when deactivating - let individual screens handle it
   }
 
   void setCurrentRoute(String routeName) {
-    if (_currentRoute == routeName) return; // Prevent duplicate calls
+    if (_currentRoute == routeName) return;
 
     _currentRoute = routeName;
     _applyRouteSpecificSettings();
@@ -74,7 +77,11 @@ class SystemNavigationManager {
     if (_isApplyingTheme) return;
 
     _isApplyingTheme = true;
-    themeApplier();
+    try {
+      themeApplier();
+    } catch (e) {
+      print('Error applying theme: $e');
+    }
     _isApplyingTheme = false;
   }
 
@@ -91,7 +98,14 @@ class SystemNavigationManager {
   }
 
   void _applyRouteSpecificSettings() {
-    // Check for light theme routes first (more specific)
+    // If HomeView is active, use home theme regardless of current route
+    // This prevents nested screens from overriding the theme
+    if (_isHomeViewActive) {
+      _safeApplyTheme(_applyHomeViewTheme);
+      return;
+    }
+
+    // Check for light theme routes first
     if (_lightThemeRoutes.any((route) => _currentRoute.contains(route))) {
       _safeApplyTheme(_applyLightTheme);
     }
@@ -99,13 +113,8 @@ class SystemNavigationManager {
     else if (_homeThemeRoutes.any((route) => _currentRoute.contains(route))) {
       _safeApplyTheme(_applyHomeViewTheme);
     }
-    // Default to home theme if HomeView is active
-    else if (_isHomeViewActive) {
-      _safeApplyTheme(_applyHomeViewTheme);
-    }
   }
 
-  // For explicit control when needed
   void applyHomeTheme() {
     _safeApplyTheme(_applyHomeViewTheme);
   }

@@ -167,7 +167,16 @@ class FirebaseAuthMethods {
     }
   }
 
-  //EMAIL VERIFICATION
+  Future<void> _loadProfileData(context) async {
+    try {
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getData();
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getAddresses();
+    } catch (e) {}
+  }
+
+//EMAIL VERIFICATION
   Future<dynamic> sendEmailVerification(BuildContext context) async {
     try {
       _auth.currentUser!.sendEmailVerification();
@@ -245,8 +254,10 @@ class FirebaseAuthMethods {
             termsAccepted: termsAccepted,
             termsAcceptedAt: DateTime.now(),
           );
+          await _loadProfileData(context);
           Get.offAll(() => ProfileView());
         } else {
+          await _loadProfileData(context);
           await _updateUserTermsAcceptance(user!.uid, termsAccepted);
           Get.offAll(() => HomeView());
         }

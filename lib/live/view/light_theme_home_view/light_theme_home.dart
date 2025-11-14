@@ -32,7 +32,7 @@ class _LightThemeHomeState extends State<LightThemeHome> {
     // Apply system chrome settings
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemNavigation().applyCustomSystemChromeSettings(
-          Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+          Colors.black, Brightness.light, Colors.black, Brightness.light);
     });
   }
 

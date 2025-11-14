@@ -312,8 +312,9 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
     String selectedSize,
   ) {
     return Container(
-      height: Dimensions.height30 * 1.2,
-      width: quantity > 0 ? 130 : 130,
+      height:
+          quantity > 0 ? Dimensions.height30 * 1.2 : Dimensions.height30 * 1.7,
+      width: quantity > 0 ? 130 : 140,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(Dimensions.radius15),
         color: Colors.black,

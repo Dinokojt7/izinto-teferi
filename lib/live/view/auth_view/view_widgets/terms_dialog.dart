@@ -28,7 +28,6 @@ class _TermsDialogState extends State<TermsDialog> {
         builder: (context, phoneAuthController, child) {
       void _handleTap() {
         if (!phoneAuthController.isTermsAccepted) {
-          // phoneAuthController.onShowTermsDialog();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:

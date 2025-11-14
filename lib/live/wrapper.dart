@@ -136,19 +136,6 @@ class _WrapperState extends State<Wrapper> {
   }
 
   @override
-  void didChangeDependencies() {
-    var navBarColor =
-        Provider.of<HomeViewController>(context).navigationBarColor;
-    SystemNavigation().applyCustomSystemChromeSettings(
-      navBarColor,
-      Brightness.light,
-      Colors.black.withOpacity(0.001),
-      Brightness.light,
-    );
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
 

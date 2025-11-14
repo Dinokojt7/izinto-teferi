@@ -32,7 +32,6 @@ class MainScaffold extends StatefulWidget {
   State<MainScaffold> createState() => _MainScaffoldState();
 }
 
-// main_scaffold.dart
 class _MainScaffoldState extends State<MainScaffold> {
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     GlobalKey<NavigatorState>(),
@@ -46,20 +45,35 @@ class _MainScaffoldState extends State<MainScaffold> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      SystemNavigationManager().setCurrentRoute('MainScaffold');
+      // Explicitly set black bars for MainScaffold
+      SystemNavigation().applyCustomSystemChromeSettings(
+        Colors.black,
+        Brightness.light,
+        Colors.black,
+        Brightness.light,
+      );
+      SystemNavigationManager().setHomeViewActive(true);
     });
   }
 
-  Widget _buildNavigator(BuildContext context, GlobalKey<NavigatorState> key,
-      Widget child, String routeName) {
+  @override
+  void dispose() {
+    SystemNavigationManager().setHomeViewActive(false);
+    super.dispose();
+  }
+
+  // FIXED: Keep the simplified navigator but ensure theme is maintained
+  Widget _buildNavigator(GlobalKey<NavigatorState> key, Widget child) {
     return Navigator(
       key: key,
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
           builder: (context) {
-            // Apply theme when nested screen builds
+            // Apply home theme when nested screen builds, but only if we're still in MainScaffold context
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              SystemNavigationManager().setCurrentRoute(routeName);
+              if (mounted) {
+                SystemNavigationManager().setHomeViewActive(true);
+              }
             });
             return child;
           },
@@ -68,27 +82,21 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 
+  // Rest of your MainScaffold code remains the same...
   List<Widget> _pages(BuildContext context, bool hasUser) {
     if (hasUser) {
       return [
-        _buildNavigator(
-            context, _navigatorKeys[0], LightThemeHome(), 'LightThemeHome'),
-        _buildNavigator(
-            context, _navigatorKeys[1], OrderHistoryView(), 'OrderHistoryView'),
-        _buildNavigator(
-            context, _navigatorKeys[2], CartViewPage(), 'CartViewPage'),
-        _buildNavigator(
-            context, _navigatorKeys[3], FavoritesView(), 'FavoritesView'),
-        _buildNavigator(
-            context, _navigatorKeys[4], UserSettingsView(), 'UserSettingsView'),
+        _buildNavigator(_navigatorKeys[0], LightThemeHome()),
+        _buildNavigator(_navigatorKeys[1], OrderHistoryView()),
+        _buildNavigator(_navigatorKeys[2], CartViewPage()),
+        _buildNavigator(_navigatorKeys[3], FavoritesView()),
+        _buildNavigator(_navigatorKeys[4], UserSettingsView()),
       ];
     } else {
       return [
-        _buildNavigator(
-            context, _navigatorKeys[0], LightThemeHome(), 'LightThemeHome'),
+        _buildNavigator(_navigatorKeys[0], LightThemeHome()),
         OrderHistoryView(),
-        _buildNavigator(
-            context, _navigatorKeys[2], CartViewPage(), 'CartViewPage'),
+        _buildNavigator(_navigatorKeys[2], CartViewPage()),
         FavoritesView(),
         UserSettingsView(),
       ];
@@ -99,14 +107,26 @@ class _MainScaffoldState extends State<MainScaffold> {
     final homeController =
         Provider.of<HomeViewController>(listen: false, context);
     homeController.onTapNav(index);
+
+    // Apply home theme when switching tabs
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+        Colors.black,
+        Brightness.light,
+        Colors.black,
+        Brightness.light,
+      );
+      SystemNavigationManager().setHomeViewActive(true);
+    });
   }
+
+// Rest of your existing c
 
   void _handlePopInvoked(bool didPop) async {
     if (!didPop) {
       final homeController =
           Provider.of<HomeViewController>(listen: false, context);
 
-      // Handle the async maybePop operation
       final bool didPopRoute = await _navigatorKeys[homeController.currentIndex]
           .currentState!
           .maybePop();
@@ -114,11 +134,12 @@ class _MainScaffoldState extends State<MainScaffold> {
       final bool isFirstRouteInCurrentTab = !didPopRoute;
 
       if (isFirstRouteInCurrentTab) {
-        // If there's no route to pop, let the system handle back button (maybe exit the app)
-        // The system will handle the back button automatically
+        // If there's no route to pop, let the system handle back button
       } else {
-        SystemNavigation().applyCustomSystemChromeSettings(
-            Colors.black, Brightness.light, Colors.black, Brightness.light);
+        // When popping within a tab, ensure we maintain home theme
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          SystemNavigationManager().setHomeViewActive(true);
+        });
       }
     }
   }
@@ -127,9 +148,10 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel?>(context);
     final _hasUser = user != null;
+
     return Consumer<HomeViewController>(builder: (context, _controller, child) {
       return PopScope(
-        canPop: false, // We handle popping manually
+        canPop: false,
         onPopInvoked: _handlePopInvoked,
         child: Stack(
           children: [

@@ -59,29 +59,81 @@ class OpeningHours extends StatelessWidget {
                       children: [
                         GenericHeaderRow(
                           headingChild: HeadingStyleText(
-                            text: 'Your delivery address',
+                            text: 'Location',
                             weight: FontWeight.w600,
                           ),
                         ),
                         SizedBox(
                           height: Dimensions.height15 / 1.2,
                         ),
-                        GenericWhiteContainer(
-                          child: GenericHeaderRow(
-                            headingChild: CheckoutPageAddress(
-                              street: street,
-                              zip: zip,
-                              suburb: suburb,
-                            ),
-                            actionButtonChild: BlueTextButton(
-                              text: 'Change',
-                              onTap: () {
-                                // Provider.of<CheckoutViewController>(context,
-                                //         listen: false)
-                                //     .onUserNavigation(
-                                //         context, SavedAddresses());
-                              },
-                            ),
+                        // Fixed address container with proper overflow handling
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(Dimensions.width15),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.circular(Dimensions.radius15)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Address text with flexible constraints
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                      right: Dimensions.width10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (street.isNotEmpty)
+                                        Padding(
+                                          padding: EdgeInsets.only(bottom: 4),
+                                          child: Text(
+                                            street,
+                                            style: TextStyle(
+                                              fontSize: Dimensions.font16,
+                                              fontWeight: FontWeight.w600,
+                                              fontFamily: 'Poppins',
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      if (suburb.isNotEmpty)
+                                        Padding(
+                                          padding: EdgeInsets.only(bottom: 4),
+                                          child: Text(
+                                            suburb,
+                                            style: TextStyle(
+                                              fontSize: Dimensions.font16 / 1.1,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'Poppins',
+                                              color: Colors.grey.shade700,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      if (zip.isNotEmpty)
+                                        Text(
+                                          zip,
+                                          style: TextStyle(
+                                            fontSize: Dimensions.font16 / 1.1,
+                                            fontWeight: FontWeight.w500,
+                                            fontFamily: 'Poppins',
+                                            color: Colors.grey.shade700,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Change button with fixed width
+                            ],
                           ),
                         ),
                         SizedBox(
@@ -100,44 +152,51 @@ class OpeningHours extends StatelessWidget {
                           builder: (context, controller, child) {
                             var operatingHours = controller.areaOpeningHours;
                             return ListView.builder(
-                              shrinkWrap:
-                                  true, // Shrink the ListView to fit within its parent
-                              physics:
-                                  NeverScrollableScrollPhysics(), // Disable ListView's scrolling
-                              itemCount: operatingHours
-                                  .length, // Number of items in the list
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: operatingHours.length,
                               itemBuilder: (context, index) {
-                                // Get the current map (day and time)
                                 final Map<String, String> item =
                                     operatingHours[index];
-
-                                // Extract day and time from the map
                                 String day = item.keys.first;
                                 String time = item.values.first;
 
-                                return Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      0.0, 8.0, 50.0, 8.0),
+                                return Container(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment
-                                        .spaceBetween, // Distribute evenly
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        '${day}:',
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          color: Colors.black,
-                                          fontSize: Dimensions.font20 / 1.3,
-                                          fontWeight: FontWeight.w500,
+                                      // Day with flexible width
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          '$day:',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            color: Colors.black,
+                                            fontSize: Dimensions.font20 / 1.3,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      Text(
-                                        time,
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          color: Colors.black,
-                                          fontSize: Dimensions.font20 / 1.29,
-                                          fontWeight: FontWeight.w300,
+                                      SizedBox(width: Dimensions.width10),
+                                      // Time with flexible width
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          time,
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            color: Colors.black,
+                                            fontSize: Dimensions.font20 / 1.29,
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.right,
                                         ),
                                       ),
                                     ],
@@ -147,6 +206,60 @@ class OpeningHours extends StatelessWidget {
                             );
                           },
                         ),
+
+                        // Disclaimer Section
+                        SizedBox(height: Dimensions.height30),
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(Dimensions.width15),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.05),
+                            borderRadius:
+                                BorderRadius.circular(Dimensions.radius15),
+                            border: Border.all(
+                              color: Colors.orange.withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: Colors.orange,
+                                    size: Dimensions.iconSize16,
+                                  ),
+                                  SizedBox(width: Dimensions.width10),
+                                  Text(
+                                    'Please Note',
+                                    style: TextStyle(
+                                      fontSize: Dimensions.font16 / 1.1,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.orange.shade800,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: Dimensions.height10),
+                              Text(
+                                'These hours may vary during public holidays and special occasions. '
+                                'For precise operating times, please contact individual service providers '
+                                'for gas refill, laundry, pet care, and home care services.',
+                                style: TextStyle(
+                                  fontSize: Dimensions.font16 / 1.3,
+                                  color: Colors.grey.shade700,
+                                  fontFamily: 'Poppins',
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: Dimensions.height20), // Bottom padding
                       ],
                     ),
                   ),

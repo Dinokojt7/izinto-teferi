@@ -4,7 +4,7 @@ import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 
 class CarWashAddToCart extends StatelessWidget {
-  final String itemCount;
+  final dynamic itemCount;
   final VoidCallback onAddToCart;
   final VoidCallback onClearSelection;
   final bool hasSelection;
@@ -62,26 +62,28 @@ class CarWashAddToCart extends StatelessWidget {
                   width: 40.0,
                   height: 40.0,
                 ),
-                Positioned(
-                  top: 0.0,
-                  right: 0.0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade500,
-                      borderRadius: BorderRadius.circular(Dimensions.radius30),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5),
-                      child: HeadingStyleText(
-                        size: Dimensions.font20 / 1.1,
-                        color: Colors.white,
-                        text: itemCount,
-                        family: 'Poppins',
-                        weight: FontWeight.w600,
+                if (itemCount > 0)
+                  Positioned(
+                    top: 0.0,
+                    right: 0.0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade500,
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius30),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 5),
+                        child: HeadingStyleText(
+                          size: Dimensions.font20 / 1.1,
+                          color: Colors.white,
+                          text: '${itemCount}',
+                          family: 'Poppins',
+                          weight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),

@@ -13,7 +13,7 @@ import '../../../../services/notification_service.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../widgets/buttons/save_button.dart';
 import '../../../widgets/text_widgets/heading_style_text.dart';
-import '../../profile_view/controller/profile_view_controller.dart';
+import '../view_widgets/call_checkout.dart';
 
 class CheckoutViewController extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -26,104 +26,162 @@ class CheckoutViewController extends ChangeNotifier {
   int _availableWalletBalance = 0;
   int get availableWalletBalance => _availableWalletBalance;
 
-  // Update order total calculation
+  // Add to CheckoutViewController class
+  LaundryValidationResult? _laundryValidationInfo;
+  LaundryValidationResult? get laundryValidationInfo => _laundryValidationInfo;
+
+  void setLaundryValidationInfo(LaundryValidationResult validation) {
+    _laundryValidationInfo = validation;
+    notifyListeners();
+  }
+
+  void clearLaundryValidationInfo() {
+    _laundryValidationInfo = null;
+    notifyListeners();
+  }
+
+  // Override order calculations to exclude laundry items when needed
+  int get orderSubtotal {
+    try {
+      final cartController = Get.find<NewCartController>();
+      int subtotal = cartController.totalAmount;
+
+      // Exclude laundry items if validation info exists
+      if (_laundryValidationInfo != null &&
+          _laundryValidationInfo!.hasLowLaundryItems) {
+        subtotal -= _laundryValidationInfo!.laundryTotal;
+      }
+
+      return subtotal;
+    } catch (e) {
+      print('Error getting order subtotal: $e');
+      return 0;
+    }
+  }
+
+  // Update order total calculation to use the adjusted subtotal
   int get orderTotal {
     int total = orderSubtotal + optionalTip - _promoDiscount - _walletDiscount;
     return total < 0 ? 0 : total; // Ensure total doesn't go negative
   }
-// In CheckoutViewController, update the loadWalletBalance method:
 
-// Load wallet balance from profile controller
-  void loadWalletBalance() {
+  // Modify createOrderObject to exclude laundry items from final order
+  Future<Map<String, dynamic>> createOrderObject(
+      Map<String, dynamic> address) async {
     try {
-      // Since ProfileViewController is a ChangeNotifier (Provider),
-      // we need to access it differently
-      // Remove this Get.find() approach:
-      // final profileController = Get.find<ProfileViewController>();
-
-      // Instead, we'll get the wallet balance directly from Firebase
-      // or access it through the context when needed
-      _loadWalletBalanceFromFirebase();
-    } catch (e) {
-      print('Error loading wallet balance: $e');
-      _availableWalletBalance = 0;
-    }
-  }
-
-  Future<void> _loadWalletBalanceFromFirebase() async {
-    try {
+      final cartController = Get.find<NewCartController>();
       final user = _auth.currentUser;
-      if (user != null) {
-        final userDoc =
-            await _firestore.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-          _availableWalletBalance = (userDoc.data()?['wallet'] ?? 0).toInt();
-          notifyListeners();
+
+      if (user == null) throw Exception('User not authenticated');
+
+      final orderId = _generateShortOrderId();
+      final timestamp = FieldValue.serverTimestamp();
+
+      // FIXED: Convert cart items with proper serialization, excluding laundry if needed
+      final List<Map<String, dynamic>> cartItems = [];
+      for (final item in cartController.getItems) {
+        // Skip laundry items if they don't meet minimum
+        if (_shouldExcludeLaundryItem(item)) {
+          continue;
+        }
+
+        if (item is NewCartModel) {
+          // Create a safe serializable version of the cart item
+          final serializableItem = {
+            'id': item.id,
+            'name': item.name,
+            'price': item.price,
+            'time': item.time,
+            'img': item.img,
+            'type': item.type,
+            'material': item.material,
+            'quantity': item.quantity,
+            'isExist': item.isExist,
+            'provider': item.provider,
+            // Handle specialty field carefully
+            'specialty': _serializeSpecialty(item.specialty),
+          };
+          cartItems.add(serializableItem);
         }
       }
+
+      // Build order object
+      final order = {
+        'orderId': orderId,
+        'userId': user.uid,
+        'userEmail': user.email ?? 'No email',
+        'status': 'pending',
+        'createdAt': timestamp,
+        'updatedAt': timestamp,
+        'items': cartItems,
+        'subtotal': orderSubtotal,
+        'serviceFee': serviceFee,
+        'tipAmount': optionalTip,
+        'totalAmount': orderTotal,
+        'deliveryAddress': address,
+        'deliveryInstructions': {
+          'leaveAtDoor': _shouldLeaveAtTheDoor,
+          'dontRingBell': _isBellAllowed,
+          'callWhenArrive': _shouldCallWhenArrive,
+          'additionalNotes': _deliveryNote,
+        },
+        'paymentMethod': _isWalletApplied && _walletDiscount >= orderTotal
+            ? 'wallet'
+            : _selectedPaymentMethod,
+        'paymentStatus': _isWalletApplied && _walletDiscount >= orderTotal
+            ? 'paid'
+            : 'pending',
+        'walletPayment': _isWalletApplied,
+        'walletAmount': _walletDiscount,
+        'serviceTypes': _getServiceTypes(cartItems),
+
+        // Add laundry exclusion info for tracking
+        if (_laundryValidationInfo != null &&
+            _laundryValidationInfo!.hasLowLaundryItems)
+          'laundryExcluded': {
+            'totalExcluded': _laundryValidationInfo!.laundryTotal,
+            'reason': 'Below minimum order threshold',
+            'itemsCount': _laundryValidationInfo!.laundryItems.length,
+            'excludedItems': _laundryValidationInfo!.laundryItems
+                .map((item) => {
+                      'id': item.id,
+                      'name': item.name,
+                      'price': item.price,
+                      'quantity': item.quantity,
+                    })
+                .toList(),
+          },
+      };
+
+      print('✅ Order object created with ID: $orderId');
+      print(
+          '📦 Order includes ${cartItems.length} items (laundry excluded: ${_laundryValidationInfo != null && _laundryValidationInfo!.hasLowLaundryItems})');
+      return order;
     } catch (e) {
-      _availableWalletBalance = 0;
+      print('❌ Error creating order object: $e');
+      rethrow;
     }
   }
 
-// Also update the _deductFromWallet method:
-  Future<void> _deductFromWallet(int amount) async {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        final newBalance = _availableWalletBalance - amount;
-
-        // Update in Firebase
-        await _firestore.collection('users').doc(user.uid).update({
-          'wallet': newBalance,
-          'lastWalletDeduction': FieldValue.serverTimestamp(),
-        });
-
-        // Update local state
-        _availableWalletBalance = newBalance;
-
-        // If ProfileViewController is in the widget tree, we could notify it too
-        // But for now, just update our local state
-      }
-    } catch (e) {}
-  }
-
-// Update toggleWalletUsage to handle payment method state properly
-  void toggleWalletUsage() {
-    if (_isWalletApplied) {
-      // Remove wallet discount
-      _isWalletApplied = false;
-      _walletDiscount = 0;
-
-      // If we were using wallet as primary payment, clear it
-      if (_selectedPaymentMethod == 'wallet') {
-        _selectedPaymentMethod = '';
-      }
-    } else {
-      // Apply wallet discount
-      _isWalletApplied = true;
-      final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
-      _walletDiscount = _availableWalletBalance > orderAmount
-          ? orderAmount
-          : _availableWalletBalance;
-
-      // Only auto-select wallet as payment method if it covers FULL amount
-      if (_walletDiscount >= orderAmount) {
-        _selectedPaymentMethod = 'wallet';
-      } else {
-        // Partial coverage - ensure payment method is selected if not already
-        // Don't auto-select, let user choose
-      }
+  bool _shouldExcludeLaundryItem(NewCartModel item) {
+    if (_laundryValidationInfo == null ||
+        !_laundryValidationInfo!.hasLowLaundryItems) {
+      return false;
     }
-    notifyListeners();
+
+    // Check if this item is one of the low-value laundry items
+    final provider = item.provider?.toString().toLowerCase() ?? '';
+    final isLaundryItem =
+        provider.contains('easy laundry') || provider.contains('laundry');
+
+    if (!isLaundryItem) return false;
+
+    // Check if this specific item is in our exclusion list
+    return _laundryValidationInfo!.laundryItems
+        .any((laundryItem) => laundryItem.id == item.id);
   }
 
-  void selectPaymentMethod(String method) {
-    _selectedPaymentMethod = method;
-    notifyListeners();
-  }
-
-  // Update submitOrder to deduct from wallet
+  // Update submitOrder to clear laundry info after successful order
   Future<Map<String, dynamic>> submitOrder(Map<String, dynamic> address) async {
     try {
       _isLoadingIndicator = true;
@@ -163,14 +221,17 @@ class CheckoutViewController extends ChangeNotifier {
           .doc(order['orderId'])
           .set(order);
 
-      // Clear discounts after successful order
+      // Clear cart only after successful order creation
+      cartController.clear();
+
+      // Clear discounts and laundry info after successful order
       clearPromoCode();
       clearWalletUsage();
+      clearLaundryValidationInfo();
 
       // Send notification
       await sendOrderNotification(order);
 
-      cartController.clear();
       _isLoadingIndicator = false;
       notifyListeners();
 
@@ -182,14 +243,79 @@ class CheckoutViewController extends ChangeNotifier {
     }
   }
 
-  // Clear wallet usage
+  Future<void> _loadWalletBalanceFromFirebase() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          _availableWalletBalance = (userDoc.data()?['wallet'] ?? 0).toInt();
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      _availableWalletBalance = 0;
+    }
+  }
+
+  Future<void> _deductFromWallet(int amount) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final newBalance = _availableWalletBalance - amount;
+
+        // Update in Firebase
+        await _firestore.collection('users').doc(user.uid).update({
+          'wallet': newBalance,
+          'lastWalletDeduction': FieldValue.serverTimestamp(),
+        });
+
+        // Update local state
+        _availableWalletBalance = newBalance;
+      }
+    } catch (e) {
+      print('Error deducting from wallet: $e');
+    }
+  }
+
+  void toggleWalletUsage() {
+    if (_isWalletApplied) {
+      // Remove wallet discount
+      _isWalletApplied = false;
+      _walletDiscount = 0;
+
+      // If we were using wallet as primary payment, clear it
+      if (_selectedPaymentMethod == 'wallet') {
+        _selectedPaymentMethod = '';
+      }
+    } else {
+      // Apply wallet discount
+      _isWalletApplied = true;
+      final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
+      _walletDiscount = _availableWalletBalance > orderAmount
+          ? orderAmount
+          : _availableWalletBalance;
+
+      // Only auto-select wallet as payment method if it covers FULL amount
+      if (_walletDiscount >= orderAmount) {
+        _selectedPaymentMethod = 'wallet';
+      }
+    }
+    notifyListeners();
+  }
+
+  void selectPaymentMethod(String method) {
+    _selectedPaymentMethod = method;
+    notifyListeners();
+  }
+
   void clearWalletUsage() {
     _isWalletApplied = false;
     _walletDiscount = 0;
     notifyListeners();
   }
 
-  // Update the existing clearPromoCode to also handle wallet if needed
   void clearPromoCode() {
     _enteredPromoCode = '';
     _isPromoCodeValid = false;
@@ -200,6 +326,16 @@ class CheckoutViewController extends ChangeNotifier {
   // Initialize wallet when controller is created
   CheckoutViewController() {
     loadWalletBalance();
+  }
+
+  // Load wallet balance
+  void loadWalletBalance() {
+    try {
+      _loadWalletBalanceFromFirebase();
+    } catch (e) {
+      print('Error loading wallet balance: $e');
+      _availableWalletBalance = 0;
+    }
   }
 
   // Primary state
@@ -274,16 +410,6 @@ class CheckoutViewController extends ChangeNotifier {
   TextEditingController deliveryNotesController = TextEditingController();
 
   // Order summary (dynamic)
-  int get orderSubtotal {
-    try {
-      final cartController = Get.find<NewCartController>();
-      return cartController.totalAmount;
-    } catch (e) {
-      print('Error getting order subtotal: $e');
-      return 0;
-    }
-  }
-
   int get serviceFee => 35; // Fixed service fee
   int get optionalTip => selectedTipAmount;
 
@@ -322,7 +448,6 @@ class CheckoutViewController extends ChangeNotifier {
   }
 
   // Order Processing
-  // Add this method to CheckoutViewController for generating short order IDs
   String _generateShortOrderId() {
     final random = Random();
     final letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -337,81 +462,6 @@ class CheckoutViewController extends ChangeNotifier {
     return '$letterPart$numberPart';
   }
 
-  Future<Map<String, dynamic>> createOrderObject(
-      Map<String, dynamic> address) async {
-    try {
-      final cartController = Get.find<NewCartController>();
-      final user = _auth.currentUser;
-
-      if (user == null) throw Exception('User not authenticated');
-
-      final orderId = _generateShortOrderId();
-      final timestamp = FieldValue.serverTimestamp();
-
-      // FIXED: Convert cart items with proper serialization
-      final List<Map<String, dynamic>> cartItems = [];
-      for (final item in cartController.getItems) {
-        if (item is NewCartModel) {
-          // Create a safe serializable version of the cart item
-          final serializableItem = {
-            'id': item.id,
-            'name': item.name,
-            'price': item.price,
-            'time': item.time,
-            'img': item.img,
-            'type': item.type,
-            'material': item.material,
-            'quantity': item.quantity,
-            'isExist': item.isExist,
-            'provider': item.provider,
-            // Handle specialty field carefully
-            'specialty': _serializeSpecialty(item.specialty),
-          };
-          cartItems.add(serializableItem);
-        }
-      }
-
-      // Build order object
-      final order = {
-        'orderId': orderId,
-        'userId': user.uid,
-        'userEmail': user.email ?? 'No email',
-        'status': 'pending',
-        'createdAt': timestamp,
-        'updatedAt': timestamp,
-        'items': cartItems,
-        'subtotal': orderSubtotal,
-        'serviceFee': serviceFee,
-        'tipAmount': optionalTip,
-        'totalAmount': orderTotal,
-        'deliveryAddress': address,
-        'deliveryInstructions': {
-          'leaveAtDoor': _shouldLeaveAtTheDoor,
-          'dontRingBell': _isBellAllowed,
-          'callWhenArrive': _shouldCallWhenArrive,
-          'additionalNotes': _deliveryNote,
-        },
-// In createOrderObject, update payment info:
-        'paymentMethod': _isWalletApplied && _walletDiscount >= orderTotal
-            ? 'wallet'
-            : _selectedPaymentMethod,
-        'paymentStatus': _isWalletApplied && _walletDiscount >= orderTotal
-            ? 'paid'
-            : 'pending',
-        'walletPayment': _isWalletApplied,
-        'walletAmount': _walletDiscount,
-        'serviceTypes': _getServiceTypes(cartController.getItems),
-      };
-
-      print('✅ Order object created with ID: $orderId');
-      return order;
-    } catch (e) {
-      print('❌ Error creating order object: $e');
-      rethrow;
-    }
-  }
-
-// Add this helper method to handle specialty serialization
   dynamic _serializeSpecialty(dynamic specialty) {
     try {
       if (specialty == null) return null;
@@ -450,8 +500,8 @@ class CheckoutViewController extends ChangeNotifier {
     final types = <String>{};
     for (final item in items) {
       try {
-        if (item.type != null) {
-          types.add(item.type.toString());
+        if (item['type'] != null) {
+          types.add(item['type'].toString());
         }
       } catch (e) {
         print('Error getting service type from item: $e');
@@ -460,7 +510,6 @@ class CheckoutViewController extends ChangeNotifier {
     return types.toList();
   }
 
-// Update the isFormValid getter to properly handle partial wallet coverage
   bool get isFormValid {
     final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
 
@@ -478,7 +527,6 @@ class CheckoutViewController extends ChangeNotifier {
     }
   }
 
-// Update the order description to be more accurate
   String get orderDescription {
     final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
 
@@ -494,7 +542,6 @@ class CheckoutViewController extends ChangeNotifier {
     }
   }
 
-// Update the helper to be more precise
   bool get isWalletCoveringFullAmount {
     final orderAmount = orderSubtotal + optionalTip - _promoDiscount;
     return _isWalletApplied && _walletDiscount >= orderAmount;
@@ -507,7 +554,6 @@ class CheckoutViewController extends ChangeNotifier {
         _walletDiscount < orderAmount;
   }
 
-// Enhanced notification sending with better error handling
   Future<void> sendOrderNotification(Map<String, dynamic> order) async {
     try {
       final notificationService = NotificationService();
@@ -553,7 +599,6 @@ class CheckoutViewController extends ChangeNotifier {
   bool _isCheckingPromoCode = false;
   bool get isCheckingPromoCode => _isCheckingPromoCode;
 
-// Add promo code methods
   Future<void> validatePromoCode(String code) async {
     if (code.isEmpty) return;
 
@@ -600,12 +645,9 @@ class CheckoutViewController extends ChangeNotifier {
     }
   }
 
-  // Add to CheckoutViewController
   void showPromoCodeDialog(BuildContext context) {
     // Check order amount first
     if (orderSubtotal < 500) {
-      // Show snackbar for minimum amount
-      // You'll need to pass context or use Get.snackbar
       return;
     }
 
@@ -761,7 +803,9 @@ class CheckoutViewController extends ChangeNotifier {
           'totalPromoRewards': FieldValue.increment(50),
         });
       }
-    } catch (e) {}
+    } catch (e) {
+      print('Error rewarding promo code owner: $e');
+    }
   }
 
   @override

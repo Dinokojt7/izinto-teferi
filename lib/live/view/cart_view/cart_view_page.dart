@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/utilities/generic_snackbar.dart';
@@ -15,7 +16,6 @@ import '../auth_view/phone_auth_view.dart';
 import '../checkout_view/checkout_page.dart';
 import '../checkout_view/view_widgets/call_checkout.dart';
 import '../home_view/controller/home_view_controller.dart';
-import '../home_view/sliver_home_page.dart';
 
 class CartViewPage extends StatelessWidget {
   const CartViewPage({Key? key}) : super(key: key);
@@ -26,15 +26,19 @@ class CartViewPage extends StatelessWidget {
       final homeViewController =
           Provider.of<HomeViewController>(context, listen: false);
       final user = Provider.of<UserModel?>(context);
+
       // Total cart items count
       final String quantityText =
           _cartController.totalItems == 1 ? 'item' : 'items';
       final String totalItemCount =
           '${_cartController.totalItems} $quantityText';
+
       // List of all items in the cart
       var _cartList = _cartController.getItems;
+
       // Total cart value
       final int _totalAmount = _cartController.totalAmount;
+
       return Scaffold(
         backgroundColor: Colors.white.withOpacity(0.97),
         appBar: AppBar(
@@ -51,6 +55,7 @@ class CartViewPage extends StatelessWidget {
                 heading: 'Your cart',
                 removeLeading: true,
               ),
+
               // Scrollable content
               _cartList.length != 0
                   ? Expanded(
@@ -63,6 +68,7 @@ class CartViewPage extends StatelessWidget {
                               totalInCartItems: totalItemCount,
                               viewContext: context,
                             ),
+
                             // Cart Items List
                             _cartList.isNotEmpty
                                 ? ListView.builder(
@@ -77,6 +83,7 @@ class CartViewPage extends StatelessWidget {
                                     },
                                   )
                                 : NoItems(),
+
                             // Recommended Section
                             CartRecommendedSection(),
                           ],
@@ -95,11 +102,10 @@ class CartViewPage extends StatelessWidget {
                         },
                       ),
                     ),
+
               // Checkout Button
               _cartList.length != 0
-                  ?
-// In CartViewPage, update the onTap logic:
-                  CallCheckout(
+                  ? CallCheckout(
                       totalCartAmount: _totalAmount,
                       onTap: () {
                         if (user == null) {
@@ -119,7 +125,6 @@ class CartViewPage extends StatelessWidget {
             ],
           ),
         ),
-        // bottomNavigationBar: GenericBottomAppBar(),
       );
     });
   }

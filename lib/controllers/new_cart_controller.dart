@@ -5,6 +5,7 @@ import 'package:izinto/models/popular_specialty_model.dart';
 import 'package:izinto/models/new_specialty_model.dart';
 
 import '../live/utilities/price_helper.dart';
+import '../live/view/checkout_view/view_widgets/call_checkout.dart';
 
 class NewCartController extends GetxController {
   final CartRepo cartRepo;
@@ -65,6 +66,48 @@ class NewCartController extends GetxController {
     }
     cartRepo.addToNewCartList(getItems);
     update();
+  }
+
+  // Add to NewCartController class
+  void removeLaundryItemsTemporarily() {
+    final itemsToRemove = <int>[];
+
+    _items.forEach((key, cartItem) {
+      final provider = cartItem.provider?.toString().toLowerCase() ?? '';
+      if (provider.contains('easy laundry') || provider.contains('laundry')) {
+        itemsToRemove.add(key);
+      }
+    });
+
+    for (final key in itemsToRemove) {
+      _items.remove(key);
+    }
+
+    addToCartList();
+    update();
+  }
+
+// Helper to check if cart has laundry items below threshold
+  LaundryValidationResult validateLaundryItems() {
+    int laundryTotal = 0;
+    bool hasLaundryItems = false;
+    List<NewCartModel> laundryItems = [];
+
+    _items.forEach((key, cartItem) {
+      final provider = cartItem.provider?.toString().toLowerCase() ?? '';
+      if (provider.contains('easy laundry') || provider.contains('laundry')) {
+        hasLaundryItems = true;
+        laundryItems.add(cartItem);
+        laundryTotal += (cartItem.price ?? 0) * (cartItem.quantity ?? 0);
+      }
+    });
+
+    return LaundryValidationResult(
+      hasLaundryItems: hasLaundryItems,
+      hasLowLaundryItems: hasLaundryItems && laundryTotal < 150,
+      laundryTotal: laundryTotal,
+      laundryItems: laundryItems,
+    );
   }
 
   bool existInCart(dynamic specialty) {
@@ -154,9 +197,6 @@ class NewCartController extends GetxController {
     try {
       cartRepo.addToNewCartList(getItems);
       update();
-      print('💾 Cart saved to shared preferences: ${getItems.length} items');
-    } catch (e) {
-      print('❌ Error saving cart to shared preferences: $e');
-    }
+    } catch (e) {}
   }
 }

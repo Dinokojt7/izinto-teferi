@@ -5,6 +5,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/address_view/edit_address.dart';
 import 'package:izinto/live/view/address_view/save_address.dart';
 import 'package:izinto/live/view/home_view/home_view.dart';
+import 'package:izinto/live/view/home_view/view_widgets/operating_areas.dart';
 import 'package:izinto/live/view/user_settings_view/opening_hours.dart';
 import 'package:provider/provider.dart';
 
@@ -124,7 +125,7 @@ class ShowResultsDialog extends StatelessWidget {
                             await Get.to(() => HomeView());
                           } else {
                             await controller.setIsLoading();
-                            await Get.to(() => OpeningHours(),
+                            await Get.to(() => ServiceAreas(),
                                 transition: Transition.fade,
                                 duration: Duration(seconds: 1));
                             controller.setIsLoading();

@@ -8,6 +8,7 @@ import 'package:izinto/controllers/laundry_specialty_controller.dart';
 import 'package:izinto/controllers/laundry_support_questions_controller.dart';
 import 'package:izinto/controllers/pet_care_specialty_controller.dart';
 import 'package:izinto/controllers/recommended_specialty_controller.dart';
+import 'package:izinto/controllers/sneakers_blankets_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
 import 'package:izinto/helpers/data/api/api_client.dart';
 import 'package:izinto/helpers/data/repository/car-wash-support-questions-repo.dart';
@@ -19,6 +20,7 @@ import 'package:izinto/helpers/data/repository/laundry_specialty_repo.dart';
 import 'package:izinto/helpers/data/repository/laundry_support_repo.dart';
 import 'package:izinto/helpers/data/repository/pet_care_specialty_repo.dart';
 import 'package:izinto/helpers/data/repository/recommended_specialty_repo.dart';
+import 'package:izinto/helpers/data/repository/sneakers_blankets_repo.dart';
 import 'package:izinto/helpers/data/repository/subscription_plan_repo.dart';
 import 'package:izinto/helpers/data/repository/tabs_header_repo.dart';
 import 'package:izinto/live/view/order_support/controller/order_support_controller.dart';
@@ -58,6 +60,7 @@ Future<void> init() async {
 
   //This will get our repositories
   Get.lazyPut(() => PopularSpecialtyRepo(apiClient: Get.find()));
+  Get.lazyPut(() => SneakersBlanketsRepo(apiClient: Get.find()));
   Get.lazyPut(() => RecommendedSpecialtyRepo(apiClient: Get.find()));
   Get.lazyPut(() => CartRepo(sharedPreferences: Get.find()));
   Get.lazyPut(() => LaundrySpecialtyRepo(apiClient: Get.find()));
@@ -87,6 +90,8 @@ Future<void> init() async {
       RecommendedSpecialtyController(recommendedSpecialtyRepo: Get.find()));
   Get.lazyPut(
       () => PopularSpecialtyController(popularSpecialtyRepo: Get.find()));
+  Get.lazyPut(
+      () => SneakersBlanketsController(sneakersAndBlanketsRepo: Get.find()));
   Get.lazyPut(() => RecommendationController());
   Get.lazyPut(() => FavoriteController());
   Get.lazyPut(() => TemperatureController());

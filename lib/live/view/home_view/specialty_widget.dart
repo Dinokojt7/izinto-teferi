@@ -89,10 +89,13 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
           setState(() {
             _isTapped = true;
           });
-
-          Provider.of<CategoryViewController>(context, listen: false)
-              .updateCategoryList(1, 1);
-
+          if (widget.index != 0) {
+            Provider.of<CategoryViewController>(context, listen: false)
+                .updateCategoryList(1, 1);
+          } else {
+            Provider.of<CategoryViewController>(context, listen: false)
+                .updateCategoryList(0, 0);
+          }
           if (isValidIndex) {
             Provider.of<CategoryViewController>(context, listen: false)
                 .updateTabsControllerIndex(

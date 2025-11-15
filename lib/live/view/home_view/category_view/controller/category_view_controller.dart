@@ -13,7 +13,6 @@ class CategoryViewController extends ChangeNotifier {
   void updateCategoryList(int activeCategory, int activeList) {
     _mainCategoryListIndex = activeCategory;
     _selectedListIndex = activeList;
-
     notifyListeners();
   }
 

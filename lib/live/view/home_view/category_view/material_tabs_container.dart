@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:izinto/controllers/sneakers_blankets_controller.dart';
 import 'package:izinto/live/utilities/live_dimensions.dart';
 import 'package:izinto/live/widgets/buttons/highlight_button.dart';
 import 'package:provider/provider.dart';
@@ -23,9 +24,8 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
   late TabController _tabController;
   List materialTabs = [];
   final List<List> mainCategoriesList = [
-    Get.find<LaundrySpecialtyController>().laundrySpecialtyList,
+    Get.find<SneakersBlanketsController>().sneakersAndBlanketsList,
     Get.find<PopularSpecialtyController>().popularSpecialtyList,
-    Get.find<LaundrySpecialtyController>().laundrySpecialtyList,
   ];
 
   @override

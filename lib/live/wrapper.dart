@@ -14,6 +14,7 @@ import 'package:izinto/controllers/home_items_controller.dart';
 import 'package:izinto/controllers/laundry_support_questions_controller.dart';
 import 'package:izinto/controllers/recommendation_controller.dart';
 import 'package:izinto/controllers/size_selection_controller.dart';
+import 'package:izinto/controllers/sneakers_blankets_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
 import 'package:izinto/controllers/tabs_header.dart';
 import 'package:izinto/controllers/temperature_controller.dart';
@@ -78,6 +79,7 @@ class _WrapperState extends State<Wrapper> {
         Get.find<FavoriteController>().onInit(),
         Get.find<RecommendationController>().getRecommendedItems(),
         Get.find<PopularSpecialtyController>().getPopularSpecialtyList(),
+        Get.find<SneakersBlanketsController>().getSneakersAndBlanketsList(),
         Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList(),
         Get.find<GasRefillSpecialtyController>().getGasRefillSpecialtyList(),
         Get.find<CarpetCareSpecialtyController>().getCarpetCareSpecialtyList(),

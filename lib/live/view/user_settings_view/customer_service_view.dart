@@ -99,7 +99,7 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
           // Show Latest Order OR No Orders Dialog
           if (orderController.isLoading)
             Container(
-              height: 120,
+              height: 60,
               child: Center(
                 child: CircularProgressIndicator(
                   color: Colors.black,

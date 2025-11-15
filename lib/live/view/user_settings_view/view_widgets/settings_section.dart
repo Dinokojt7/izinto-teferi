@@ -41,8 +41,6 @@ class _settingsSectionState extends State<settingsSection> {
     return Container(
       height: Dimensions.height45 * 1.4,
       width: double.maxFinite,
-      margin:
-          EdgeInsets.only(left: Dimensions.width15, right: Dimensions.width15),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.3),
         color: _isTapped ? Colors.grey.shade200 : Colors.white,

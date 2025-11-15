@@ -15,6 +15,7 @@ import '../../../widgets/texts/small_text.dart';
 import '../../utilities/colors.dart';
 import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/buttons/delete_widget.dart';
+import '../../widgets/general_information_page.dart';
 import '../../widgets/generic_header_row.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
 import '../home_view/controller/home_view_controller.dart';
@@ -88,9 +89,6 @@ class _MainAppSettingsState extends State<MainAppSettings> {
               ],
             ),
           ),
-          SizedBox(
-            height: Dimensions.height30,
-          ),
           Padding(
             padding: EdgeInsets.only(left: 20.0, top: 10.0, right: 20.0),
             child: GenericHeaderRow(
@@ -108,25 +106,18 @@ class _MainAppSettingsState extends State<MainAppSettings> {
             child: Column(
               children: [
                 settingsSection(
-                  subHeading: 'Your payment methods',
+                  subHeading: 'Your Wallet',
                   onTap: () {
-                    Get.to(
-                      () => SavedAddresses(),
-                      transition: Transition.rightToLeftWithFade,
-                      duration: Duration(milliseconds: 500),
-                    );
-                  },
-                ),
-                SizedBox(
-                  height: Dimensions.height10,
-                ),
-                settingsSection(
-                  subHeading: 'Billing info',
-                  onTap: () {
-                    Get.to(
-                      () => ProfileView(),
-                      transition: Transition.rightToLeftWithFade,
-                      duration: Duration(milliseconds: 500),
+                    Provider.of<HomeViewController>(context, listen: false)
+                        .navigateToNestedWidget(
+                      context,
+                      GeneralInformationPage(
+                        title: 'Your wallet',
+                        heading: 'Pay with your Izinto Wallet',
+                        information:
+                            'Izinto Wallet is our credit facility. Your refunds and promo code rewards are credited into your Izinto Wallet which you can then use to pay for future reservations. You can pay using Izinto Wallet during checkout. ',
+                        pageType: PageType.wallet,
+                      ),
                     );
                   },
                 ),
@@ -134,7 +125,7 @@ class _MainAppSettingsState extends State<MainAppSettings> {
             ),
           ),
           SizedBox(
-            height: Dimensions.height30 / 1.1,
+            height: Dimensions.height30,
           ),
           Padding(
             padding: EdgeInsets.only(left: 20.0, top: 10.0, right: 20.0),
@@ -252,9 +243,6 @@ class _MainAppSettingsState extends State<MainAppSettings> {
               ],
             ),
           ),
-          SizedBox(
-            height: Dimensions.height20,
-          )
         ],
       );
     });

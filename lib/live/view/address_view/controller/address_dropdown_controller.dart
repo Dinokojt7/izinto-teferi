@@ -56,16 +56,16 @@ class MainAddressViewController extends ChangeNotifier {
   String _address = '';
 
   // Address Components
-  String _street = '';
+  String _street = 'Rivonia Blvd';
   String get street => _street;
 
-  String _suburb = '';
+  String _suburb = 'Rivonia Village';
   String get suburb => _suburb;
 
-  String _zipCode = '';
+  String _zipCode = '2499';
   String get zipCode => _zipCode;
 
-  String _town = '';
+  String _town = 'Sandton';
   String get town => _town;
 
   String _country = 'South Africa';
@@ -237,9 +237,11 @@ class MainAddressViewController extends ChangeNotifier {
   Future<void> _assignAddressValues(Placemark placemark) async {
     try {
       _street = _getStreetAddress(placemark);
-      _suburb = placemark.subLocality ?? placemark.locality ?? '';
-      _town = placemark.locality ?? placemark.subAdministrativeArea ?? '';
-      _zipCode = placemark.postalCode ?? '';
+      _suburb =
+          placemark.subLocality ?? placemark.locality ?? 'Rivonia Village';
+      _town =
+          placemark.locality ?? placemark.subAdministrativeArea ?? 'Sandton';
+      _zipCode = placemark.postalCode ?? '2499';
       _country = placemark.country ?? 'South Africa';
 
       print(

@@ -30,6 +30,7 @@ class _EditAddressState extends State<EditAddress> {
   late TextEditingController _additionalInfoController;
   late TextEditingController _labelController;
   bool _isSaving = false;
+  bool _isUsingSharedController = false;
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _EditAddressState extends State<EditAddress> {
     if (widget.index < profileController.savedAddresses.length) {
       final selectedAddress = profileController.savedAddresses[widget.index];
 
-      // Initialize controllers with current values
+      // Initialize local controllers with current values
       _additionalInfoController = TextEditingController(
           text: selectedAddress['additional info']?.toString() ?? '');
       _labelController = TextEditingController(
@@ -57,18 +58,20 @@ class _EditAddressState extends State<EditAddress> {
       addressController.setAddressLabel(
           selectedAddress['label']?.toString() ?? 'Home', false);
 
-      // Set the current additional info in the address controller
-      addressController.additionalDetailsController.text =
-          selectedAddress['additional info']?.toString() ?? '';
+      // DO NOT use the shared controller's additionalDetailsController
+      // We'll use our local controller instead
+      _isUsingSharedController = false;
     } else {
       // Default values if index is invalid
       _additionalInfoController = TextEditingController();
       _labelController = TextEditingController(text: 'Home');
+      _isUsingSharedController = false;
     }
   }
 
   @override
   void dispose() {
+    // Always dispose local controllers
     _additionalInfoController.dispose();
     _labelController.dispose();
 
@@ -78,6 +81,10 @@ class _EditAddressState extends State<EditAddress> {
     if (dropdownController.isDropdownOpen) {
       dropdownController.clearLabel();
     }
+
+    // Clear any text that might have been set in shared controllers
+    dropdownController.additionalDetailsController.clear();
+
     super.dispose();
   }
 
@@ -146,32 +153,21 @@ class _EditAddressState extends State<EditAddress> {
                                     SizedBox(
                                       height: Dimensions.height45 / 1.2,
                                     ),
-                                    // Additional Info Field (Editable) - Your original design
+                                    // Additional Info Field (Editable) - Use LOCAL controller only
                                     GenericTextField(
-                                      textField: Expanded(
-                                        child: TextFormField(
-                                          controller: _additionalInfoController,
-                                          textCapitalization:
-                                              TextCapitalization.sentences,
-                                          onChanged: (val) {
-                                            // Update the address controller with the new additional info
-                                            final addressController = Provider
-                                                .of<MainAddressViewController>(
-                                                    context,
-                                                    listen: false);
-                                            addressController
-                                                .additionalDetailsController
-                                                .text = val;
-                                            addressController
-                                                .captureAddressDetails();
-                                          },
-                                          keyboardType: TextInputType.text,
-                                          obscureText: false,
-                                          cursorColor: Colors.black,
-                                          decoration:
-                                              buildInputDecoration(false),
-                                          style: buildTextStyle(),
-                                        ),
+                                      textField: TextFormField(
+                                        controller:
+                                            _additionalInfoController, // Use local controller
+                                        textCapitalization:
+                                            TextCapitalization.sentences,
+                                        onChanged: (val) {
+                                          // No need to update shared controller - we'll use local value directly
+                                        },
+                                        keyboardType: TextInputType.text,
+                                        obscureText: false,
+                                        cursorColor: Colors.black,
+                                        decoration: buildInputDecoration(false),
+                                        style: buildTextStyle(),
                                       ),
                                     ),
                                     SizedBox(
@@ -328,17 +324,6 @@ class _EditAddressState extends State<EditAddress> {
     );
   }
 
-  Widget _buildLoadingOverlay() {
-    return Container(
-      color: Colors.black.withOpacity(0.3),
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(LiveColors.cartBlue),
-        ),
-      ),
-    );
-  }
-
   String _buildFullAddress(Map<String, dynamic> address) {
     final List<String?> items = [
       address['street']?.toString(),
@@ -373,15 +358,12 @@ class _EditAddressState extends State<EditAddress> {
 
       final selectedAddress = addresses[index];
 
-      // PROPERLY CAPTURE CURRENT VALUES FROM CONTROLLERS
+      // Use LOCAL controller values directly
       final String currentLabel = addressController.label.isNotEmpty
           ? addressController.label
           : selectedAddress['label']?.toString() ?? 'Home';
 
-      final String currentAdditionalInfo =
-          _additionalInfoController.text.isNotEmpty
-              ? _additionalInfoController.text
-              : selectedAddress['additional info']?.toString() ?? '';
+      final String currentAdditionalInfo = _additionalInfoController.text;
 
       // Create updated address with new values
       final Map<String, dynamic> updatedAddress = {
@@ -390,10 +372,9 @@ class _EditAddressState extends State<EditAddress> {
         'suburb': selectedAddress['suburb']?.toString() ?? '',
         'Town': selectedAddress['Town']?.toString() ?? '',
         'Country': selectedAddress['Country']?.toString() ?? 'South Africa',
-        'label': currentLabel, // Use the captured label
+        'label': currentLabel,
         'selected': selectedAddress['selected'] == true,
-        'additional info':
-            currentAdditionalInfo, // Use the captured additional info
+        'additional info': currentAdditionalInfo,
         // Keep the document ID if it exists for Firebase operations
         if (selectedAddress['id'] != null)
           'id': selectedAddress['id']?.toString(),

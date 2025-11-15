@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/view/user_settings_view/controller/user_settings_controller.dart';
 import 'package:izinto/live/view/user_settings_view/main_app_settings.dart';
+import 'package:izinto/live/widgets/text_widgets/big_mallanna.dart';
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 
@@ -176,7 +177,7 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     return Consumer<ProfileViewController>(
       builder: (context, _profileController, child) {
         return AppBar(
-          backgroundColor: Colors.black,
+          backgroundColor: Colors.black.withOpacity(opacity),
           toolbarHeight: 200,
           elevation: 0,
           title: Column(
@@ -188,28 +189,13 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
                   height: 25.0,
                 ),
               ),
-              Container(
-                width: double.maxFinite,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top: Dimensions.height15,
-                    left: Dimensions.width10,
-                    right: Dimensions.width10,
-                  ),
-                  child: _profileController.firstName == null ||
-                          _profileController.lastName == null
-                      ? ProfileBigText(
-                          size: Dimensions.height20 * 2,
-                          text1: 'Hello ',
-                          text2: 'Welcome',
-                        )
-                      : ProfileBigText(
-                          size: Dimensions.height20 * 2,
-                          text1: '${_profileController.firstName!} ',
-                          text2: '${_profileController.lastName!}',
-                        ),
-                ),
-              ),
+              SizedBox(height: 5.0),
+              _profileController.firstName == '' ||
+                      _profileController.firstName == null
+                  ? BigMallanna(text1: 'Hello', text2: 'Welcome')
+                  : BigMallanna(
+                      text1: '${_profileController.firstName}',
+                      text2: '${_profileController.lastName}'),
               Opacity(
                 opacity: walletOpacity(shrinkOffset).clamp(0.0, 1.0),
                 child: Column(

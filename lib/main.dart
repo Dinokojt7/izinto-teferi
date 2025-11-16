@@ -24,12 +24,16 @@ import 'package:izinto/data_uploader_screen.dart';
 import 'package:izinto/helpers/dependencies.dart' as dep;
 import 'package:izinto/live/auxiliery_classes/cart_recommended_items_controller.dart';
 import 'package:izinto/live/utilities/colors.dart';
+import 'package:izinto/live/view/auth_view/phone_auth_view.dart';
 import 'package:izinto/live/view/checkout_view/controller/checkout_view_controller.dart';
 import 'package:izinto/live/view/checkout_view/controller/riderTip_controller.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
+import 'package:izinto/live/view/home_view/guest_access.dart';
+import 'package:izinto/live/view/home_view/home_view.dart';
 import 'package:izinto/live/view/order_history_view/controller/order_history_controller.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
+import 'package:izinto/live/view/profile_view/profile_view.dart';
 import 'package:izinto/live/view/user_settings_view/controller/user_settings_controller.dart';
 import 'package:izinto/models/user.dart';
 import 'package:izinto/pages/cart/cart_page.dart';
@@ -42,6 +46,7 @@ import 'package:izinto/live/wrapper.dart';
 import 'package:izinto/pages/options/profile_settings.dart';
 import 'package:izinto/pages/splash/splash_screen.dart';
 import 'package:izinto/routes/route_helper.dart';
+import 'package:izinto/services/auth_service.dart';
 import 'package:izinto/services/dependency_injection.dart';
 import 'package:izinto/services/firebase_auth_methods.dart';
 import 'package:izinto/services/location/location_model.dart';
@@ -295,6 +300,8 @@ class MyApp extends StatelessWidget {
                                                 create: (_) =>
                                                     NotificationService(),
                                               ),
+                                              Provider<AuthService>(
+                                                  create: (_) => AuthService()),
                                             ],
                                             child: GetMaterialApp(
                                               debugShowCheckedModeBanner: false,
@@ -303,6 +310,16 @@ class MyApp extends StatelessWidget {
                                               ],
                                               title: 'Izinto',
                                               home: Wrapper(),
+                                              routes: {
+                                                '/login': (context) =>
+                                                    const PhoneAuthView(),
+                                                '/home': (context) =>
+                                                    const HomeView(),
+                                                '/profile': (context) =>
+                                                    const ProfileView(),
+                                                '/guest-access': (context) =>
+                                                    const GuestAccess(),
+                                              },
                                               theme: ThemeData(
                                                 colorScheme:
                                                     ColorScheme.fromSeed(

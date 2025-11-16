@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -26,19 +27,10 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  CollectionReference _referenceUserInfo =
-      FirebaseFirestore.instance.collection('plans');
-  late Stream<QuerySnapshot> _streamUserInfo;
-
   @override
   void initState() {
     super.initState();
-
-    _streamUserInfo = _referenceUserInfo.snapshots();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Gracefully activate HomeView without collisions
-    });
+    _loadUserDataImmediately();
   }
 
   @override
@@ -46,43 +38,33 @@ class _HomeViewState extends State<HomeView> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final user = Provider.of<UserModel?>(context);
-
-    // Single application point in build
-    WidgetsBinding.instance.addPostFrameCallback((_) {});
-
+  Future<void> _loadUserDataImmediately() async {
+    final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      return StreamBuilder<QuerySnapshot>(
-        stream: _streamUserInfo,
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
-          }
-          if (snapshot.connectionState == ConnectionState.active) {
-            return MainScaffold();
-          }
-          return _buildLoadingScreen();
-        },
-      );
-    } else {
-      return MainScaffold();
+      try {
+        DocumentSnapshot userData = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (userData.exists) {
+          final controller =
+              Provider.of<ProfileViewController>(context, listen: false);
+          controller.updateNewUser(
+              userData['name'] ?? '',
+              userData['surname'] ?? '',
+              userData['email'] ?? '',
+              userData['phone'] ?? '',
+              userData['telephoneSurveyConsent'] ?? false,
+              userData['emailMarketingConsent'] ?? false,
+              userData['wallet'] ?? 0);
+        }
+      } catch (e) {}
     }
   }
 
-  Widget _buildLoadingScreen() {
-    return Scaffold(
-      body: Container(
-        height: double.maxFinite,
-        color: Colors.white,
-        child: Center(
-          child: LiveProgressIndicator(
-            hasOwnDialog: true,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
+  @override
+  Widget build(BuildContext context) {
+    return MainScaffold();
   }
 }

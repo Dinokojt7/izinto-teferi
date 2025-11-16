@@ -69,9 +69,6 @@ class _MaterialTabsHeaderState extends State<MaterialTabsHeader>
           color: Colors.black,
           child: Stack(
             children: [
-              // SizedBox(
-              //   width: 8,
-              // ),
               Padding(
                 padding: EdgeInsets.only(left: Dimensions.width30 * 1.1),
                 child: Align(

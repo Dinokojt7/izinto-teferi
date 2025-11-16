@@ -12,7 +12,7 @@ import 'category_view/controller/category_view_controller.dart';
 
 class SpecialtyWidget extends StatefulWidget {
   final int index;
-  final List<NewSpecialtyModel> homeItemList; // CHANGE: Use NewSpecialtyModel
+  final List<NewSpecialtyModel> homeItemList;
   final BuildContext context;
 
   const SpecialtyWidget({
@@ -89,14 +89,10 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
           setState(() {
             _isTapped = true;
           });
-          if (widget.index != 0) {
-            Provider.of<CategoryViewController>(context, listen: false)
-                .updateCategoryList(1, 1);
-          } else {
+
+          if (isValidIndex) {
             Provider.of<CategoryViewController>(context, listen: false)
                 .updateCategoryList(0, 0);
-          }
-          if (isValidIndex) {
             Provider.of<CategoryViewController>(context, listen: false)
                 .updateTabsControllerIndex(
                     widget.homeItemList[widget.index].name!, widget.index);

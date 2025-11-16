@@ -40,10 +40,12 @@ class HighlightButton extends StatelessWidget {
           vertical: LiveDimensions.width10 / 1.8,
           horizontal: LiveDimensions.width15,
         ),
-        child: PrimaryStyleText(
-          text: text,
-          weight: weight,
-          size: fontSize,
+        child: Center(
+          child: PrimaryStyleText(
+            text: text,
+            weight: weight,
+            size: fontSize,
+          ),
         ),
       ),
     );

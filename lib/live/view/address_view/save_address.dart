@@ -212,10 +212,6 @@ class _SaveAddressState extends State<SaveAddress> {
                 AddressLabelOptions(
                   isEditAddressChild: false,
                 ),
-              if (_isSaving)
-                LiveProgressIndicator(
-                  color: Colors.black,
-                ),
             ],
           );
         });

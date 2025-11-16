@@ -62,7 +62,8 @@ class _ProfileViewState extends State<ProfileView> {
               userData['email'] ?? '',
               userData['phone'] ?? '',
               userData['telephoneSurveyConsent'] ?? false,
-              userData['emailMarketingConsent'] ?? false);
+              userData['emailMarketingConsent'] ?? false,
+              userData['wallet'] ?? 0);
         }
       } catch (e) {
         print('Error loading user data: $e');

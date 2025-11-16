@@ -676,13 +676,14 @@ class ProfileViewController extends ChangeNotifier {
   }
 
   Future<void> updateNewUser(firstName, lastName, emailAddress, phone,
-      telephoneSurveyConsent, emailMarketingConsent) async {
+      telephoneSurveyConsent, emailMarketingConsent, walletBalance) async {
     _firstName = firstName;
     _lastName = lastName;
     _emailAddress = emailAddress;
     _phoneNumber = phone;
     _telephoneSurveyConsent = telephoneSurveyConsent;
     _emailMarketingConsent = emailMarketingConsent;
+    _walletBalance = walletBalance;
     notifyListeners();
     return;
   }

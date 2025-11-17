@@ -61,11 +61,24 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
   void _scrollToIndex(int index) {
     if (!mounted) return;
 
+    // Adjust index since we're starting from index 2 in the ListView
+    final adjustedIndex = index - 2;
+
+    // If adjustedIndex is negative, scroll to beginning
+    if (adjustedIndex < 0) {
+      _scrollController.animateTo(
+        0.0,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
+
     // Calculate the position to scroll to
     final double itemWidth = 100; // Approximate width of each tab
     final double screenWidth = MediaQuery.of(context).size.width;
     final double scrollPosition =
-        (itemWidth * index) - (screenWidth / 2) + (itemWidth / 2);
+        (itemWidth * adjustedIndex) - (screenWidth / 2) + (itemWidth / 2);
 
     _scrollController.animateTo(
       scrollPosition.clamp(0.0, _scrollController.position.maxScrollExtent),
@@ -166,11 +179,11 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
           child: Container(
             height: 54,
             child: ListView.builder(
-              controller: _scrollController, // Use the scroll controller
+              controller: _scrollController,
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.zero,
-              itemCount: _categoriesHeaderTabs.length,
-              itemBuilder: (context, index) => _categoriesHeaderTabs[index],
+              itemCount: _categoriesHeaderTabs.length - 2,
+              itemBuilder: (context, index) => _categoriesHeaderTabs[index + 2],
             ),
           ),
         );

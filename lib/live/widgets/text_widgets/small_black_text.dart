@@ -21,7 +21,7 @@ class SmallBlackText extends StatelessWidget {
       this.align,
       this.maxLines,
       this.decoration,
-      this.font = 'Hind',
+      this.font = 'Poppins',
       this.overFlow = TextOverflow.clip,
       this.size = 0})
       : super(key: key);

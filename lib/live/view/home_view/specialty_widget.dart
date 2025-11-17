@@ -142,7 +142,7 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
                 borderRadius: BorderRadius.circular(Dimensions.radius15),
                 onTap: _isLoading ? null : _handleTap,
                 child: _isLoading
-                    ? _buildSkeletonWidget() // USING THE SKELETON HERE
+                    ? _buildSkeletonWidget()
                     : buildSpecialtyWidget(isValidIndex),
               ),
             ),
@@ -167,25 +167,30 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
         Padding(
           padding: EdgeInsets.only(
             left: 8.0,
+            top: Dimensions.height10 / 3,
             right: 2.0,
             bottom: _getBottomPadding(widget.index),
           ),
           child: SmallBlackText(
             text: itemName,
+            size: Dimensions.font16 / 1.3,
           ),
         ),
         Positioned(
           top: _getTopPosition(widget.index),
           child: widget.index == 0
-              ? Text(
-                  'NEW',
-                  style: TextStyle(
-                    letterSpacing: 2,
-                    overflow: TextOverflow.visible,
-                    fontSize: Dimensions.height20 * 2.2,
-                    fontFamily: 'Cabin',
-                    color: Colors.black,
-                    fontWeight: FontWeight.w900,
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(6.0, 0.0, 8.0, 12.0),
+                  child: Text(
+                    'NEW',
+                    style: TextStyle(
+                      letterSpacing: 2,
+                      overflow: TextOverflow.visible,
+                      fontSize: Dimensions.height20 * 1.8,
+                      fontFamily: 'Cabin',
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 )
               : Center(
@@ -217,7 +222,6 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
     );
   }
 
-  // Your existing helper methods...
   double _getBottomPadding(int index) {
     switch (index) {
       case 1:
@@ -245,10 +249,11 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
       case 1:
         return 5.0;
       case 5:
-        return 14.0;
+        return 10.0;
       case 3:
-      case 4:
         return 18.0;
+      case 4:
+        return 12.0;
       default:
         return 0.0;
     }
@@ -269,9 +274,11 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
   double _getImageHeight(int? id) {
     switch (id) {
       case 5:
-      case 6:
         return 70;
+      case 6:
+        return 75;
       case 3:
+        return 75;
       case 4:
         return 65;
       case 2:

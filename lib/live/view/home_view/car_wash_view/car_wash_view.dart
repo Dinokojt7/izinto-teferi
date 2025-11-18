@@ -195,12 +195,11 @@ class _CarWashViewState extends State<CarWashView> {
                                         children: [
                                           _buildCartItemCard(controller, item,
                                               index, () => setState(() {})),
-                                          if (index < cartItems.length - 1)
-                                            Divider(
-                                              color: Colors.grey.shade400,
-                                              height: 1,
-                                              thickness: 0.5,
-                                            ),
+                                          Divider(
+                                            color: Colors.grey.shade400,
+                                            height: 1,
+                                            thickness: 0.5,
+                                          ),
                                         ],
                                       );
                                     },

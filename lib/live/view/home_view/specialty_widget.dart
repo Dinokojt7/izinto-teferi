@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
+import 'package:izinto/live/view/home_view/view_widgets/new_item_view.dart';
+import 'package:izinto/live/view/user_settings_view/opening_hours.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/new_specialty_model.dart';
 import '../../../models/popular_specialty_model.dart';
 import '../../../utils/dimensions.dart';
+import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/text_widgets/small_black_text.dart';
 import 'category_view/category_view.dart';
 import 'category_view/controller/category_view_controller.dart';
@@ -90,16 +93,24 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
             _isTapped = true;
           });
 
-          if (isValidIndex) {
+          if (isValidIndex && widget.index != 1) {
             Provider.of<CategoryViewController>(context, listen: false)
                 .updateCategoryList(0, 0);
             Provider.of<CategoryViewController>(context, listen: false)
                 .updateTabsControllerIndex(
                     widget.homeItemList[widget.index].name!, widget.index);
+            Provider.of<HomeViewController>(context, listen: false)
+                .navigateToNestedWidget(context, CategoryView());
+          } else if (widget.index == 1) {
+            Provider.of<HomeViewController>(context, listen: false)
+                .onIndependentPageNavigation(
+              context,
+              NewItemView(
+                index: widget.index,
+                homeItemList: widget.homeItemList,
+              ),
+            );
           }
-
-          Provider.of<HomeViewController>(context, listen: false)
-              .navigateToNestedWidget(context, CategoryView());
 
           Future.delayed(const Duration(milliseconds: 200), () {
             if (mounted) {

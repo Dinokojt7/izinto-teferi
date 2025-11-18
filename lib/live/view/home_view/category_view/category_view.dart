@@ -62,7 +62,6 @@ class _CategoryViewState extends State<CategoryView> {
     super.dispose();
   }
 
-  // Helper method to get the relevant list based on service type
   List<dynamic> _getRelevantList(String serviceViewed) {
     switch (serviceViewed) {
       case 'Laundry':
@@ -74,11 +73,10 @@ class _CategoryViewState extends State<CategoryView> {
       case 'Pet Care':
         return petCareList;
       default:
-        return []; // Return empty list for other services
+        return [];
     }
   }
 
-  // Build service slivers for grid layout
   List<Widget> _buildServiceSlivers(String serviceViewed) {
     final relevantList = _getRelevantList(serviceViewed);
 

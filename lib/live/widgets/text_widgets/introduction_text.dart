@@ -7,12 +7,14 @@ class IntroductionText extends StatelessWidget {
   final double? textSize;
   final int? maxLines;
   final Color? color;
+  final TextAlign? align;
   const IntroductionText({
     super.key,
     required this.text,
     this.textSize,
     this.maxLines = 2,
     this.color = Colors.black,
+    this.align,
   });
 
   @override
@@ -22,6 +24,7 @@ class IntroductionText extends StatelessWidget {
         maxWidth: Dimensions.screenWidth - 40, // Account for padding
       ),
       child: Text(
+        textAlign: align,
         text,
         maxLines: maxLines,
         overflow: TextOverflow.ellipsis,

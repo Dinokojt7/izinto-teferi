@@ -27,7 +27,7 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
     // Get.find<SneakersBlanketsController>().sneakersAndBlanketsList,
     Get.find<PopularSpecialtyController>().popularSpecialtyList,
   ];
-  final ScrollController _scrollController = ScrollController(); // Add this
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -61,18 +61,11 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
   void _scrollToIndex(int index) {
     if (!mounted) return;
 
-    // Adjust index since we're starting from index 2 in the ListView
-    final adjustedIndex = index - 2;
-
-    // If adjustedIndex is negative, scroll to beginning
-    if (adjustedIndex < 0) {
-      _scrollController.animateTo(
-        0.0,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      return;
-    }
+    // Adjust index: we're keeping item 0, removing item 1
+    // So displayed indices: [0, 2, 3, 4...]
+    // If index is 0, it stays at position 0
+    // If index is 2+, it moves to position (index - 1)
+    final adjustedIndex = index == 0 ? 0 : index - 1;
 
     // Calculate the position to scroll to
     final double itemWidth = 100; // Approximate width of each tab
@@ -98,7 +91,7 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
 
   @override
   void dispose() {
-    _scrollController.dispose(); // Don't forget to dispose
+    _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -121,6 +114,9 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
       );
     } else {
       for (var i = 0; i < materialTabs.length; i++) {
+        // Skip item 1 (index 1)
+        if (i == 1) continue;
+
         _categoriesHeaderTabs.add(
           Consumer<CategoryViewController>(
             builder: (context, categoryViewController, child) {
@@ -182,8 +178,9 @@ class _MaterialTabsContainerState extends State<MaterialTabsContainer>
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.zero,
-              itemCount: _categoriesHeaderTabs.length - 2,
-              itemBuilder: (context, index) => _categoriesHeaderTabs[index + 2],
+              // No need to subtract 1 from length since we're skipping item 1 in the loop
+              itemCount: _categoriesHeaderTabs.length,
+              itemBuilder: (context, index) => _categoriesHeaderTabs[index],
             ),
           ),
         );

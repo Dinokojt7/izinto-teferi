@@ -1,61 +1,86 @@
-// legal_documents_controller.dart
 import 'package:get/get.dart';
 import 'package:izinto/models/legal_documents_model.dart';
 import '../helpers/data/repository/legal_documents_repo.dart';
+import 'package:flutter/foundation.dart';
 
 class LegalDocumentsController extends GetxController {
   final LegalDocumentsRepo legalDocumentsRepo;
 
   LegalDocumentsController({required this.legalDocumentsRepo});
 
-  List<LegalDocumentCategory> _legalDocuments = [];
+  // Use Rx for reactive state management
+  final RxList<LegalDocumentCategory> _legalDocuments =
+      <LegalDocumentCategory>[].obs;
   List<LegalDocumentCategory> get legalDocuments => _legalDocuments;
 
-  ContactInfo _contactInfo = ContactInfo();
-  ContactInfo get contactInfo => _contactInfo;
+  final Rx<ContactInfo> _contactInfo = ContactInfo().obs;
+  ContactInfo get contactInfo => _contactInfo.value;
 
-  DocumentMetadata _metadata = DocumentMetadata();
-  DocumentMetadata get metadata => _metadata;
+  final Rx<DocumentMetadata> _metadata = DocumentMetadata().obs;
+  DocumentMetadata get metadata => _metadata.value;
 
-  bool _isLoaded = false;
-  bool get isLoaded => _isLoaded;
+  final RxBool _isLoaded = false.obs;
+  bool get isLoaded => _isLoaded.value;
 
-  String _errorMessage = '';
-  String get errorMessage => _errorMessage;
+  final RxString _errorMessage = ''.obs;
+  String get errorMessage => _errorMessage.value;
 
-  bool _isLoading = false; // Add this to track loading state
-  bool get isLoading => _isLoading;
+  final RxBool _isLoading = false.obs;
+  bool get isLoading => _isLoading.value;
 
-  Future<void> getLegalDocuments() async {
+  @override
+  void onInit() {
+    super.onInit();
+    getLegalDocuments();
+  }
+
+  Future<void> getLegalDocuments({bool forceRefresh = false}) async {
+    if (_isLoading.value || (_isLoaded.value && !forceRefresh)) {
+      return;
+    }
+
     try {
-      _isLoading = true; // Set loading to true
-      _isLoaded = false;
-      _errorMessage = '';
-      update();
+      _isLoading.value = true;
+      _errorMessage.value = '';
 
       Response response = await legalDocumentsRepo.getLegalDocuments();
 
       if (response.statusCode == 200) {
         final data = response.body;
         final documents = LegalDocuments.fromJson(data);
-        _legalDocuments = documents.categories;
-        _contactInfo = documents.contactInfo;
-        _metadata = documents.metadata;
-        _isLoaded = true;
-        _errorMessage = ''; // Clear any previous errors
+        _legalDocuments.value = documents.categories;
+        _contactInfo.value = documents.contactInfo;
+        _metadata.value = documents.metadata;
+        _isLoaded.value = true;
+
+        if (kDebugMode) {
+          print(
+              'Legal documents loaded successfully: ${_legalDocuments.length} categories');
+        }
       } else {
-        _errorMessage = 'Failed to load documents: ${response.statusText}';
-        _isLoaded = false;
+        _handleError(
+            'Failed to load documents: ${response.statusCode} ${response.statusText}');
       }
     } catch (error) {
-      print('Error fetching legal documents: $error');
-      _errorMessage =
-          'An error occurred while loading documents. Please check your connection and try again.';
-      _isLoaded = false;
+      _handleError('Network error: $error');
     } finally {
-      _isLoading = false; // Set loading to false when done
+      _isLoading.value = false;
       update();
     }
+  }
+
+  void _handleError(String message) {
+    _errorMessage.value = message;
+    if (kDebugMode) {
+      print('LegalDocumentsController Error: $message');
+    }
+
+    // Auto-retry after 3 seconds
+    Future.delayed(Duration(seconds: 3), () {
+      if (!_isLoaded.value && !_isLoading.value) {
+        getLegalDocuments();
+      }
+    });
   }
 
   // Helper method to get specific document by type
@@ -74,9 +99,13 @@ class LegalDocumentsController extends GetxController {
     return getDocumentByType(documentType) != null;
   }
 
-  @override
-  void onInit() {
-    super.onInit();
-    // Don't load immediately - let the UI trigger the loading
+  // Retry method for manual retry
+  void retryLoading() {
+    getLegalDocuments(forceRefresh: true);
+  }
+
+  // Clear error method
+  void clearError() {
+    _errorMessage.value = '';
   }
 }

@@ -29,7 +29,7 @@ class _MaterialTabsHeaderState extends State<MaterialTabsHeader>
   late TabController _tabController;
   List materialTabs = [];
   final List<List> mainCategoriesList = [
-    Get.find<SneakersBlanketsController>().sneakersAndBlanketsList,
+    //   Get.find<SneakersBlanketsController>().sneakersAndBlanketsList,
     Get.find<PopularSpecialtyController>().popularSpecialtyList,
   ];
   final List headerTabs = Get.find<TabsHeaderController>().tabsHeaderList;

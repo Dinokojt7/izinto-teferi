@@ -58,6 +58,7 @@ class _WrapperState extends State<Wrapper> {
   Map<String, dynamic>? _userProfileData;
   bool _hasError = false;
   bool _hasAddresses = false;
+  final Map<String, bool> _controllerLoadStatus = {};
 
   @override
   void initState() {
@@ -78,13 +79,11 @@ class _WrapperState extends State<Wrapper> {
         return;
       }
 
-      // Load everything in a single sequence to avoid overlapping calls
-      await _loadGuestAddress();
-      await _loadUserProfileData(authService, user.uid);
-      await _loadProfileViewController();
+      // Load critical data first
+      await _loadCriticalData(authService, user.uid);
 
-      // Load non-critical resources in background
-      _loadOtherResources();
+      // Load non-critical data with better error handling
+      await _loadNonCriticalResources();
 
       setState(() {
         _isInitialLoadComplete = true;
@@ -99,6 +98,66 @@ class _WrapperState extends State<Wrapper> {
       });
       FlutterNativeSplash.remove();
     }
+  }
+
+  Future<void> _loadCriticalData(AuthService authService, String uid) async {
+    await _loadGuestAddress();
+    await _loadUserProfileData(authService, uid);
+    await _loadProfileViewController();
+    await _loadOtherResources();
+  }
+
+  Future<void> _loadNonCriticalResources() async {
+    final controllers = [
+      _loadController(
+          'RecommendedSpecialty',
+          () => Get.find<RecommendedSpecialtyController>()
+              .getRecommendedSpecialtyList()),
+      _loadController('HomeItems',
+          () => Get.find<HomeItemsController>().getHomeItemsList()),
+      _loadController(
+          'LaundrySpecialty',
+          () =>
+              Get.find<LaundrySpecialtyController>().getLaundrySpecialtyList()),
+      _loadController(
+          'GasRefillSpecialty',
+          () => Get.find<GasRefillSpecialtyController>()
+              .getGasRefillSpecialtyList()),
+      _loadController(
+          'CarpetCareSpecialty',
+          () => Get.find<CarpetCareSpecialtyController>()
+              .getCarpetCareSpecialtyList()),
+      _loadController(
+          'PetCareSpecialty',
+          () =>
+              Get.find<PetCareSpecialtyController>().getPetCareSpecialtyList()),
+      _loadController(
+          'Cart', () => Get.find<NewCartController>().getCartData()),
+    ];
+
+    // Load controllers with timeout and individual error handling
+    for (var controllerLoad in controllers) {
+      try {
+        await controllerLoad().timeout(Duration(seconds: 10));
+      } catch (e) {
+        print('Controller load error: $e');
+        // Continue with other controllers even if one fails
+      }
+    }
+  }
+
+  Future<void> Function() _loadController(
+      String name, Future<void> Function() loadFunction) {
+    return () async {
+      try {
+        await loadFunction();
+        _controllerLoadStatus[name] = true;
+      } catch (e) {
+        _controllerLoadStatus[name] = false;
+        print('Failed to load $name: $e');
+        rethrow;
+      }
+    };
   }
 
   Future<void> _loadGuestAddress() async {
@@ -154,10 +213,23 @@ class _WrapperState extends State<Wrapper> {
     }
   }
 
+  Future<void> _loadControllerWithTimeout(
+      Future<void> Function() loadFunction, String controllerName) async {
+    try {
+      await loadFunction().timeout(Duration(seconds: 10));
+    } catch (e) {
+      print('$controllerName load timeout/error: $e');
+      // Don't rethrow - let other controllers continue loading
+    }
+  }
+
   Future<void> _loadOtherResources() async {
     try {
       await Future.wait(
           [
+            _loadControllerWithTimeout(
+                () => Get.find<TabsHeaderController>().getTabsHeaderList(),
+                'TabsHeader'),
             Get.find<RecommendedSpecialtyController>()
                 .getRecommendedSpecialtyList(),
             Get.find<CartController>().getCartHistoryList(),

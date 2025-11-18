@@ -200,6 +200,7 @@ class _EditAddressState extends State<EditAddress> {
                   ),
                 if (_isSaving)
                   LiveProgressIndicator(
+                    hasOwnDialog: true,
                     color: Colors.black,
                   ),
               ],

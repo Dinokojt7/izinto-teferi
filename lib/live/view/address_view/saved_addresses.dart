@@ -91,7 +91,6 @@ class _SavedAddressesState extends State<SavedAddresses> {
                           EdgeInsets.only(left: 24.0, top: 25.0, right: 24.0),
                       child:
 // In your SavedAddresses widget build method, update the ListView.builder:
-// In your SavedAddresses widget build method, update the ListView.builder:
                           ListView.builder(
                         scrollDirection: Axis.vertical,
                         itemCount: items.length,

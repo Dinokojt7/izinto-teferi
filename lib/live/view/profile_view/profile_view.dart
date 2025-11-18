@@ -309,6 +309,7 @@ class _ProfileViewState extends State<ProfileView> {
                                   padding:
                                       EdgeInsets.only(left: 24.0, right: 24.0),
                                   child: SaveButton(
+                                    isLoading: controller.isLoading,
                                     isActive: controller.isValid,
                                     description: 'Save changes',
                                     isAuthScreen: false,
@@ -328,7 +329,11 @@ class _ProfileViewState extends State<ProfileView> {
                 ),
               ),
             ),
-            if (controller.isLoading) LiveProgressIndicator(),
+            if (controller.isLoading)
+              LiveProgressIndicator(
+                color: Colors.black,
+                hasOwnDialog: true,
+              ),
           ],
         ),
       );

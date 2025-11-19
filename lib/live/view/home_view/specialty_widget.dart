@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:izinto/live/view/home_view/view_widgets/new_item_view.dart';
 import 'package:izinto/live/view/user_settings_view/opening_hours.dart';
+import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/new_specialty_model.dart';
@@ -10,6 +12,7 @@ import '../../../models/popular_specialty_model.dart';
 import '../../../utils/dimensions.dart';
 import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/text_widgets/small_black_text.dart';
+import '../auth_view/phone_auth_view.dart';
 import 'category_view/category_view.dart';
 import 'category_view/controller/category_view_controller.dart';
 
@@ -46,7 +49,6 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
     });
   }
 
-  // ADD THIS METHOD BACK:
   Widget _buildSkeletonWidget() {
     return Stack(
       children: [
@@ -83,6 +85,11 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
   Widget build(BuildContext context) {
     return Consumer<CategoryViewController>(
       builder: (context, _categoryViewController, child) {
+        final UserModel? user = Provider.of<UserModel>(context);
+        final _homeController =
+            Provider.of<HomeViewController>(context, listen: false);
+        final _categoryViewController =
+            Provider.of<CategoryViewController>(context, listen: false);
         // Safe index check
         final bool isValidIndex = widget.index < widget.homeItemList.length;
 
@@ -94,22 +101,26 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
           });
 
           if (isValidIndex && widget.index != 1) {
-            Provider.of<CategoryViewController>(context, listen: false)
-                .updateCategoryList(0, 0);
-            Provider.of<CategoryViewController>(context, listen: false)
-                .updateTabsControllerIndex(
-                    widget.homeItemList[widget.index].name!, widget.index);
-            Provider.of<HomeViewController>(context, listen: false)
-                .navigateToNestedWidget(context, CategoryView());
+            _categoryViewController.updateCategoryList(0, 0);
+            _categoryViewController.updateTabsControllerIndex(
+                widget.homeItemList[widget.index].name!, widget.index);
+            _homeController.navigateToNestedWidget(context, CategoryView());
           } else if (widget.index == 1) {
-            Provider.of<HomeViewController>(context, listen: false)
-                .onIndependentPageNavigation(
-              context,
-              NewItemView(
-                index: widget.index,
-                homeItemList: widget.homeItemList,
-              ),
-            );
+            if (user != null) {
+              _homeController.onIndependentPageNavigation(
+                context,
+                NewItemView(
+                  index: widget.index,
+                  homeItemList: widget.homeItemList,
+                ),
+              );
+            } else {
+              GenericSnackBar().showCustomSnackBar(() {
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                _homeController.onIndependentPageNavigation(
+                    context, PhoneAuthView());
+              }, context, 'Please login to continue', false);
+            }
           }
 
           Future.delayed(const Duration(milliseconds: 200), () {

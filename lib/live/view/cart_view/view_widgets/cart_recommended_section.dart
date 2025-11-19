@@ -295,7 +295,7 @@ class _CartRecommendedSectionState extends State<CartRecommendedSection> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height / 2.8,
+        height: MediaQuery.of(context).size.height / 2.6,
         padding: EdgeInsets.symmetric(
             horizontal: Dimensions.width30, vertical: Dimensions.width15),
         decoration: BoxDecoration(

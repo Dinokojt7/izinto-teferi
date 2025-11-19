@@ -45,6 +45,7 @@ class SpecialityItemView extends StatelessWidget {
                     Padding(
                       padding: EdgeInsets.only(
                         left: Dimensions.width15,
+                        top: Dimensions.height20,
                         right: Dimensions.width15,
                       ),
                       child: Column(
@@ -53,10 +54,10 @@ class SpecialityItemView extends StatelessWidget {
                             text: 'EASY WASH MOBILE CAR WASH SERVICE',
                           ),
                           SizedBox(
-                            height: Dimensions.height20,
+                            height: Dimensions.height20 / 1.5,
                           ),
                           IntroductionText(
-                            text: 'Why Mobile Car Wash',
+                            text: 'Why Mobile Car Wash?',
                             textSize: Dimensions.font20 * 1.1,
                           ),
                           SizedBox(
@@ -69,7 +70,7 @@ class SpecialityItemView extends StatelessWidget {
                           ),
                           SmallBlackBald(
                             text:
-                                'Leave the hussle and tussle of driving through busy roads to get to the car wash. Easy wash lets you take care of the car wash with just a few clicks.',
+                                "Skip the traffic and queues. Get your car washed with just a few taps - we bring the car wash to you.",
                             isBold: false,
                           ),
                           SizedBox(

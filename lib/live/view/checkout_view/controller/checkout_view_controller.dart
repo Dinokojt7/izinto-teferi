@@ -183,6 +183,7 @@ class CheckoutViewController extends ChangeNotifier {
     try {
       _isLoadingIndicator = true;
       notifyListeners();
+      await Future.delayed(const Duration(seconds: 5));
 
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');

@@ -181,7 +181,7 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
           elevation: 0,
           title: Column(
             crossAxisAlignment:
-                CrossAxisAlignment.center, // This should already be there
+                CrossAxisAlignment.center,
             children: [
               Opacity(
                 opacity: disappear(shrinkOffset).clamp(0.0, 1.0),

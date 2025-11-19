@@ -42,6 +42,45 @@ class ViewSpecialtyInfo extends StatefulWidget {
 }
 
 class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
+  // Track if controllers are ready
+  bool _controllersReady = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
+    try {
+      // Ensure all required controllers are registered and ready
+      if (!Get.isRegistered<SizeSelectionController>()) {
+        Get.put(SizeSelectionController());
+      }
+      if (!Get.isRegistered<NewCartController>()) {
+        Get.put(NewCartController(cartRepo: Get.find()));
+      }
+      if (!Get.isRegistered<FavoriteController>()) {
+        Get.put(FavoriteController());
+      }
+      if (!Get.isRegistered<TemperatureController>()) {
+        Get.put(TemperatureController());
+      }
+
+      setState(() {
+        _controllersReady = true;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error initializing controllers: $e');
+      }
+      setState(() {
+        _hasError = true;
+      });
+    }
+  }
+
   dynamic get item {
     try {
       if (widget.item != null) {
@@ -56,7 +95,9 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 
       throw Exception('ViewSpecialtyInfo: Could not resolve item.');
     } catch (e) {
-      if (kDebugMode) {}
+      if (kDebugMode) {
+        print('Error getting item: $e');
+      }
       return _createFallbackItem();
     }
   }
@@ -106,6 +147,14 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 
   @override
   Widget build(BuildContext context) {
+    if (_hasError) {
+      return _buildErrorScreen('Failed to initialize controllers', _onTap);
+    }
+
+    if (!_controllersReady) {
+      return _buildLoadingScreen();
+    }
+
     ReleaseDebug.logItem('ViewSpecialtyInfo', item);
 
     if (item == null) {
@@ -126,55 +175,93 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       },
       child: Scaffold(
         backgroundColor: Colors.white.withOpacity(0.97),
-        body: GetBuilder<SizeSelectionController>(builder: (sizeController) {
-          try {
+        body: _buildSafeGetBuilder<SizeSelectionController>(
+          builder: (sizeController) {
+            try {
+              final shouldShowSizeSelector =
+                  sizeController.shouldShowSizeSelector(item);
+
+              return CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    automaticallyImplyLeading: false,
+                    toolbarHeight: 50,
+                    title: Padding(
+                      padding: EdgeInsets.only(right: Dimensions.width10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          BackArrow(iconColor: Colors.black, onTap: _onTap),
+                          _buildFavoriteIcon(item),
+                        ],
+                      ),
+                    ),
+                    pinned: true,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    expandedHeight: 300,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: _buildProductImage(item),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: Dimensions.width20,
+                        right: Dimensions.width20,
+                      ),
+                      child: _buildContent(item, shouldShowSizeSelector),
+                    ),
+                  )
+                ],
+              );
+            } catch (e) {
+              return _buildErrorScreen('Error building screen: $e', _onTap);
+            }
+          },
+        ),
+        bottomNavigationBar: _buildSafeGetBuilder<SizeSelectionController>(
+          builder: (sizeController) {
             final shouldShowSizeSelector =
                 sizeController.shouldShowSizeSelector(item);
 
-            return CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  automaticallyImplyLeading: false,
-                  toolbarHeight: 50,
-                  title: Padding(
-                    padding: EdgeInsets.only(right: Dimensions.width10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        BackArrow(iconColor: Colors.black, onTap: _onTap),
-                        _buildFavoriteIcon(item),
-                      ],
-                    ),
-                  ),
-                  pinned: true,
-                  backgroundColor: Colors.white.withOpacity(0.1),
-                  expandedHeight: 300,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: _buildProductImage(item),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: Dimensions.width20,
-                      right: Dimensions.width20,
-                    ),
-                    child: _buildContent(item, shouldShowSizeSelector),
-                  ),
-                )
-              ],
-            );
-          } catch (e) {
-            return _buildErrorScreen('Error building screen: $e', _onTap);
-          }
-        }),
-        bottomNavigationBar:
-            GetBuilder<SizeSelectionController>(builder: (sizeController) {
-          final shouldShowSizeSelector =
-              sizeController.shouldShowSizeSelector(item);
+            return _buildBottomCartSection(
+                item, context, shouldShowSizeSelector);
+          },
+        ),
+      ),
+    );
+  }
 
-          return _buildBottomCartSection(item, context, shouldShowSizeSelector);
-        }),
+  // Safe GetBuilder wrapper to prevent null check errors
+  Widget _buildSafeGetBuilder<T extends GetxController>({
+    required Widget Function(T) builder,
+    Widget? loadingWidget,
+  }) {
+    if (!Get.isRegistered<T>()) {
+      return loadingWidget ?? SizedBox.shrink();
+    }
+
+    return GetBuilder<T>(
+      initState: (_) {},
+      dispose: (_) {},
+      builder: (controller) {
+        return builder(controller);
+      },
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Scaffold(
+      backgroundColor: Colors.white.withOpacity(0.97),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text('Loading...'),
+          ],
+        ),
       ),
     );
   }
@@ -235,7 +322,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
   }
 
   Widget _buildPriceAndAddSection(dynamic item, bool shouldShowSizeSelector) {
-    return GetBuilder<NewCartController>(
+    return _buildSafeGetBuilder<NewCartController>(
       builder: (cartController) {
         // Get the current size selection
         final sizeController = Get.find<SizeSelectionController>();
@@ -506,7 +593,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 
   Widget _buildBottomCartSection(
       dynamic item, BuildContext context, bool shouldShowSizeSelector) {
-    return GetBuilder<NewCartController>(
+    return _buildSafeGetBuilder<NewCartController>(
       builder: (cartController) {
         try {
           // Get the current size selection
@@ -609,7 +696,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
   }
 
   Widget _buildSizeSelector(NewSpecialtyModel item) {
-    return GetBuilder<SizeSelectionController>(
+    return _buildSafeGetBuilder<SizeSelectionController>(
       builder: (sizeController) {
         try {
           final selectedSize = sizeController.getSelectedSize(item.id,
@@ -920,7 +1007,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
   }
 
   Widget _buildFavoriteIcon(dynamic item) {
-    return GetBuilder<FavoriteController>(
+    return _buildSafeGetBuilder<FavoriteController>(
       builder: (favoriteController) {
         final sizeController = Get.find<SizeSelectionController>();
         final shouldShowSizeSelector =
@@ -991,7 +1078,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
       return SizedBox.shrink();
     }
 
-    return GetBuilder<TemperatureController>(
+    return _buildSafeGetBuilder<TemperatureController>(
       builder: (tempController) {
         final isHeated = tempController.isItemHeated(item.id);
         return GestureDetector(

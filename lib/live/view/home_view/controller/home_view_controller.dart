@@ -60,6 +60,11 @@ class HomeViewController extends ChangeNotifier {
     }
   }
 
+  Future<void> changeSelectedIndex() async {
+    _selectedIndex = 0;
+    notifyListeners();
+  }
+
   bool _isLoadingIndicator = false;
   bool get isLoadingIndicator => _isLoadingIndicator;
 

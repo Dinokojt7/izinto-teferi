@@ -1,6 +1,7 @@
 // view_order_screen.dart
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/home_view/home_view.dart';
+import 'package:izinto/live/view/home_view/view_widgets/main_scaffold.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/order_timeline_widget.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/service_type_dropdown.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/services_dialog.dart';
@@ -10,6 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../auxiliery_classes/generic_app_bar.dart';
 import '../../../../utilities/generic_system_navigation.dart';
 import '../../../../utilities/service_type_utils.dart';
+import '../../../../wrapper.dart';
 import '../../../home_view/controller/home_view_controller.dart';
 import '../../../order_support/order_support_chat.dart';
 
@@ -604,13 +606,13 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvoked: (didPop) async {
         if (!didPop) {
           if (widget.isFromCheckout) {
             homeViewController.changeIndex(0, false);
-
+            await homeViewController.changeSelectedIndex();
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => HomeView()),
+              MaterialPageRoute(builder: (_) => MainScaffold()),
               (Route<dynamic> route) => false, // removes everything
             );
           } else {

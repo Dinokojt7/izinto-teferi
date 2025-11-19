@@ -9,6 +9,9 @@ import 'package:izinto/live/view/cart_view/view_widgets/cart_recommended_section
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/cart_controller.dart';
+import '../../../controllers/favorite_controller.dart';
+import '../../../controllers/size_selection_controller.dart';
+import '../../../controllers/temperature_controller.dart';
 import '../../../pages/cart/cart_processes_and_widgets/no_items.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';
 import '../../widgets/generic_center_dialog.dart';
@@ -19,9 +22,25 @@ import '../home_view/controller/home_view_controller.dart';
 
 class CartViewPage extends StatelessWidget {
   const CartViewPage({Key? key}) : super(key: key);
+// Add this method to your main.dart or app initialization
+  void _ensureCartControllers() {
+    if (!Get.isRegistered<TemperatureController>()) {
+      Get.put(TemperatureController());
+    }
+    if (!Get.isRegistered<FavoriteController>()) {
+      Get.put(FavoriteController());
+    }
+    if (!Get.isRegistered<SizeSelectionController>()) {
+      Get.put(SizeSelectionController());
+    }
+  }
 
+// Call this before building any cart-related screens
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureCartControllers();
+    });
     return GetBuilder<NewCartController>(builder: (_cartController) {
       final homeViewController =
           Provider.of<HomeViewController>(context, listen: false);

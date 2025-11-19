@@ -111,9 +111,10 @@ Future<void> init() async {
   Get.lazyPut(() => CarpetCareSpecialtyController(
       carpetCareRepo: Get.find(), cartRepo: Get.find()));
 
+// In your dependencies.dart
   Get.lazyPut(() => PetCareSpecialtyController(
-      petCareRepo: Get.find(), cartRepo: Get.find()));
-
+        petCareRepo: Get.find(), // Remove cartRepo parameter
+      ));
   // In your main binding file
   Get.lazyPut(() => LegalDocumentsRepo(apiClient: Get.find()));
   Get.lazyPut(() => LegalDocumentsController(legalDocumentsRepo: Get.find()));

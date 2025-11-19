@@ -167,14 +167,12 @@ class CartProductView extends StatelessWidget {
                           maxLines: 1,
                         ),
                       ),
-// In CartProductView, update the CartProductActions usage:
                       CartProductActions(
                         quantity: cartItem.quantity!,
                         index: index,
                         productName: specialty.name ?? 'Item',
                         viewContext: context,
-                        specialty:
-                            specialty, // Pass the extracted specialty, not the cartItem
+                        specialty: specialty,
                       ),
                     ],
                   )
@@ -188,7 +186,6 @@ class CartProductView extends StatelessWidget {
   }
 
   // Helper method to extract specialty from cart item
-// Helper method to extract specialty from cart item
   dynamic _getSpecialty(NewCartModel cartItem) {
     if (cartItem.specialty is NewSpecialtyModel) {
       return cartItem.specialty;
@@ -236,7 +233,16 @@ class CartProductView extends StatelessWidget {
         iconColor: Colors.grey,
       );
     } else {
-      // Toggleable for laundry and pet care
+      // Toggleable for laundry and pet care - WITH SAFETY CHECK
+      if (!Get.isRegistered<TemperatureController>()) {
+        return AppIcon(
+          size: 24,
+          icon: Icons.thermostat,
+          backgroundColor: Colors.grey.withOpacity(0.1),
+          iconColor: Colors.grey,
+        );
+      }
+
       return GetBuilder<TemperatureController>(
         builder: (tempController) {
           final isHeated = tempController.isItemHeated(specialty.id);
@@ -313,6 +319,15 @@ class CartProductView extends StatelessWidget {
   }
 
   Widget _buildFavoriteIcon(dynamic specialty, BuildContext context) {
+    // SAFETY CHECK: Ensure FavoriteController is registered
+    if (!Get.isRegistered<FavoriteController>()) {
+      return Icon(
+        MdiIcons.heartOutline,
+        color: Colors.black.withOpacity(0.5),
+        size: 20,
+      );
+    }
+
     return GetBuilder<FavoriteController>(
       builder: (favoriteController) {
         final isFavorite = favoriteController.isFavorite(specialty);

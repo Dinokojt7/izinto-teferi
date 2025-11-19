@@ -2,20 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:izinto/helpers/data/repository/pet_care_specialty_repo.dart';
 import 'package:izinto/models/new_specialty_model.dart';
-import 'package:izinto/models/new_cart_model.dart';
-import '../helpers/data/repository/cart_repo.dart';
-import '../live/utilities/price_helper.dart';
 
 class PetCareSpecialtyController extends GetxController {
   final PetCareSpecialtyRepo petCareRepo;
-  final CartRepo cartRepo;
 
   PetCareSpecialtyController({
-    required this.cartRepo,
     required this.petCareRepo,
   });
 
-  // Use Rx for reactive state management
   final RxList<NewSpecialtyModel> _petCareSpecialtyList =
       <NewSpecialtyModel>[].obs;
   List<NewSpecialtyModel> get petCareSpecialtyList => _petCareSpecialtyList;
@@ -29,18 +23,19 @@ class PetCareSpecialtyController extends GetxController {
   final RxBool _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
 
-  Map<int, NewCartModel> _items = {};
-  Map<int, NewCartModel> get getItems => _items;
-
-  int _quantity = 0;
-  int get quantity => _quantity;
-  int _inCartItems = 0;
-  int get inCartItems => _inCartItems + _quantity;
-
   @override
   void onInit() {
     super.onInit();
-    getPetCareSpecialtyList();
+    // Use delayed initialization to avoid race conditions
+    Future.microtask(() => getPetCareSpecialtyList());
+  }
+
+  @override
+  void onClose() {
+    // Don't manually close Rx variables - GetX handles this
+    // Just clear the data if needed
+    _petCareSpecialtyList.clear();
+    super.onClose();
   }
 
   Future<void> getPetCareSpecialtyList({bool forceRefresh = false}) async {
@@ -56,8 +51,8 @@ class PetCareSpecialtyController extends GetxController {
 
       if (response.statusCode == 200) {
         _petCareSpecialtyList.clear();
-        _petCareSpecialtyList
-            .addAll(NewSpecialty.fromJson(response.body).specialties);
+        final specialties = NewSpecialty.fromJson(response.body).specialties;
+        _petCareSpecialtyList.addAll(specialties);
         _isLoaded.value = true;
 
         if (kDebugMode) {
@@ -72,14 +67,13 @@ class PetCareSpecialtyController extends GetxController {
       _handleError('Network error: $e');
     } finally {
       _isLoading.value = false;
-      update();
     }
   }
 
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-
+      print('PetCareSpecialtyController Error: $message');
     }
 
     // Auto-retry after 3 seconds
@@ -88,103 +82,6 @@ class PetCareSpecialtyController extends GetxController {
         getPetCareSpecialtyList();
       }
     });
-  }
-
-  void addItem(NewSpecialtyModel specialty, int quantity) {
-    try {
-      var totalQuantity = 0;
-
-      if (_items.containsKey(specialty.id!)) {
-        _items.update(specialty.id!, (value) {
-          totalQuantity = value.quantity! + quantity;
-
-          return NewCartModel(
-            id: value.id,
-            name: value.name,
-            price: PriceHelper.getPrice(specialty),
-            time: DateTime.now().toString(),
-            img: specialty.img,
-            type: specialty.type,
-            material: specialty.material,
-            quantity: value.quantity! + quantity,
-            isExist: true,
-            provider: specialty.provider,
-            specialty: specialty,
-          );
-        });
-
-        if (totalQuantity <= 0) {
-          _items.remove(specialty.id);
-        }
-      } else {
-        if (quantity > 0) {
-          _items.putIfAbsent(specialty.id!, () {
-            return NewCartModel(
-              id: specialty.id,
-              name: specialty.name,
-              price: PriceHelper.getPrice(specialty),
-              time: DateTime.now().toString(),
-              img: specialty.img,
-              type: specialty.type,
-              material: specialty.material,
-              quantity: quantity,
-              isExist: true,
-              provider: specialty.provider,
-              specialty: specialty,
-            );
-          });
-        } else {
-          Get.snackbar(
-            'Item count 0',
-            'Please select items to add to cart',
-          );
-        }
-      }
-
-      cartRepo.addToNewCartList(getItems.values.toList());
-      update();
-    } catch (e) {
-      if (kDebugMode) {
-
-      }
-      Get.snackbar('Error', 'Failed to add item to cart');
-    }
-  }
-
-  void setQuantity(bool isIncrement) {
-    if (isIncrement) {
-      _quantity = checkQuantity(_quantity + 1);
-    } else {
-      _quantity = checkQuantity(_quantity - 1);
-    }
-    update();
-  }
-
-  int checkQuantity(int quantity) {
-    if ((_inCartItems + quantity) < 0) {
-      Get.snackbar(
-        'Item count 0',
-        'You don\'t have items',
-      );
-      if (_inCartItems > 0) {
-        _quantity = -_inCartItems;
-        return _quantity;
-      }
-      return 0;
-    } else if ((_inCartItems + quantity) > 20) {
-      Get.snackbar('Item count 20', 'Maximum number of items selected');
-      return 20;
-    } else {
-      return quantity;
-    }
-  }
-
-  int getQuantity(NewSpecialtyModel specialty) {
-    return _items[specialty.id]?.quantity ?? 0;
-  }
-
-  bool existInCart(NewSpecialtyModel specialty) {
-    return _items.containsKey(specialty.id);
   }
 
   // Retry method for manual retry
@@ -196,4 +93,12 @@ class PetCareSpecialtyController extends GetxController {
   void clearError() {
     _errorMessage.value = '';
   }
+
+  // Helper method to ensure list is never null
+  List<NewSpecialtyModel> getSafePetCareList() {
+    return _petCareSpecialtyList.isEmpty ? [] : _petCareSpecialtyList;
+  }
+
+  // Check if list is ready to use
+  bool get isListReady => _isLoaded.value && _petCareSpecialtyList.isNotEmpty;
 }

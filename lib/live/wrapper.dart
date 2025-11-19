@@ -91,7 +91,6 @@ class _WrapperState extends State<Wrapper> {
 
       FlutterNativeSplash.remove();
     } catch (e) {
-
       setState(() {
         _hasError = true;
         _isInitialLoadComplete = true;
@@ -140,7 +139,6 @@ class _WrapperState extends State<Wrapper> {
       try {
         await controllerLoad().timeout(Duration(seconds: 10));
       } catch (e) {
-
         // Continue with other controllers even if one fails
       }
     }
@@ -165,9 +163,7 @@ class _WrapperState extends State<Wrapper> {
       final addressController =
           Provider.of<MainAddressViewController>(context, listen: false);
       await addressController.loadGuestAddressFromLocalStorage();
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   Future<void> _loadUserProfileData(AuthService authService, String uid) async {
@@ -195,7 +191,6 @@ class _WrapperState extends State<Wrapper> {
       // Check addresses once
       _hasAddresses = await authService.hasAddresses();
     } catch (e) {
-
       setState(() {
         _hasError = true;
       });
@@ -208,9 +203,7 @@ class _WrapperState extends State<Wrapper> {
           Provider.of<ProfileViewController>(context, listen: false);
       await controller.getData();
       await controller.getAddresses();
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   Future<void> _loadControllerWithTimeout(
@@ -218,11 +211,23 @@ class _WrapperState extends State<Wrapper> {
     try {
       await loadFunction().timeout(Duration(seconds: 10));
     } catch (e) {
-
       // Don't rethrow - let other controllers continue loading
     }
   }
 
+  Future<void> _ensureCartControllers() async {
+    if (!Get.isRegistered<TemperatureController>()) {
+      Get.put(TemperatureController());
+    }
+    if (!Get.isRegistered<FavoriteController>()) {
+      Get.put(FavoriteController());
+    }
+    if (!Get.isRegistered<SizeSelectionController>()) {
+      Get.put(SizeSelectionController());
+    }
+  }
+
+// Call this before building any cart-related screens
   Future<void> _loadOtherResources() async {
     try {
       await Future.wait(
@@ -230,6 +235,7 @@ class _WrapperState extends State<Wrapper> {
             _loadControllerWithTimeout(
                 () => Get.find<TabsHeaderController>().getTabsHeaderList(),
                 'TabsHeader'),
+            _ensureCartControllers,
             Get.find<RecommendedSpecialtyController>()
                 .getRecommendedSpecialtyList(),
             Get.find<CartController>().getCartHistoryList(),
@@ -256,9 +262,7 @@ class _WrapperState extends State<Wrapper> {
             Get.find<SubscriptionPlansController>().getSubscriptionPlansList(),
           ] as Iterable<Future>,
           eagerError: false);
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   Widget _buildErrorScreen() {

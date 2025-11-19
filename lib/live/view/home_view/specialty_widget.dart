@@ -85,11 +85,13 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
   Widget build(BuildContext context) {
     return Consumer<CategoryViewController>(
       builder: (context, _categoryViewController, child) {
-        final UserModel? user = Provider.of<UserModel>(context);
+        // FIXED: Use UserModel? instead of UserModel to handle null case
+        final UserModel? user = Provider.of<UserModel?>(context);
         final _homeController =
             Provider.of<HomeViewController>(context, listen: false);
         final _categoryViewController =
             Provider.of<CategoryViewController>(context, listen: false);
+
         // Safe index check
         final bool isValidIndex = widget.index < widget.homeItemList.length;
 
@@ -106,7 +108,8 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
                 widget.homeItemList[widget.index].name!, widget.index);
             _homeController.navigateToNestedWidget(context, CategoryView());
           } else if (widget.index == 1) {
-            if (user != null) {
+            // FIXED: Check if user is null (not logged in)
+            if (user?.uid != null && user!.uid!.isNotEmpty) {
               _homeController.onIndependentPageNavigation(
                 context,
                 NewItemView(
@@ -176,7 +179,7 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
 
   Widget buildSpecialtyWidget(bool isValidIndex) {
     if (!isValidIndex) {
-      return _buildSkeletonWidget(); // AND HERE FOR INVALID INDEX
+      return _buildSkeletonWidget();
     }
 
     final item = widget.homeItemList[widget.index];

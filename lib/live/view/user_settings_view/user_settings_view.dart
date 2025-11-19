@@ -101,7 +101,6 @@ class _UserSettingsViewState extends State<UserSettingsView>
             );
           }
         } catch (e) {
-
           return Center();
         }
       },
@@ -181,6 +180,8 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
           toolbarHeight: 200,
           elevation: 0,
           title: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.center, // This should already be there
             children: [
               Opacity(
                 opacity: disappear(shrinkOffset).clamp(0.0, 1.0),
@@ -190,12 +191,15 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
                 ),
               ),
               SizedBox(height: 5.0),
-              _profileController.firstName == '' ||
-                      _profileController.firstName == null
-                  ? BigMallanna(text1: 'Hello', text2: 'Welcome')
-                  : BigMallanna(
-                      text1: '${_profileController.firstName}',
-                      text2: '${_profileController.lastName}'),
+              Center(
+                // Add this Center widget to ensure BigMallanna is centered
+                child: _profileController.firstName == '' ||
+                        _profileController.firstName == null
+                    ? BigMallanna(text1: 'Hello', text2: 'Welcome')
+                    : BigMallanna(
+                        text1: '${_profileController.firstName}',
+                        text2: '${_profileController.lastName}'),
+              ),
               Opacity(
                 opacity: walletOpacity(shrinkOffset).clamp(0.0, 1.0),
                 child: Column(

@@ -585,8 +585,6 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
         );
       });
     } catch (e) {
-
-
       // Fallback: try regular navigation
       try {
         Navigator.of(context).pop(); // Ensure bottom sheet is closed
@@ -595,9 +593,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
             builder: (context) => OrderSupportChat(order: order),
           ),
         );
-      } catch (e2) {
-
-      }
+      } catch (e2) {}
     }
   }
 
@@ -606,104 +602,123 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
     final homeViewController =
         Provider.of<HomeViewController>(context, listen: false);
 
-    return GestureDetector(
-      onTap: () {
-        if (_isServicesDialogOpen) {
-          _closeServicesDialog();
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          if (widget.isFromCheckout) {
+            homeViewController.changeIndex(0, false);
+
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => HomeView()),
+              (Route<dynamic> route) => false, // removes everything
+            );
+          } else {
+            _applySystemChromeSettings();
+            Navigator.of(context).pop();
+          }
         }
       },
-      child: Stack(
-        children: [
-          Scaffold(
-            backgroundColor: Colors.white.withOpacity(0.97),
-            appBar: AppBar(
-              elevation: 0,
-              backgroundColor: Colors.white,
-              automaticallyImplyLeading: false,
-              toolbarHeight: 0,
-            ),
-            body: SafeArea(
-              child: Column(
-                children: [
-                  GenericAppBar(
-                    removeLeading: widget.isFromCheckout,
-                    onTap: _handleBackNavigation,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    heading: widget.orderNumber,
-                  ),
-                  SizedBox(
-                    height: Dimensions.height10,
-                  ),
+      child: GestureDetector(
+        onTap: () {
+          if (_isServicesDialogOpen) {
+            _closeServicesDialog();
+          }
+        },
+        child: Stack(
+          children: [
+            Scaffold(
+              backgroundColor: Colors.white.withOpacity(0.97),
+              appBar: AppBar(
+                elevation: 0,
+                backgroundColor: Colors.white,
+                automaticallyImplyLeading: false,
+                toolbarHeight: 0,
+              ),
+              body: SafeArea(
+                child: Column(
+                  children: [
+                    GenericAppBar(
+                      removeLeading: widget.isFromCheckout,
+                      onTap: _handleBackNavigation,
+                      backgroundColor: Colors.white,
+                      textColor: Colors.black,
+                      heading: widget.orderNumber,
+                    ),
+                    SizedBox(
+                      height: Dimensions.height10,
+                    ),
 
-                  // Service Type Dropdown with View Details - Split layout
-                  ServiceTypeDropdown(
-                    serviceTypes: _serviceTypes,
-                    selectedServiceType: _selectedServiceType,
-                    onServiceTypeChanged: _onServiceTypeChanged,
-                    order: widget.order,
-                    onViewDetails: () => _showDetailsBottomSheet(widget.order),
-                    onShowServicesDialog: _toggleServicesDialog,
-                  ),
-                  SizedBox(
-                    height: Dimensions.height10,
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          // Vacuuming Image
-                          Container(
-                            height: MediaQuery.of(context).size.height * 0.25,
-                            margin: EdgeInsets.symmetric(
-                              horizontal: Dimensions.width30,
-                              vertical: Dimensions.height20,
+                    // Service Type Dropdown with View Details - Split layout
+                    ServiceTypeDropdown(
+                      serviceTypes: _serviceTypes,
+                      selectedServiceType: _selectedServiceType,
+                      onServiceTypeChanged: _onServiceTypeChanged,
+                      order: widget.order,
+                      onViewDetails: () =>
+                          _showDetailsBottomSheet(widget.order),
+                      onShowServicesDialog: _toggleServicesDialog,
+                    ),
+                    SizedBox(
+                      height: Dimensions.height10,
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Vacuuming Image
+                            Container(
+                              height: MediaQuery.of(context).size.height * 0.25,
+                              margin: EdgeInsets.symmetric(
+                                horizontal: Dimensions.width30,
+                                vertical: Dimensions.height20,
+                              ),
+                              child: Image.asset(
+                                'assets/image/vacuuming.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey.shade200,
+                                    child: Icon(
+                                      Icons.shopping_bag,
+                                      size: 50,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                            child: Image.asset(
-                              'assets/image/vacuuming.png',
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey.shade200,
-                                  child: Icon(
-                                    Icons.shopping_bag,
-                                    size: 50,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                );
-                              },
+                            SizedBox(
+                              height: Dimensions.bottomHeightBar / 2,
                             ),
-                          ),
-                          SizedBox(
-                            height: Dimensions.bottomHeightBar / 2,
-                          ),
-                          // Order Timeline
-                          _buildOrderTimeline(),
-                        ],
+                            // Order Timeline
+                            _buildOrderTimeline(),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Tap overlay (stays full screen)
-          if (_isServicesDialogOpen)
-            Positioned.fill(
-              child: Container(
-                color: Colors.transparent,
+                  ],
+                ),
               ),
             ),
 
-          // ServicesDialog with adjusted position
-          ServicesDialog(
-            isDialogOpen: _isServicesDialogOpen,
-            serviceTypes: _serviceTypes,
-            onServiceTypeSelected: _onServiceTypeChanged,
-            onClose: _closeServicesDialog,
-          ),
-        ],
+            // Tap overlay (stays full screen)
+            if (_isServicesDialogOpen)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.transparent,
+                ),
+              ),
+
+            // ServicesDialog with adjusted position
+            ServicesDialog(
+              isDialogOpen: _isServicesDialogOpen,
+              serviceTypes: _serviceTypes,
+              onServiceTypeSelected: _onServiceTypeChanged,
+              onClose: _closeServicesDialog,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -824,7 +839,6 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
         ),
       );
     } catch (e) {
-
       return Container(
         padding: EdgeInsets.all(Dimensions.height20),
         child: Text(
@@ -953,7 +967,6 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
     try {
       return ServiceTypeUtils.getItemsByServiceType(widget.order, serviceType);
     } catch (e) {
-
       return [];
     }
   }

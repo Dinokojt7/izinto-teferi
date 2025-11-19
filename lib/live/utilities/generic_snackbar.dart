@@ -14,7 +14,7 @@ class GenericSnackBar {
         margin: isWiderSnack
             ? EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 2.0)
             : EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 20.0),
-        duration: Duration(seconds: 5),
+        duration: Duration(seconds: 2),
         elevation: 5,
         backgroundColor: Colors.white,
         behavior: SnackBarBehavior.floating,

@@ -4,8 +4,6 @@ import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/view/address_view/controller/address_dropdown_controller.dart';
 import 'package:izinto/live/view/address_view/view_widgets/address_label.dart';
 import 'package:izinto/live/view/address_view/view_widgets/address_label_options.dart';
-import 'package:izinto/live/widgets/generic_text_field.dart';
-import 'package:izinto/live/view/checkout_view/view_widgets/generic_white_container.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:provider/provider.dart';
 
@@ -141,49 +139,29 @@ class _EditAddressState extends State<EditAddress> {
                             ],
                           ),
                           Expanded(
-                            child: Container(
-                              height: double.maxFinite,
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                    left: 24.0, top: 25.0, right: 24.0),
-                                child: Column(
-                                  children: [
-                                    // Address Display (Read-only)
-                                    _buildAddressDisplay(fullAddress),
-                                    SizedBox(
-                                      height: Dimensions.height45 / 1.2,
-                                    ),
-                                    // Additional Info Field (Editable) - Use LOCAL controller only
-                                    GenericTextField(
-                                      textField: TextFormField(
-                                        controller:
-                                            _additionalInfoController, // Use local controller
-                                        textCapitalization:
-                                            TextCapitalization.sentences,
-                                        onChanged: (val) {
-                                          // No need to update shared controller - we'll use local value directly
-                                        },
-                                        keyboardType: TextInputType.text,
-                                        obscureText: false,
-                                        cursorColor: Colors.black,
-                                        decoration: buildInputDecoration(false),
-                                        style: buildTextStyle(),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: Dimensions.height45 / 1.2,
-                                    ),
-                                    // Label Selection (Editable) - Your original design
-                                    GenericWhiteContainer(
-                                      isSelected: _isDropdownOpen,
-                                      topPadding: Dimensions.height10,
-                                      bottomPadding: Dimensions.height20 / 2,
-                                      leftPadding: Dimensions.width10 / 1.5,
-                                      color: Colors.black12.withOpacity(0.04),
-                                      child: AddressLabel(),
-                                    ),
-                                  ],
-                                ),
+                            child: SingleChildScrollView(
+                              // Wrap with SingleChildScrollView
+                              padding: EdgeInsets.only(
+                                left: 24.0,
+                                top: 25.0,
+                                right: 24.0,
+                                bottom: 20.0, // Add bottom padding
+                              ),
+                              child: Column(
+                                children: [
+                                  // Address Display (Read-only)
+                                  _buildAddressDisplay(fullAddress),
+                                  SizedBox(
+                                    height: Dimensions.height45 / 1.2,
+                                  ),
+                                  // Custom Additional Info Box
+                                  _buildCustomAdditionalInfoBox(),
+                                  SizedBox(
+                                    height: Dimensions.height45 / 1.2,
+                                  ),
+                                  // Label Selection (Editable) - Your original design
+                                  _buildLabelSelection(_dropdownController),
+                                ],
                               ),
                             ),
                           ),
@@ -208,6 +186,88 @@ class _EditAddressState extends State<EditAddress> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildCustomAdditionalInfoBox() {
+    return Container(
+      width: double.maxFinite,
+      height: Dimensions.height45 * 1.4,
+      decoration: BoxDecoration(
+        color: Colors.black12.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.3),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _additionalInfoController,
+                textCapitalization: TextCapitalization.sentences,
+                onChanged: (val) {
+                  // No need to update shared controller - we'll use local value directly
+                },
+                keyboardType: TextInputType.text,
+                obscureText: false,
+                cursorColor: Colors.black,
+                maxLines: 1,
+                style: TextStyle(
+                  decoration: TextDecoration.none,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                  fontFamily: 'Poppins',
+                  fontSize: Dimensions.font16,
+                  height: 2, // Better vertical alignment
+                ),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  hintText: 'Additional info (building, floor...)',
+                  hintStyle: TextStyle(
+                    decoration: TextDecoration.none,
+                    fontSize: Dimensions.font16,
+                    fontFamily: 'Poppins',
+                    overflow: TextOverflow.ellipsis,
+                    color: Colors.black.withOpacity(0.6),
+                    fontWeight: FontWeight.w400,
+                    height: 1.2,
+                  ),
+                  contentPadding:
+                      EdgeInsets.only(bottom: 2.0), // Better vertical centering
+                  isDense: true,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabelSelection(MainAddressViewController dropdownController) {
+    return Container(
+      width: double.maxFinite,
+      decoration: BoxDecoration(
+        color: Colors.black12.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.3),
+        border: dropdownController.isDropdownOpen
+            ? Border.all(
+                color: Colors.black,
+                width: 1.8,
+              )
+            : null,
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: Dimensions.width10 / 1.5,
+          top: Dimensions.height10,
+          bottom: Dimensions.height20 / 2,
+          right: Dimensions.width10 / 1.5,
+        ),
+        child: AddressLabel(),
+      ),
     );
   }
 
@@ -246,7 +306,12 @@ class _EditAddressState extends State<EditAddress> {
   }
 
   Widget _buildAddressDisplay(String fullAddress) {
-    return GenericWhiteContainer(
+    return Container(
+      width: double.maxFinite,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Dimensions.radius15 * 1.3),
+      ),
       child: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -284,7 +349,7 @@ class _EditAddressState extends State<EditAddress> {
       color: Colors.transparent,
       height: Dimensions.bottomHeightBar * 1.3,
       child: Padding(
-        padding: EdgeInsets.only(left: 24.0, right: 24.0),
+        padding: EdgeInsets.only(left: 24.0, right: 24.0, bottom: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -390,7 +455,6 @@ class _EditAddressState extends State<EditAddress> {
 
       Navigator.of(context).pop();
     } catch (error) {
-      print('Error updating address: $error');
     } finally {
       setState(() {
         _isSaving = false;
@@ -407,9 +471,7 @@ class _EditAddressState extends State<EditAddress> {
 
       Navigator.of(context).pop();
       Navigator.of(context).pop(); // Close edit screen
-    } catch (error) {
-      print('Error deleting address: $error');
-    }
+    } catch (error) {}
   }
 
   void _showDeleteConfirmation(BuildContext context, int index) {
@@ -453,33 +515,4 @@ class _EditAddressState extends State<EditAddress> {
       },
     );
   }
-}
-
-TextStyle buildTextStyle() {
-  return TextStyle(
-    decoration: TextDecoration.none,
-    fontWeight: FontWeight.w500,
-    color: Colors.black,
-    fontFamily: 'Poppins',
-  );
-}
-
-InputDecoration buildInputDecoration(bool isAddressField) {
-  return InputDecoration(
-    border: InputBorder.none,
-    enabledBorder: InputBorder.none,
-    focusedBorder: InputBorder.none,
-    contentPadding: EdgeInsets.only(
-      bottom: isAddressField ? Dimensions.height10 : Dimensions.height20,
-      left: 20,
-    ),
-    hintText: 'Additional info (building, floor...)',
-    hintStyle: TextStyle(
-      decoration: TextDecoration.none,
-      fontSize: Dimensions.font20 / 1.38,
-      fontFamily: 'Poppins',
-      color: isAddressField ? Colors.black : Colors.black.withOpacity(0.8),
-      fontWeight: isAddressField ? FontWeight.w500 : FontWeight.w300,
-    ),
-  );
 }

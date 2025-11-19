@@ -79,7 +79,7 @@ class PetCareSpecialtyController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('PetCareSpecialtyController Error: $message');
+
     }
 
     // Auto-retry after 3 seconds
@@ -145,7 +145,7 @@ class PetCareSpecialtyController extends GetxController {
       update();
     } catch (e) {
       if (kDebugMode) {
-        print('Error adding pet care item to cart: $e');
+
       }
       Get.snackbar('Error', 'Failed to add item to cart');
     }

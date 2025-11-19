@@ -372,7 +372,7 @@ class _MainSpecialtyPageState extends State<MainSpecialtyPage>
             .toString();
 
         final offer = offerings.first;
-        print('Offer: $offer');
+
       }
     }
 

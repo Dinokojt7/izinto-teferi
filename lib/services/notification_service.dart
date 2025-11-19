@@ -71,7 +71,7 @@ class NotificationService {
     if (androidPlugin != null) {
       await androidPlugin.createNotificationChannel(orderChannel);
       await androidPlugin.createNotificationChannel(supportChannel);
-      print('✅ Created order and support notification channels');
+
     }
 
     // Configure Firebase Messaging
@@ -84,7 +84,7 @@ class NotificationService {
 
     // Listen for token refresh and auto-save
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-      print('🔄 FCM Token refreshed: $newToken');
+
       _saveFCMTokenToFirestore(newToken);
     });
 
@@ -95,26 +95,26 @@ class NotificationService {
     await _setupFCMToken();
 
     _isInitialized = true;
-    print('✅ Izinto Notification service initialized');
+
   }
 
   Future<void> _setupFCMToken() async {
     try {
       // Get the FCM token
       _currentFcmToken = await FirebaseMessaging.instance.getToken();
-      print('🎯 FCM Token: $_currentFcmToken');
+
 
       // AUTO-SAVE: Save to Firestore if user is logged in
       await _saveFCMTokenToFirestore(_currentFcmToken);
     } catch (e) {
-      print('❌ Error getting FCM token: $e');
+
     }
   }
 
   // AUTO-SAVE FCM token to Firestore
   Future<void> _saveFCMTokenToFirestore(String? token) async {
     if (token == null) {
-      print('❌ No FCM token to save');
+
       return;
     }
 
@@ -128,26 +128,26 @@ class NotificationService {
           'notificationsEnabledAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
-        print('✅ FCM token saved for user: ${user.uid}');
-        print('📱 Token: ${token.substring(0, 20)}...');
+
+
       } else {
-        print('⚠️ No user logged in, cannot save FCM token');
+
       }
     } catch (e) {
-      print('❌ Error saving FCM token to Firestore: $e');
+
     }
   }
 
   void _setupMessageHandling() {
     // Foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('📱 Foreground message received: ${message.messageId}');
+
       _showLocalNotificationFromMessage(message);
     });
 
     // When app is opened from background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('🔔 App opened from notification');
+
       _handleNotificationData(message.data);
     });
 
@@ -156,7 +156,7 @@ class NotificationService {
         .getInitialMessage()
         .then((RemoteMessage? message) {
       if (message != null) {
-        print('🔔 App opened from terminated state with notification');
+
         _handleNotificationData(message.data);
       }
     });
@@ -180,7 +180,7 @@ class NotificationService {
   }
 
   void _handleNotificationData(Map<String, dynamic> data) {
-    print('🎯 Handling notification data: $data');
+
 
     final type = data['type'];
     final orderId = data['orderId'];
@@ -212,7 +212,7 @@ class NotificationService {
       final data = _parsePayload(payload);
       _handleNotificationData(data);
     } catch (e) {
-      print('❌ Error handling notification tap: $e');
+
     }
   }
 
@@ -275,9 +275,9 @@ class NotificationService {
         payload: payload != null ? jsonEncode(payload) : null,
       );
 
-      print('✅ Notification shown: $title');
+
     } catch (e) {
-      print('❌ Error showing notification: $e');
+
     }
   }
 
@@ -338,7 +338,7 @@ class NotificationService {
       payload: data,
     );
 
-    print('🔔 Support notification shown: $body');
+
   }
 
 // Also update the message handler to be more specific
@@ -348,7 +348,7 @@ class NotificationService {
     final orderId = data['orderId'];
     final senderType = data['senderType'];
 
-    print('📱 Handling chat message: $data');
+
 
     // Only handle admin support messages
     if (type == 'order_support' && senderType == 'admin') {
@@ -390,10 +390,10 @@ class NotificationService {
           'notificationsEnabled': false,
           'updatedAt': FieldValue.serverTimestamp(),
         });
-        print('🗑️ FCM token removed for user: ${user.uid}');
+
       }
     } catch (e) {
-      print('❌ Error removing FCM token: $e');
+
     }
   }
 
@@ -410,15 +410,15 @@ class NotificationService {
           settings.authorizationStatus == AuthorizationStatus.authorized;
 
       if (granted) {
-        print('✅ Notification permission granted');
+
         await _setupFCMToken();
       } else {
-        print('❌ Notification permission denied');
+
       }
 
       return granted;
     } catch (e) {
-      print('❌ Error requesting notification permission: $e');
+
       return false;
     }
   }
@@ -451,7 +451,7 @@ class NotificationService {
       }
       return false;
     } catch (e) {
-      print('❌ Error checking token in backend: $e');
+
       return false;
     }
   }
@@ -459,13 +459,13 @@ class NotificationService {
 // Listen for new support messages in the background
   void setupChatMessageListener() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('📱 Chat message received in foreground: ${message.messageId}');
+
       _handleChatMessage(message);
     });
 
     // Setup for background messages
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('🔔 Chat app opened from notification');
+
       _handleChatMessage(message);
     });
   }
@@ -492,11 +492,11 @@ class NotificationService {
               'timestamp': DateTime.now().toIso8601String(),
             },
           );
-          print('✅ Chat notification sent for order: $orderId');
+
         }
       }
     } catch (e) {
-      print('❌ Error sending chat notification: $e');
+
     }
   }
 
@@ -509,19 +509,19 @@ class NotificationService {
   // You'll need to implement these based on your app structure
 
   void _navigateToOrderDetails(String orderId) {
-    print('📱 Would navigate to order details: $orderId');
+
     // Implement your navigation logic
     // Example: Get.to(() => OrderDetailsScreen(orderId: orderId));
   }
 
   void _navigateToSupportChat(String orderId) {
-    print('📱 Would navigate to support chat: $orderId');
+
     // Implement your navigation logic
     // Example: Get.to(() => SupportChatScreen(orderId: orderId));
   }
 
   void _navigateToOrdersList() {
-    print('📱 Would navigate to orders list');
+
     // Implement your navigation logic
     // Example: Get.to(() => OrderHistoryView());
   }

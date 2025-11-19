@@ -132,11 +132,11 @@ class _GetStartedState extends State<GetStarted> {
             .set({'phoneNumber': value.user.phoneController.text});
       });
       if (user != null) {
-        print('We have a user and token');
+
         Get.toNamed(RouteHelper.getInitial());
       }
     } catch (e) {
-      print(e);
+
     }
   }
 

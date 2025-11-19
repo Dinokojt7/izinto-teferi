@@ -54,10 +54,10 @@ class PhoneAuthMethods extends GetxController {
         await _firebaseFirestore.collection('users').doc(_uid).get();
 
     if (snapshot.exists) {
-      print('USER EXIST IN THE DATABASE');
+
       return true;
     } else {
-      print('NEW USER DOCUMENT CREATED');
+
       return false;
     }
   }

@@ -101,7 +101,7 @@ class _UserSettingsViewState extends State<UserSettingsView>
             );
           }
         } catch (e) {
-          print('Error in UserSettingsView: $e');
+
           return Center();
         }
       },

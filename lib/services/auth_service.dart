@@ -55,10 +55,10 @@ class AuthService {
             .collection('users')
             .doc(user.uid)
             .set(userData, SetOptions(merge: true));
-        print('✅ Created new user document');
+
       }
     } catch (e) {
-      print('❌ Error saving user to Firestore: $e');
+
       rethrow;
     }
   }
@@ -89,7 +89,7 @@ class AuthService {
 
       return true;
     } catch (e) {
-      print('❌ Error checking profile completion: $e');
+
       return false;
     }
   }
@@ -175,7 +175,7 @@ class AuthService {
         photoURL: photoURL,
       );
     } catch (e) {
-      print('Error creating user document: $e');
+
       rethrow;
     }
   }

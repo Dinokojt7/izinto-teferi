@@ -41,7 +41,6 @@ class _MainAddressViewState extends State<MainAddressView> {
     await addressController.loadGuestAddressFromLocalStorage();
 
     if (await addressController.hasGuestAddress()) {
-      print('Guest address loaded: ${addressController.street}');
       // Force a rebuild after loading the address
       if (mounted) {
         setState(() {});

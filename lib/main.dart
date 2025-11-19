@@ -77,7 +77,7 @@ import 'models/subscription_model.dart';
 
 /// Initialize Firebase Messaging and setup notification handlers
 Future<void> setupFirebaseMessaging() async {
-  print('🚀 Setting up Firebase Messaging...');
+
 
   final notificationService = NotificationService();
   await notificationService.initialize();
@@ -85,12 +85,12 @@ Future<void> setupFirebaseMessaging() async {
   // Setup chat message listeners
   notificationService.setupChatMessageListener();
 
-  print('✅ Firebase messaging setup complete');
+
 }
 
 /// Handle foreground messages
 void handleForegroundMessage(RemoteMessage message) {
-  print('Handling a foreground message: ${message.messageId}');
+
 
   // For example, using GetX:
   if (message.notification != null) {
@@ -108,7 +108,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Handle background message
-  print('Handling a background message: ${message.messageId}');
+
 
   // You can process the background message here
   // For example, update local data, show local notification using system APIs, etc.
@@ -116,7 +116,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Note: Since we removed flutter_local_notifications, you might want to use
   // the system's native notification capabilities or handle data messages directly
   if (message.data.isNotEmpty) {
-    print('Message data: ${message.data}');
+
   }
 }
 
@@ -145,7 +145,7 @@ Future<void> main() async {
 
   // Handle when app is opened from background state
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print('App opened from background with message: ${message.messageId}');
+
     // Handle the message, e.g., navigate to specific screen
   });
 

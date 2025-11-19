@@ -74,9 +74,9 @@ class _LocationAccessState extends State<LocationAccess> {
     User? user = await _auth.currentUser;
     if (user != null) {
       Position position = await determinePosition();
-      print(position.latitude);
+
       _address = await GetAddressFromLatLong(position);
-      print(_address);
+
 
       List<Placemark> placemark =
           await placemarkFromCoordinates(position.latitude, position.longitude);
@@ -94,7 +94,7 @@ class _LocationAccessState extends State<LocationAccess> {
   GetAddressFromLatLong(Position position) async {
     List<Placemark> placemark =
         await placemarkFromCoordinates(position.latitude, position.longitude);
-    print(placemark);
+
     Placemark place = placemark[0];
     _street = '${place.street}';
     _address = '${place.subLocality}';

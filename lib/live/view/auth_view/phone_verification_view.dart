@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/widgets/text_widgets/description_text.dart';
 import 'package:izinto/live/view/auth_view/view_widgets/top_logo.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
@@ -10,9 +13,15 @@ import 'package:timer_count_down/timer_controller.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 
+import '../../../services/firebase_auth_methods.dart';
+import '../../../services/firebase_storage_service.dart';
 import '../../../utils/dimensions.dart';
+import '../../utilities/colors.dart';
 import '../../widgets/text_widgets/introduction_text.dart';
+import '../../wrapper.dart';
 import '../home_view/home_view.dart';
+import '../profile_view/controller/profile_view_controller.dart';
+import '../profile_view/profile_view.dart';
 import 'controller/phone_auth_view_controller.dart';
 
 class PhoneVerificationView extends StatefulWidget {
@@ -48,9 +57,9 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
   Future<void> _getAppSignature() async {
     try {
       _appSignature = await SmsAutoFill().getAppSignature;
-      print('App Signature: $_appSignature');
+
     } catch (e) {
-      print('Error getting app signature: $e');
+
     }
   }
 
@@ -61,6 +70,25 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
         _verifyOTP(code);
       }
     });
+  }
+
+  String generateRandomNumber() {
+    final numbers = '1234567890';
+    final random = Random();
+    String randomNumber = '';
+    for (int i = 0; i < 8; i++) {
+      randomNumber += numbers[random.nextInt(numbers.length)];
+    }
+    return randomNumber;
+  }
+
+  Future<void> _loadProfileData(BuildContext context) async {
+    try {
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getData();
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getAddresses();
+    } catch (e) {}
   }
 
   Future<void> _verifyOTP(String pin) async {
@@ -80,25 +108,40 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
           await FirebaseAuth.instance.signInWithCredential(credential);
 
       if (userCredential.user != null) {
-        Get.offAll(() => HomeView());
+        User? user = userCredential.user;
+
+        final _uniquePromoCode = "N" + "U" + generateRandomNumber();
+        final bool _hasFirebaseDocument =
+            await FirebaseAuthMethods().checkUserDocumentExists();
+        if (userCredential.additionalUserInfo!.isNewUser ||
+            !_hasFirebaseDocument) {
+          await DatabaseService(uid: user?.uid).updateUserData(
+            "",
+            "",
+            widget.phone,
+            "",
+            'Subscribe',
+            0.0,
+            _uniquePromoCode,
+            termsAccepted: true,
+            termsAcceptedAt: DateTime.now(),
+          );
+          await _loadProfileData(context);
+          Get.offAll(() => ProfileView());
+        } else {
+          await _loadProfileData(context);
+          Get.offAll(() => Wrapper());
+        }
       }
     } on FirebaseAuthException catch (e) {
-      Get.snackbar(
-        'Error',
-        'Invalid OTP. Please try again.',
-        backgroundColor: Color(0xff9A9483),
-        colorText: Colors.white,
-      );
+      GenericSnackBar().showCustomSnackBar(
+          null, context, 'Invalid OTP. Please try again.', false);
       // Clear the OTP field on error
       _pinPutController.clear();
       _pinPutFocusNode.requestFocus();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Something went wrong. Please try again.',
-        backgroundColor: Color(0xff9A9483),
-        colorText: Colors.white,
-      );
+      GenericSnackBar().showCustomSnackBar(
+          null, context, 'Something went wrong. Please try again.', false);
     } finally {
       setState(() {
         _isVerifying = false;
@@ -111,12 +154,8 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
         Provider.of<PhoneAuthViewController>(context, listen: false);
     controller.resendOTP(widget.phone, context);
     _countdownController.restart();
-    Get.snackbar(
-      'Success',
-      'OTP has been resent',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
+    GenericSnackBar()
+        .showCustomSnackBar(null, context, 'OTP has been resent', false);
   }
 
   @override
@@ -160,123 +199,113 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
         ),
         toolbarHeight: 0,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(Dimensions.width20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TopLogo(),
-              SizedBox(height: Dimensions.height45),
+      body: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(Dimensions.width20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TopLogo(),
+                SizedBox(height: Dimensions.height45),
 
-              // Responsive title
-              IntroductionText(
-                text: 'Verification code sent to',
-                textSize: Dimensions.font20,
-                maxLines: 2,
-              ),
+                // Responsive title
+                IntroductionText(
+                  text: 'Verification code sent to',
+                  textSize: Dimensions.font20,
+                  maxLines: 2,
+                ),
 
-              IntroductionText(
-                text: widget.phone,
-                textSize: Dimensions.font20,
-                maxLines: 2,
-              ),
+                IntroductionText(
+                  text: widget.phone,
+                  textSize: Dimensions.font20,
+                  maxLines: 2,
+                ),
 
-              SizedBox(height: Dimensions.height20),
+                SizedBox(height: Dimensions.height20),
 
-              // Responsive description
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  DescriptionText(
-                    text: 'Enter verification code below.',
-                    maxLines: 2,
-                  ),
-                  SizedBox(width: Dimensions.width10),
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Text(
-                      'Change number',
-                      style: TextStyle(
-                        fontSize: Dimensions.font16,
-                        fontFamily: 'Poppins',
-                        color: Colors.blue,
-                        fontWeight: FontWeight.w600,
+                // Responsive description
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    DescriptionText(
+                      text: 'Enter verification code below.',
+                      maxLines: 2,
+                    ),
+                    SizedBox(width: Dimensions.width10),
+                    GestureDetector(
+                      onTap: () => Get.back(),
+                      child: Text(
+                        'Change number',
+                        style: TextStyle(
+                          fontSize: Dimensions.font16 / 1.1,
+                          fontFamily: 'Poppins',
+                          color: LiveColors.accent,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: Dimensions.height30),
-
-              // OTP Input Field using Pinput
-              Pinput(
-                length: 6,
-                controller: _pinPutController,
-                focusNode: _pinPutFocusNode,
-                defaultPinTheme: defaultPinTheme,
-                focusedPinTheme: defaultPinTheme.copyWith(
-                  decoration: defaultPinTheme.decoration!.copyWith(
-                    border: Border.all(color: Colors.blue),
-                  ),
+                  ],
                 ),
-                submittedPinTheme: defaultPinTheme.copyWith(
-                  decoration: defaultPinTheme.decoration!.copyWith(
-                    color: Colors.green[50],
+
+                SizedBox(height: Dimensions.height30),
+
+                // OTP Input Field using Pinput
+                Pinput(
+                  length: 6,
+                  controller: _pinPutController,
+                  focusNode: _pinPutFocusNode,
+                  defaultPinTheme: defaultPinTheme,
+                  focusedPinTheme: defaultPinTheme.copyWith(
+                    decoration: defaultPinTheme.decoration!.copyWith(
+                      border: Border.all(color: LiveColors.accent),
+                    ),
                   ),
-                ),
-                errorPinTheme: defaultPinTheme.copyWith(
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(Dimensions.radius15),
-                    border: Border.all(color: Colors.red),
+                  submittedPinTheme: defaultPinTheme.copyWith(
+                    decoration: defaultPinTheme.decoration!.copyWith(
+                      color: Colors.green[50],
+                    ),
                   ),
-                ),
-                pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
-                showCursor: true,
-                onCompleted: (pin) => _verifyOTP(pin),
-                onChanged: (value) {
-                  // Auto-submit when 6 digits are entered
-                  if (value.length == 6) {
-                    _verifyOTP(value);
-                  }
-                },
-              ),
-
-              // SMS Autofill hint
-              Padding(
-                padding: EdgeInsets.only(top: Dimensions.height10),
-                child: Text(
-                  'Make sure SMS read permission is enabled for auto-fill',
-                  style: TextStyle(
-                    fontSize: Dimensions.font16 / 1.2,
-                    color: Colors.grey[600],
+                  errorPinTheme: defaultPinTheme.copyWith(
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(Dimensions.radius15),
+                      border: Border.all(color: Colors.red),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
+                  pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+                  showCursor: true,
+                  onCompleted: (pin) => _verifyOTP(pin),
+                  onChanged: (value) {
+                    // Auto-submit when 6 digits are entered
+                    if (value.length == 6) {
+                      _verifyOTP(value);
+                    }
+                  },
                 ),
-              ),
 
-              SizedBox(height: Dimensions.height30),
+                SizedBox(height: Dimensions.height30),
 
-              // Continue Button
-              SaveButton(
-                isActive: _pinPutController.text.length == 6 && !_isVerifying,
-                isLoading: _isVerifying,
-                description: _isVerifying ? 'Verifying...' : 'Continue',
-                isAuthScreen: false,
-                onTap: () {
-                  if (_pinPutController.text.length == 6) {
-                    _verifyOTP(_pinPutController.text);
-                  }
-                },
-              ),
+                // Continue Button
+                SaveButton(
+                  isActive: _pinPutController.text.length == 6 && !_isVerifying,
+                  isLoading: _isVerifying,
+                  description: _isVerifying ? 'Verifying...' : 'Continue',
+                  isAuthScreen: false,
+                  onTap: () {
+                    if (_pinPutController.text.length == 6) {
+                      _verifyOTP(_pinPutController.text);
+                    }
+                  },
+                ),
 
-              SizedBox(height: Dimensions.height20),
+                SizedBox(height: Dimensions.height20),
 
-              // Countdown Timer with Resend
-              _buildCountdownTimer(),
-            ],
+                // Countdown Timer with Resend
+                _buildCountdownTimer(),
+              ],
+            ),
           ),
         ),
       ),
@@ -294,9 +323,9 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
               Text(
                 '${time.toInt()} seconds',
                 style: TextStyle(
-                  fontSize: Dimensions.font16,
-                  color: Colors.grey[600],
-                ),
+                    fontSize: Dimensions.font16,
+                    color: Colors.grey[900],
+                    fontFamily: 'Poppins'),
               ),
               SizedBox(height: Dimensions.height10),
               if (time == 0)
@@ -306,7 +335,7 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
                     'Resend OTP',
                     style: TextStyle(
                       fontSize: Dimensions.font16,
-                      color: Colors.blue,
+                      color: LiveColors.accent,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

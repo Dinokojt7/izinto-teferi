@@ -33,7 +33,7 @@ class LocationServer {
       _currentLocation = UserLocation(
           longitude: userLocation.latitude!, latitude: userLocation.longitude!);
     } catch (e) {
-      print('Could not get this location: $e');
+
     }
 
     return _currentLocation!;

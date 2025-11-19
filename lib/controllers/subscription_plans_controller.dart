@@ -22,7 +22,7 @@ class SubscriptionPlansController extends GetxController {
       _isLoaded = true;
       update();
     } else {
-      print('missing subscription plans ${response.statusCode}');
+
     }
   }
 }

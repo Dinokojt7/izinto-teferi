@@ -417,7 +417,7 @@ class _CarSpecialtyDetailState extends State<CarSpecialtyDetail>
                                             _checkPrice();
                                             info['time'] = timeValue;
                                             info['Total amount'] = _basePrice;
-                                            print(info);
+
                                           }
                                         },
                                       );

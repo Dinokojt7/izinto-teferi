@@ -102,7 +102,7 @@ class FirebaseAuthMethods {
         behavior: SnackBarBehavior.floating,
         content: Text(e.toString()),
       );
-      print(e.toString());
+
       return null;
     }
   }
@@ -162,7 +162,7 @@ class FirebaseAuthMethods {
 
       return docSnapshot.exists;
     } catch (e) {
-      print('Error checking user document: $e');
+
       return false;
     }
   }
@@ -321,7 +321,7 @@ class FirebaseAuthMethods {
         'termsAcceptedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error updating terms acceptance: $e');
+
     }
   }
 

@@ -25,7 +25,7 @@ class FavoriteController extends GetxController {
         _favorites.addAll(favoritesMap);
       }
     } catch (e) {
-      print('Error loading favorites: $e');
+
       _favorites.clear();
     }
   }
@@ -37,7 +37,7 @@ class FavoriteController extends GetxController {
       prefs.setString('favorites', favoritesJson);
       update();
     } catch (e) {
-      print('Error saving favorites: $e');
+
     }
   }
 
@@ -79,7 +79,7 @@ class FavoriteController extends GetxController {
   // ✅ Toggle favorite with enhanced error handling
   void toggleFavorite(dynamic item) {
     if (item == null) {
-      print('Cannot favorite null item');
+
       return;
     }
 
@@ -94,13 +94,13 @@ class FavoriteController extends GetxController {
         if (jsonData != null) {
           _favorites[key] = jsonData;
         } else {
-          print('Failed to convert item to JSON: $item');
+
           return;
         }
       }
       _saveFavorites();
     } catch (e) {
-      print('Error toggling favorite: $e');
+
     }
   }
 
@@ -117,7 +117,7 @@ class FavoriteController extends GetxController {
         return item.toString();
       }
     } catch (e) {
-      print('Error in _safeConvertToJson: $e');
+
       return null;
     }
   }
@@ -142,7 +142,7 @@ class FavoriteController extends GetxController {
             }
             return json;
           } catch (e) {
-            print('Error parsing favorite item: $e');
+
             // Return the raw JSON if parsing fails
             return json;
           }

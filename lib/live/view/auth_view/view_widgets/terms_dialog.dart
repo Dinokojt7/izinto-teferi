@@ -57,7 +57,7 @@ class _TermsDialogState extends State<TermsDialog> {
       return Center(
         child: Dialog(
           elevation: 0,
-          backgroundColor: Color(0xff000008).withOpacity(0.55),
+          backgroundColor: Color(0xff000008).withOpacity(0.45),
           insetPadding: EdgeInsets.all(0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.zero,

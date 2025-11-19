@@ -55,7 +55,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
                         currentLatLng: const LatLng(-26.056, 28.060),
                         onNext: (dynamic result) {
                           // Use dynamic for now
-                          print('Location selected: $result');
+
                           // if (result != null) {
                           //   setState(() {
                           //     address = result.formattedAddress ?? "";

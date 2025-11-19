@@ -174,14 +174,14 @@ class _CartHistoryItemsState extends State<CartHistoryItems> {
           if (doc.id != 'current order') {
             Object? data = doc.data();
 
-            print(doc.id);
+
             final items = (data as Map<String, dynamic>)['order items'][0];
             final orderInitiated = (data)['createdAt'];
             timeOfOrder = orderInitiated;
             orderSpecialties = items;
             final images = (data)['order items'][0]['img'];
 
-            print(images);
+
             thumb = images;
           }
         });

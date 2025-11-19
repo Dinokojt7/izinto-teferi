@@ -113,7 +113,7 @@ class _PayWithSubscriptionState extends State<PayWithSubscription> {
     } else if (subscriptions[typeIndex][0] == 1) {
     } else if (subscriptions[typeIndex][0] == 2) {
     } else {
-      print('this is the sub status code ${subscriptions[typeIndex][0]}');
+
     }
   }
 

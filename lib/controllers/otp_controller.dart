@@ -8,7 +8,7 @@ class OTPController extends GetxController {
   static OTPController get instance => Get.find();
 
   void verifyOTP(String otp) async {
-    print('Currently running this function');
+
     var isVerified = false;
     //  await FirebaseAuthMethods().verifyOTP(otp);
     isVerified

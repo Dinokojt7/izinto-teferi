@@ -82,7 +82,7 @@ class _GuestAccessState extends State<GuestAccess> {
                           ],
                         ),
                         SizedBox(
-                          height: Dimensions.height20 * 1.1,
+                          height: Dimensions.height20,
                         ),
                         IntroductionText(
                             text:

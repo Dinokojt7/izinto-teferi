@@ -183,7 +183,7 @@ class _OrderReceivedState extends State<OrderReceived> {
           if (doc.id != 'current order') {
             Object? data = doc.data();
 
-            print(doc.id);
+
             final items = (data as Map<String, dynamic>)['order items'][0];
             final orderInitiated = (data as Map<String, dynamic>)['createdAt'];
             timeOfOrder = orderInitiated;
@@ -191,7 +191,7 @@ class _OrderReceivedState extends State<OrderReceived> {
             final images =
                 (data as Map<String, dynamic>)['order items'][0]['img'];
 
-            print(images);
+
             thumb = images;
           }
         });

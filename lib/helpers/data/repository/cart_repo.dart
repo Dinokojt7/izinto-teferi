@@ -149,14 +149,14 @@ class CartRepo {
     }
 
     addToNewCartList(newCart);
-    print('✅ Migrated ${newCart.length} items from old cart to new cart');
+
   }
 
   // In your CartRepo class, add this method:
 // In CartRepo - FIXED clearCart method
   Future<bool> clearCart() async {
     try {
-      print('🗑️ Attempting to clear ALL cart data from shared preferences...');
+
 
       // Clear ALL cart-related keys
       final keysToRemove = [
@@ -179,7 +179,7 @@ class CartRepo {
           '🎯 Cart clearance completed: ${allSuccess ? 'SUCCESS' : 'PARTIAL'}');
       return allSuccess;
     } catch (e) {
-      print('❌ Error clearing cart from shared preferences: $e');
+
       return false;
     }
   }
@@ -187,7 +187,7 @@ class CartRepo {
 // Also add this debug method:
   Future<void> debugCartState() async {
     try {
-      print('🔍 === CART REPO DEBUG ===');
+
       final keys = [
         AppConstants.NEW_CART_LIST,
         AppConstants.CART_LIST,
@@ -198,12 +198,12 @@ class CartRepo {
         final exists = sharedPreferences.containsKey(key);
         final data = sharedPreferences.getStringList(key);
         if (exists && data != null && data.isNotEmpty) {
-          print('      Sample: ${data.first}');
+
         }
       }
-      print('🔍 =======================');
+
     } catch (e) {
-      print('❌ Error in cart debug: $e');
+
     }
   }
 }

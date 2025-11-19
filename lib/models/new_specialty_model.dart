@@ -17,13 +17,13 @@ class NewSpecialty {
             _specialties.add(NewSpecialtyModel.fromJson(v));
           } else {
             if (kDebugMode) {
-              print('Warning: Skipping invalid specialty data: $v');
+
             }
           }
         }
       } catch (e) {
         if (kDebugMode) {
-          print('Error parsing specialties: $e');
+
         }
         _specialties = [];
       }
@@ -143,8 +143,8 @@ class NewSpecialtyModel {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error creating NewSpecialtyModel: $e');
-        print('Problematic JSON: $json');
+
+
       }
       // Set safe defaults
       _setSafeDefaults();
@@ -174,7 +174,7 @@ class NewSpecialtyModel {
       return [0];
     } catch (e) {
       if (kDebugMode) {
-        print('Error parsing price: $e');
+
       }
       return [0];
     }
@@ -191,7 +191,7 @@ class NewSpecialtyModel {
       return ['Standard'];
     } catch (e) {
       if (kDebugMode) {
-        print('Error parsing size: $e');
+
       }
       return ['Standard'];
     }
@@ -217,13 +217,13 @@ class NewSpecialtyModel {
   // Validation and logging
   void _validateAndLog() {
     if (price == null || price!.isEmpty) {
-      print('Warning: Item $id ($name) has no valid price');
+
     }
     if (size == null || size!.isEmpty) {
-      print('Warning: Item $id ($name) has no valid size');
+
     }
     if (img == null || img!.isEmpty) {
-      print('Warning: Item $id ($name) has no image');
+
     }
   }
 
@@ -272,7 +272,7 @@ class NewSpecialtyModel {
       return firstPrice;
     } catch (e) {
       if (kDebugMode) {
-        print('Error getting actualPrice: $e');
+
       }
       return firstPrice;
     }
@@ -310,7 +310,7 @@ class NewSpecialtyModel {
       );
     } catch (e) {
       if (kDebugMode) {
-        print('Error creating favorite variant: $e');
+
       }
       // Return a safe fallback
       return NewSpecialtyModel(
@@ -341,7 +341,7 @@ class NewSpecialtyModel {
       return item.firstPrice;
     } catch (e) {
       if (kDebugMode) {
-        print('Error getting price for size: $e');
+
       }
       return item.firstPrice;
     }
@@ -361,26 +361,26 @@ class NewSpecialtyModel {
 class ReleaseDebug {
   static void logItem(String tag, dynamic item) {
     try {
-      print('[$tag] Item Type: ${item.runtimeType}');
-      print('[$tag] ID: ${item.id}');
-      print('[$tag] Name: ${item.name}');
-      print('[$tag] Price: ${item.price}');
-      print('[$tag] Size: ${item.size}');
-      print('[$tag] Image: ${item.img}');
-      print('[$tag] Type: ${item.type}');
-      print('[$tag] Material: ${item.material}');
-      print('[$tag] Provider: ${item.provider}');
+
+
+
+
+
+
+
+
+
 
       // Check for common issues
       if (item.img == null || item.img.isEmpty) {
-        print('[$tag] ⚠️ WARNING: No image path');
+
       }
       if (item.price == null || item.price.isEmpty) {
-        print('[$tag] ⚠️ WARNING: No price data');
+
       }
     } catch (e) {
-      print('[$tag] ERROR logging item: $e');
-      print('[$tag] Item data: $item');
+
+
     }
   }
 }

@@ -67,7 +67,7 @@ class PopularSpecialtyController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('PopularSpecialtyController Error: $message');
+
     }
 
     // Auto-retry after 3 seconds

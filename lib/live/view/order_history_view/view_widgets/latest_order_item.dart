@@ -233,7 +233,7 @@ class LatestOrderItem extends StatelessWidget {
           }
         }
       } catch (e) {
-        print('Error getting service type: $e');
+
       }
     }
 
@@ -609,7 +609,7 @@ class LatestOrderItem extends StatelessWidget {
       }
       return null;
     } catch (e) {
-      print('Error getting first item image: $e');
+
       return null;
     }
   }
@@ -636,7 +636,7 @@ class LatestOrderItem extends StatelessWidget {
         }
       }
     } catch (e) {
-      print('Error getting address: $e');
+
       return 'Address unavailable';
     }
   }

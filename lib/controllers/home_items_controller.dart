@@ -67,7 +67,7 @@ class HomeItemsController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('HomeItemsController Error: $message');
+
     }
 
     // Auto-retry after 3 seconds

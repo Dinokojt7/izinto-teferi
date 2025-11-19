@@ -11,7 +11,7 @@ class FirestoreService {
       final doc = await _firestore.collection('users').doc(userId).get();
       return doc.data();
     } catch (e) {
-      print('Error getting user data: $e');
+
       return null;
     }
   }
@@ -24,7 +24,7 @@ class FirestoreService {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      print('Error updating user data: $e');
+
       rethrow;
     }
   }
@@ -45,7 +45,7 @@ class FirestoreService {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      print('Error creating user document: $e');
+
       rethrow;
     }
   }
@@ -69,7 +69,7 @@ class FirestoreService {
 
       return hasBasicInfo && hasInterests;
     } catch (e) {
-      print('Error checking profile completion: $e');
+
       return false;
     }
   }

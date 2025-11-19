@@ -41,7 +41,7 @@ class OrderHistoryController extends ChangeNotifier {
     } catch (error) {
       _isLoading = false;
       notifyListeners();
-      print('Error loading orders: $error');
+
     }
   }
 

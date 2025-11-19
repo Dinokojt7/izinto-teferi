@@ -28,7 +28,7 @@ class _SignInState extends State<SignIn> {
       await FirebaseAuthMethods()
           .phoneAuthLogin(context, '+27${phoneController.text}');
     } catch (e) {
-      print(e);
+
     }
   }
 

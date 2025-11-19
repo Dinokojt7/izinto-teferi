@@ -125,7 +125,7 @@ class _AddressSettingsState extends State<AddressSettings> {
     User? user = await _firebaseAuth.currentUser;
     if (user != null) {
       Position position = await determinePosition();
-      print(position.latitude);
+
       lat = position.latitude;
       long = position.longitude;
     }
@@ -241,13 +241,13 @@ class _AddressSettingsState extends State<AddressSettings> {
             autocompletePlace = _formatAddressFromPlacemark(placemark);
             var output = autocompletePlace.split(',');
             searchResults = output;
-            print(output);
+
           });
 
           // Check if location is supported
           if (searchResults.length > 1 &&
               (searchResults[1]?.toLowerCase().contains('midrand') == true)) {
-            print('this approach is not working');
+
             Get.to(() => const PlaceNotSupported(),
                 transition: Transition.fade, duration: Duration(seconds: 1));
           } else {
@@ -258,7 +258,7 @@ class _AddressSettingsState extends State<AddressSettings> {
         }
       }
     } catch (e) {
-      print("Search error: $e");
+
     }
   }
 

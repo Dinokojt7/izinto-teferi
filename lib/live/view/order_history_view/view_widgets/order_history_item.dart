@@ -41,7 +41,7 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
     try {
       await _openOrderDetails(context, widget.order);
     } catch (e) {
-      print('Error opening order details: $e');
+
     } finally {
       if (mounted) {
         setState(() {
@@ -481,7 +481,7 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
         }
       }
     } catch (e) {
-      print('Error getting address: $e');
+
       return 'Address unavailable';
     }
   }

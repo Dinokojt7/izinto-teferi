@@ -77,7 +77,7 @@ class MainAddressViewController extends ChangeNotifier {
   String _customLabel = 'Add new label...';
   String get customLabel => _customLabel;
 
-  String _additionalInfo = 'Additional info (building, floor...)';
+  String _additionalInfo = 'Additional information';
   String get additionalInfo => _additionalInfo;
 
   String _searchStatusText = '';
@@ -203,13 +203,11 @@ class MainAddressViewController extends ChangeNotifier {
           await Geolocator.requestPermission();
 
       if (permission == LocationPermission.denied) {
-        print('Location permission denied');
         await _handleLocationError('Location permission denied');
         return;
       }
 
       if (permission == LocationPermission.deniedForever) {
-        print('Location permission permanently denied');
         await _handleLocationError('Location permission permanently denied');
         return;
       }
@@ -222,7 +220,6 @@ class MainAddressViewController extends ChangeNotifier {
       _initialPosition = latLng;
       notifyListeners();
     } catch (e) {
-      print('Error getting location: $e');
       await _handleLocationError('Error getting location: $e');
     }
   }
@@ -247,7 +244,6 @@ class MainAddressViewController extends ChangeNotifier {
       print(
           'Parsed address - Street: $_street, Suburb: $_suburb, Town: $_town, Zip: $_zipCode, Country: $_country');
     } catch (e) {
-      print('Error assigning address values: $e');
       await _handleAddressParsingError('Failed to parse address: $e');
     }
   }
@@ -275,7 +271,6 @@ class MainAddressViewController extends ChangeNotifier {
       final double distanceInKm = distanceInMeters / 1000;
       return distanceInKm <= 20;
     } catch (e) {
-      print('Error calculating distance: $e');
       return false;
     }
   }
@@ -313,7 +308,6 @@ class MainAddressViewController extends ChangeNotifier {
         await _handleAddressParsingError('No placemark found for coordinates');
       }
     } catch (e) {
-      print('Error in onAddressAutocomplete: $e');
       await _handleAddressParsingError('Failed to process address: $e');
     }
   }
@@ -399,7 +393,6 @@ class MainAddressViewController extends ChangeNotifier {
 
       _handleSaveSuccess(context);
     } catch (error) {
-      print('Error saving address: $error');
       _showErrorSnackBar(context, 'Failed to add address: $error');
     }
   }
@@ -589,10 +582,8 @@ class MainAddressViewController extends ChangeNotifier {
 
       _newAddress = newAddress;
 
-      print('Guest address saved successfully: $_street, $_town');
       _handleSaveSuccess(context);
     } catch (error) {
-      print('Error saving guest address: $error');
       _showErrorSnackBar(context, 'Failed to add address: $error');
     }
   }

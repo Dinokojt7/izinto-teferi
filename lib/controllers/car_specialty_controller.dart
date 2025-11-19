@@ -20,7 +20,7 @@ class CarSpecialtyController extends GetxController {
       _isLoaded = true;
       update();
     } else {
-      print('this is not working ${response.statusCode}');
+
     }
   }
 }

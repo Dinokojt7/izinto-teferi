@@ -61,7 +61,7 @@ class _CarouselWithIndicatorState extends State<CarouselWithIndicator> {
             items: widget.specialties.map((specialty) {
               return GestureDetector(
                 onTap: () {
-                  print('Carousel item tapped! Specialty: ${specialty.name}');
+
                   Provider.of<HomeViewController>(context, listen: false)
                       .navigateToNestedWidget(
                     context,

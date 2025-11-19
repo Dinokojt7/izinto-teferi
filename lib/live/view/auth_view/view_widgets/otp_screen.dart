@@ -50,7 +50,7 @@ class _OtpScreenState extends State<OtpScreen> with CodeAutoFill {
   void initState() {
     super.initState();
     listenForCode();
-    print('WE ARE ON THIS ROUTE');
+
   }
 
   @override
@@ -68,7 +68,7 @@ class _OtpScreenState extends State<OtpScreen> with CodeAutoFill {
         User? user = userCredential.user;
 
         // create a new document for the user with the uid
-        print('new user created');
+
         await DatabaseService(uid: user?.uid)
             .updateUserData('', '', widget.phone, '', 'Subscribe', 0, '');
         Navigator.pushReplacement(
@@ -78,7 +78,7 @@ class _OtpScreenState extends State<OtpScreen> with CodeAutoFill {
       } else {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (BuildContext context) => HomePage()));
-        print('this is not a new user');
+
         //sa02HmiOZ0VmUkB7nQSx214KOn43
       }
     }
@@ -239,7 +239,7 @@ class _OtpScreenState extends State<OtpScreen> with CodeAutoFill {
                   onTap: () async {
                     FocusScope.of(context).unfocus();
 
-                    print('this is the code currently ${otpCode}');
+
                     try {
                       setState(() {
                         _isLoading = true;

@@ -80,7 +80,7 @@ class LaundrySpecialtyController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('LaundrySpecialtyController Error: $message');
+
     }
 
     // Retry logic - auto-retry after 3 seconds
@@ -147,7 +147,7 @@ class LaundrySpecialtyController extends GetxController {
       update();
     } catch (e) {
       if (kDebugMode) {
-        print('Error adding item to cart: $e');
+
       }
       Get.snackbar('Error', 'Failed to add item to cart');
     }

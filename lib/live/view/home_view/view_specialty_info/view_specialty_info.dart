@@ -56,9 +56,7 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 
       throw Exception('ViewSpecialtyInfo: Could not resolve item.');
     } catch (e) {
-      if (kDebugMode) {
-        print('Error resolving item: $e');
-      }
+      if (kDebugMode) {}
       return _createFallbackItem();
     }
   }
@@ -1093,8 +1091,6 @@ class _ViewSpecialtyInfoState extends State<ViewSpecialtyInfo> {
 // Helper class for release mode debugging
 class ReleaseDebug {
   static void logItem(String tag, dynamic item) {
-    if (kDebugMode) {
-      print('$tag: ${item?.name} (ID: ${item?.id})');
-    }
+    if (kDebugMode) {}
   }
 }

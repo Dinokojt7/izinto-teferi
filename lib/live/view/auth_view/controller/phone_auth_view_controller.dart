@@ -1,10 +1,17 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/view/auth_view/phone_verification_view.dart';
+import 'package:provider/provider.dart';
 
+import '../../../../services/firebase_storage_service.dart';
 import '../../../utilities/generic_snackbar.dart';
+import '../../../wrapper.dart';
+import '../../profile_view/controller/profile_view_controller.dart';
+import '../../profile_view/profile_view.dart';
 import '../view_widgets/otp_screen.dart';
 import '../../../../pages/auth/phone_auth.dart';
 import '../../../../services/firebase_auth_methods.dart';
@@ -82,32 +89,113 @@ class PhoneAuthViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _verifyPhone(
+// Check if user document exists in Firestore
+  Future<bool> _checkUserDocumentExists(String uid) async {
+    try {
+      final docSnapshot =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      return docSnapshot.exists;
+    } catch (e) {
+      return false;
+    }
+  }
+
+// Create user document for phone authentication
+  // Create user document for phone authentication using DatabaseService
+  Future<void> _createPhoneUserDocument({
+    required String uid,
+    required String phoneNumber,
+    required bool termsAccepted,
+    required String promoCode,
+  }) async {
+    try {
+      // Use DatabaseService to create user document and save promo code
+      await DatabaseService(uid: uid).updateUserData(
+        '', // name - empty for phone auth users to fill in later
+        '', // surname - empty for phone auth users to fill in later
+        phoneNumber, // phone number
+        '', // email - empty for phone auth
+        'Subscribe', // subscription status
+        0.0, // iTokens
+        promoCode, // promo code - this will trigger _savePromoCodeToCollection
+        termsAccepted: termsAccepted,
+        termsAcceptedAt: DateTime.now(),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+// Load profile data (reuse existing method)
+  Future<void> _loadProfileData(BuildContext context) async {
+    try {
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getData();
+      await Provider.of<ProfileViewController>(context, listen: false)
+          .getAddresses();
+    } catch (e) {}
+  }
+
+// Generate random number (reuse existing method)
+  String generateRandomNumber() {
+    final numbers = '1234567890';
+    final random = Random();
+    String randomNumber = '';
+    for (int i = 0; i < 8; i++) {
+      randomNumber += numbers[random.nextInt(numbers.length)];
+    }
+    return randomNumber;
+  }
+
+  Future<dynamic> _verifyPhone(
       BuildContext context, String phoneNumber, bool termsAccepted) async {
     try {
       String formattedPhone = _formatPhoneNumber(phoneNumber);
-      print('Verifying phone: $formattedPhone');
+
 
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: formattedPhone,
         verificationCompleted: (PhoneAuthCredential credential) async {
           // Auto-sign in if verification completes automatically
-          print('Verification completed automatically');
+
           UserCredential userCredential =
               await FirebaseAuth.instance.signInWithCredential(credential);
 
-          // Update user data with terms acceptance
+          // Handle user data creation/update after successful authentication
           if (userCredential.user != null) {
-            await _updateUserTermsAcceptance(
-                userCredential.user!.uid, termsAccepted);
+            User? user = userCredential.user;
+
+            final _uniquePromoCode = "N" + "U" + generateRandomNumber();
+            final bool _hasFirebaseDocument =
+                await FirebaseAuthMethods().checkUserDocumentExists();
+            if (userCredential.additionalUserInfo!.isNewUser ||
+                !_hasFirebaseDocument) {
+              await DatabaseService(uid: user?.uid).updateUserData(
+                "",
+                "",
+                phoneNumber,
+                "",
+                'Subscribe',
+                0.0,
+                _uniquePromoCode,
+                termsAccepted: termsAccepted,
+                termsAcceptedAt: DateTime.now(),
+              );
+              await _loadProfileData(context);
+              Get.offAll(() => ProfileView());
+            } else {
+              await _loadProfileData(context);
+              await _updateUserTermsAcceptance(user!.uid, termsAccepted);
+              Get.offAll(() => Wrapper());
+            }
           }
 
           if (context.mounted) {
-            Get.offAll(() => HomeView());
+            Get.offAll(() => Wrapper());
           }
         },
         codeSent: (String verificationId, int? resendToken) {
-          print('Code sent: $verificationId');
+
           _verificationCode = verificationId;
           if (context.mounted) {
             Navigator.of(context).pushReplacement(
@@ -115,8 +203,7 @@ class PhoneAuthViewController extends ChangeNotifier {
                 builder: (context) => PhoneVerificationView(
                   phone: formattedPhone,
                   verificationId: verificationId,
-                  termsAccepted:
-                      termsAccepted, // Pass terms acceptance to OTP screen
+                  termsAccepted: termsAccepted,
                 ),
               ),
             );
@@ -124,9 +211,8 @@ class PhoneAuthViewController extends ChangeNotifier {
           _isInitialized = false;
           notifyListeners();
         },
-        // In your _verifyPhone method in PhoneAuthViewController
         verificationFailed: (FirebaseAuthException e) {
-          print('Verification failed: ${e.message}');
+
           _isInitialized = false;
           if (context.mounted) {
             GenericSnackBar().showCustomSnackBar(
@@ -139,13 +225,13 @@ class PhoneAuthViewController extends ChangeNotifier {
           notifyListeners();
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          print('Code auto retrieval timeout: $verificationId');
+
           _verificationCode = verificationId;
         },
         timeout: Duration(seconds: 60),
       );
     } catch (e) {
-      print('Error in _verifyPhone: $e');
+
       _isInitialized = false;
       if (context.mounted) {
         Get.snackbar(
@@ -196,9 +282,9 @@ class PhoneAuthViewController extends ChangeNotifier {
         'termsAccepted': termsAccepted,
         'termsAcceptedAt': FieldValue.serverTimestamp(),
       });
-      print('Terms acceptance updated for user: $uid');
+
     } catch (e) {
-      print('Error updating terms acceptance: $e');
+
     }
   }
 

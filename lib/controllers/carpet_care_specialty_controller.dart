@@ -80,7 +80,7 @@ class CarpetCareSpecialtyController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('CarpetCareSpecialtyController Error: $message');
+
     }
 
     // Auto-retry after 3 seconds
@@ -146,7 +146,7 @@ class CarpetCareSpecialtyController extends GetxController {
       update();
     } catch (e) {
       if (kDebugMode) {
-        print('Error adding carpet care item to cart: $e');
+
       }
       Get.snackbar('Error', 'Failed to add item to cart');
     }

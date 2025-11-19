@@ -144,7 +144,7 @@ class _PaymentPageState extends State<PaymentPage> {
   void _setupFirebaseMessaging() {
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("................onMessage....................");
+
       print(
           "onMessage: ${message.notification?.title}/${message.notification?.body}}");
 
@@ -173,7 +173,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
     // Handle when app is opened from background state
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('App opened from background with message: ${message.messageId}');
+
       _handleNotificationNavigation();
     });
   }
@@ -198,12 +198,12 @@ class _PaymentPageState extends State<PaymentPage> {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('user granted permission');
+
     } else if (settings.authorizationStatus ==
         AuthorizationStatus.provisional) {
-      print('user granted provisional permission');
+
     } else {
-      print('user declined or has not accepted permission');
+
     }
   }
 
@@ -318,7 +318,7 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
       );
     } catch (error) {
-      print(error);
+
     }
   }
 
@@ -344,9 +344,9 @@ class _PaymentPageState extends State<PaymentPage> {
     User? user = await _firebaseAuth.currentUser;
     if (user != null) {
       Position position = await determinePosition();
-      print(position.latitude);
+
       _address = await GetAddressFromLatLong(position);
-      print(_address);
+
 
       List<Placemark> placemark =
           await placemarkFromCoordinates(position.latitude, position.longitude);
@@ -378,7 +378,7 @@ class _PaymentPageState extends State<PaymentPage> {
   GetAddressFromLatLong(Position position) async {
     List<Placemark> placemark =
         await placemarkFromCoordinates(position.latitude, position.longitude);
-    print(placemark);
+
     Placemark place = placemark[0];
     _street = '${place.street}';
     _address = '${place.subLocality}';

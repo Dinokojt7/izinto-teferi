@@ -54,7 +54,6 @@ class CheckoutViewController extends ChangeNotifier {
 
       return subtotal;
     } catch (e) {
-      print('Error getting order subtotal: $e');
       return 0;
     }
   }
@@ -153,12 +152,10 @@ class CheckoutViewController extends ChangeNotifier {
           },
       };
 
-      print('✅ Order object created with ID: $orderId');
       print(
           '📦 Order includes ${cartItems.length} items (laundry excluded: ${_laundryValidationInfo != null && _laundryValidationInfo!.hasLowLaundryItems})');
       return order;
     } catch (e) {
-      print('❌ Error creating order object: $e');
       rethrow;
     }
   }
@@ -274,9 +271,7 @@ class CheckoutViewController extends ChangeNotifier {
         // Update local state
         _availableWalletBalance = newBalance;
       }
-    } catch (e) {
-      print('Error deducting from wallet: $e');
-    }
+    } catch (e) {}
   }
 
   void toggleWalletUsage() {
@@ -333,7 +328,6 @@ class CheckoutViewController extends ChangeNotifier {
     try {
       _loadWalletBalanceFromFirebase();
     } catch (e) {
-      print('Error loading wallet balance: $e');
       _availableWalletBalance = 0;
     }
   }
@@ -404,7 +398,7 @@ class CheckoutViewController extends ChangeNotifier {
   List<Map<String, dynamic>> get paymentMethods => _paymentMethods;
 
   // Delivery notes
-  String _deliveryNote = 'Any other delivery notes? Add them here!';
+  String _deliveryNote = 'Any additional notes? Add them here!';
   String get deliveryNote => _deliveryNote;
 
   TextEditingController deliveryNotesController = TextEditingController();
@@ -491,7 +485,6 @@ class CheckoutViewController extends ChangeNotifier {
         return specialty.toString();
       }
     } catch (e) {
-      print('⚠️ Error serializing specialty: $e');
       return null;
     }
   }
@@ -503,9 +496,7 @@ class CheckoutViewController extends ChangeNotifier {
         if (item['type'] != null) {
           types.add(item['type'].toString());
         }
-      } catch (e) {
-        print('Error getting service type from item: $e');
-      }
+      } catch (e) {}
     }
     return types.toList();
   }
@@ -564,10 +555,8 @@ class CheckoutViewController extends ChangeNotifier {
       // Check if notifications are enabled
       final areEnabled = await notificationService.areNotificationsEnabled();
       if (!areEnabled) {
-        print('⚠️ Notifications not enabled, requesting permission...');
         final granted = await notificationService.requestPermission();
         if (!granted) {
-          print('❌ Notification permission denied by user');
           return;
         }
       }
@@ -803,9 +792,7 @@ class CheckoutViewController extends ChangeNotifier {
           'totalPromoRewards': FieldValue.increment(50),
         });
       }
-    } catch (e) {
-      print('Error rewarding promo code owner: $e');
-    }
+    } catch (e) {}
   }
 
   @override

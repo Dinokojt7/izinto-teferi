@@ -17,7 +17,7 @@ class HomeRoute extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null) {
-            print(snapshot.data);
+
 
             () => Navigator.push(
                   context,
@@ -26,7 +26,7 @@ class HomeRoute extends StatelessWidget {
                   ),
                 );
           }
-          print('No data');
+
           return SignIn();
         });
   }

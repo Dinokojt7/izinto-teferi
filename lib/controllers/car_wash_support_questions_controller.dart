@@ -23,7 +23,7 @@ class CarWashSupportQuestionsController extends GetxController {
       _isLoaded = true;
       update();
     } else {
-      print('missing support questions ${response.statusCode}');
+
     }
   }
 }

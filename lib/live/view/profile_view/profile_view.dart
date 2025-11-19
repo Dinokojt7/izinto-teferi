@@ -66,7 +66,7 @@ class _ProfileViewState extends State<ProfileView> {
               userData['wallet'] ?? 0);
         }
       } catch (e) {
-        print('Error loading user data: $e');
+
       }
     }
   }

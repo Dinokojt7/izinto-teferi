@@ -127,7 +127,7 @@ class _HomePageState extends State<HomePage> {
         laundryReference = userData['Laundry reference'];
         laundryInitialized = userData['Laundry initialized'];
 
-        print('Here is the status here: $laundryInitialized');
+
       });
     });
     return laundryInitialized;
@@ -223,7 +223,7 @@ class _HomePageState extends State<HomePage> {
         // print('Check response: ${response.statusCode} of ${response.body}');
         final String status = body['data']['status'];
         if (response.statusCode == 200) {
-          print('here is the result:$status');
+
 
           return status;
           break;
@@ -231,7 +231,7 @@ class _HomePageState extends State<HomePage> {
       } catch (e) {
         // print('This is the problem: $e');
         // return '$e';
-        print('Error polling for result: $e');
+
         return 'awaiting payment';
       }
       // Pause for a short duration before making the next request

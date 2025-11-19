@@ -72,7 +72,7 @@ class ProfileViewController extends ChangeNotifier {
   List _savedAddresses = [];
 
   List get savedAddresses => _savedAddresses;
-  String _defaultAdditionalInfoText = 'Additional info (building, floor...)';
+  String _defaultAdditionalInfoText = 'Additional information';
 
   String get defaultAdditionalInfoText => _defaultAdditionalInfoText;
   bool _isUserInfoIncomplete = false;
@@ -82,7 +82,7 @@ class ProfileViewController extends ChangeNotifier {
   // ========== ADDRESS MANAGEMENT METHODS ==========
 
   Future<void> resetAddressDetailsFields() async {
-    _defaultAdditionalInfoText = 'Additional info (building, floor...)';
+    _defaultAdditionalInfoText = 'Additional information';
     notifyListeners();
   }
 
@@ -128,10 +128,7 @@ class ProfileViewController extends ChangeNotifier {
         }
 
         await batch.commit();
-        print('✅ Firebase addresses updated for: $street');
-      } catch (e) {
-        print('❌ Error updating Firebase addresses: $e');
-      }
+      } catch (e) {}
     }
   }
 
@@ -160,7 +157,6 @@ class ProfileViewController extends ChangeNotifier {
       // Then save to Firebase
       await _saveAddressToFirebase(safeNewAddress);
     } catch (e) {
-      print('Error adding address: $e');
       // Revert local changes if Firebase fails
       _savedAddresses.removeLast();
       notifyListeners();
@@ -249,7 +245,6 @@ class ProfileViewController extends ChangeNotifier {
         // Ensure only one address is selected
         _ensureSingleSelectionLogic();
       } catch (e) {
-        print('Error getting addresses: $e');
         _savedAddresses = [];
       } finally {
         _isLoading = false;
@@ -327,7 +322,6 @@ class ProfileViewController extends ChangeNotifier {
         }
       }
     } catch (e) {
-      print('Error deleting address: $e');
       if (context != null) {
         GenericSnackBar().showCustomSnackBar(
             null, context, 'Failed to delete address', false);
@@ -364,8 +358,6 @@ class ProfileViewController extends ChangeNotifier {
             ..._savedAddresses[index],
             ...updatedAddress,
           };
-
-          print('✅ Address updated in Firebase subcollection');
         } else {
           // Fallback: Update in user document addresses array (legacy)
           DocumentSnapshot userDoc = await FirebaseFirestore.instance
@@ -386,7 +378,6 @@ class ProfileViewController extends ChangeNotifier {
             });
 
             _savedAddresses = List<Map<String, dynamic>>.from(addresses);
-            print('✅ Address updated in user document array (legacy)');
           }
         }
 
@@ -394,7 +385,6 @@ class ProfileViewController extends ChangeNotifier {
         // REMOVED Navigator.pop from here - navigation should be in UI layer
       }
     } catch (e) {
-      print('Error updating address: $e');
       throw e; // Re-throw to show error in UI
     } finally {
       _isLoading = false;
@@ -502,10 +492,7 @@ class ProfileViewController extends ChangeNotifier {
           'addresses': updatedAddresses,
         });
       }
-
-      print('✅ Addresses updated locally and in Firebase');
     } catch (e) {
-      print('❌ Error updating addresses: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -620,7 +607,6 @@ class ProfileViewController extends ChangeNotifier {
           .get();
       return doc.data();
     } catch (e) {
-      print('Error getting user profile data: $e');
       return null;
     }
   }
@@ -636,7 +622,6 @@ class ProfileViewController extends ChangeNotifier {
 
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      print('Error checking addresses: $e');
       return false;
     }
   }
@@ -854,7 +839,6 @@ class ProfileViewController extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      print('Error deleting account: $e');
       return false;
     } finally {
       _isLoading = false;

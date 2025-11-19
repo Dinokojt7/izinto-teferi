@@ -72,7 +72,7 @@ class FavoritesView extends StatelessWidget {
               ],
             );
           } catch (e) {
-            print('Error building favorites view: $e');
+
             return _buildErrorView();
           }
         },
@@ -155,7 +155,7 @@ class FavoritesView extends StatelessWidget {
                   index: index,
                 );
               } catch (e) {
-                print('Error building favorite item at index $index: $e');
+
                 return _buildErrorItem(index);
               }
             },

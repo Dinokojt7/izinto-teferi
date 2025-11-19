@@ -12,11 +12,13 @@ import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/widgets/icons/back_arrow.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 
+import '../../../../controllers/recommended_specialty_controller.dart';
 import '../../../../models/new_specialty_model.dart';
 import '../../../../models/user.dart';
 import '../../../../widgets/texts/small_text.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../widgets/generic_header_row.dart';
+import '../../address_view/controller/address_dropdown_controller.dart';
 import '../../address_view/saved_addresses.dart';
 import '../../auth_view/phone_auth_view.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
@@ -497,70 +499,103 @@ class _CarWashViewState extends State<CarWashView> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<CarWashController>(
-      builder: (carWashController) {
-        final _profileController = Provider.of<ProfileViewController>(context);
-        final List<dynamic> _addresses = _profileController.savedAddresses;
-        var selectedAddresses =
-            _addresses.where((address) => address['selected'] == true).toList();
+    final user = Provider.of<UserModel?>(context);
 
-        var street = '';
-        var suburb = '';
-        for (var address in selectedAddresses) {
-          street = address['street'];
-          suburb = address['suburb'];
-        }
-        final selectedVehicleIndex = carWashController.selectVehicleIndex;
-        final selectedWashTypeIndex = carWashController.washTypeIndex;
-        final hasCartItems = carWashController.totalCarWashItems > 0;
-        final hasSelection =
-            selectedVehicleIndex != -1 && selectedWashTypeIndex != -1;
+    return GetBuilder<RecommendedSpecialtyController>(
+      builder: (recommendedSpecialties) {
+        return Consumer<MainAddressViewController>(
+            builder: (context, addressViewController, child) {
+          // Also consume ProfileViewController for user addresses
+          return Consumer<ProfileViewController>(
+              builder: (context, _profileController, child) {
+            /// Here's a list of addresses from the controller
+            final List<dynamic> _addresses = _profileController.savedAddresses;
 
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                toolbarHeight: Dimensions.height30,
-                title: buildAppBar(context, street, suburb),
-                backgroundColor: LiveColors.accent.withOpacity(0.3),
-                elevation: 0,
-                pinned: true,
-                expandedHeight: Dimensions.screenHeight * 0.35,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: _buildTopSection(carWashController),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Container(
-                  height: Dimensions.screenHeight * 0.43,
-                  color: Colors.grey.shade50,
-                  child: Column(
-                    children: [
-                      SizedBox(height: Dimensions.screenHeight * 0.02),
-                      _buildVehicleSelectionConsole(carWashController),
-                      Expanded(
-                          child: _buildWashTypeSelection(carWashController)),
+            /// Here's the selection of currently active address///
+            var selectedAddresses = _addresses
+                .where((address) => address['selected'] == true)
+                .toList();
+
+            String street = '';
+
+            if (user != null && selectedAddresses.isNotEmpty) {
+              street = selectedAddresses.first['street'] ?? '';
+            } else if (addressViewController.hasData) {
+              street = addressViewController.street;
+            } else {
+              street = 'Rivonia Blvd & Mutual Rd';
+            }
+
+            return GetBuilder<CarWashController>(
+              builder: (carWashController) {
+                var selectedAddresses = _addresses
+                    .where((address) => address['selected'] == true)
+                    .toList();
+
+                var street = '';
+                var suburb = '';
+                for (var address in selectedAddresses) {
+                  street = address['street'];
+                  suburb = address['suburb'];
+                }
+                final selectedVehicleIndex =
+                    carWashController.selectVehicleIndex;
+                final selectedWashTypeIndex = carWashController.washTypeIndex;
+                final hasCartItems = carWashController.totalCarWashItems > 0;
+                final hasSelection =
+                    selectedVehicleIndex != -1 && selectedWashTypeIndex != -1;
+
+                return Scaffold(
+                  backgroundColor: Colors.white,
+                  body: CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
+                      SliverAppBar(
+                        automaticallyImplyLeading: false,
+                        toolbarHeight: Dimensions.height30,
+                        title: buildAppBar(context, street, suburb),
+                        backgroundColor: LiveColors.accent.withOpacity(0.3),
+                        elevation: 0,
+                        pinned: true,
+                        expandedHeight: Dimensions.screenHeight * 0.35,
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: _buildTopSection(carWashController),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Container(
+                          height: Dimensions.screenHeight * 0.43,
+                          color: Colors.grey.shade50,
+                          child: Column(
+                            children: [
+                              SizedBox(height: Dimensions.screenHeight * 0.02),
+                              _buildVehicleSelectionConsole(carWashController),
+                              Expanded(
+                                  child: _buildWashTypeSelection(
+                                      carWashController)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Column(
+                          children: [
+                            Expanded(child: SizedBox()),
+                            _buildAddToCartSection(
+                                carWashController, hasSelection),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ),
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  children: [
-                    Expanded(child: SizedBox()),
-                    _buildAddToCartSection(carWashController, hasSelection),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          bottomNavigationBar:
-              _buildBottomNavBar(carWashController, hasCartItems),
-        );
+                  bottomNavigationBar:
+                      _buildBottomNavBar(carWashController, hasCartItems),
+                );
+              },
+            );
+          });
+        });
       },
     );
   }
@@ -1031,7 +1066,9 @@ class _CarWashViewState extends State<CarWashView> {
                         width: squareSize / 1.2,
                         height: squareSize / 1.2,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isSelected
+                              ? LiveColors.whiteTextColor
+                              : Colors.white,
                           borderRadius:
                               BorderRadius.circular(Dimensions.radius15 / 1.1),
                           border: Border.all(
@@ -1080,16 +1117,6 @@ class _CarWashViewState extends State<CarWashView> {
                                       },
                                     ),
                             ),
-                            if (isSelected)
-                              Positioned(
-                                top: Dimensions.height10 / 2,
-                                right: Dimensions.height10 / 2,
-                                child: Icon(
-                                  Icons.check,
-                                  color: Colors.black45,
-                                  size: Dimensions.iconSize24 / 1.4,
-                                ),
-                              ),
                           ],
                         ),
                       ),
@@ -1220,7 +1247,7 @@ class _CarWashViewState extends State<CarWashView> {
                                   }).toList(),
                                 ),
                               ),
-                              SizedBox(height: Dimensions.height10),
+                              SizedBox(height: Dimensions.height10 / 2),
                               GestureDetector(
                                 onTap: () {
                                   _showDescriptionTooltip(

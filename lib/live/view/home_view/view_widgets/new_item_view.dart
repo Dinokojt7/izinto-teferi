@@ -47,7 +47,7 @@ class _NewItemViewState extends State<NewItemView> {
       throw Exception('NewItemView: Could not resolve item.');
     } catch (e) {
       if (kDebugMode) {
-        print('Error resolving item: $e');
+
       }
       return _createFallbackItem();
     }
@@ -368,7 +368,7 @@ class _NewItemViewState extends State<NewItemView> {
       return null;
     } catch (e) {
       if (kDebugMode) {
-        print('Error getting details: $e');
+
       }
       return null;
     }
@@ -494,7 +494,7 @@ class _NewItemViewState extends State<NewItemView> {
       return SizedBox.shrink();
     } catch (e) {
       if (kDebugMode) {
-        print('Error building feature content: $e');
+
       }
       return SizedBox.shrink();
     }
@@ -590,7 +590,7 @@ class _NewItemViewState extends State<NewItemView> {
 class ReleaseDebug {
   static void logItem(String tag, dynamic item) {
     if (kDebugMode) {
-      print('$tag: ${item?.name} (ID: ${item?.id})');
+
     }
   }
 }

@@ -333,7 +333,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
       ))
           .then((value) async {
         if (value.user != null) {
-          print('Authentication successful, passing to home');
+
           setState(() {
             isLoading = false;
           });
@@ -349,7 +349,7 @@ class _PhoneAuthState extends State<PhoneAuth> {
         isLoading = false;
       });
       _showSnackBar('Invalid OTP. Please try again.');
-      print('OTP verification error: $e');
+
     }
   }
 
@@ -389,20 +389,20 @@ class _PhoneAuthState extends State<PhoneAuth> {
         setState(() {
           _verificationCode = verificationID;
         });
-        print('Code sent: $verificationID');
+
       },
       verificationFailed: (FirebaseAuthException error) {
         setState(() {
           isLoading = false;
         });
         _showSnackBar('Verification failed: ${error.message}');
-        print('Verification failed: ${error.message}');
+
       },
       codeAutoRetrievalTimeout: (String verificationID) {
         setState(() {
           _verificationCode = verificationID;
         });
-        print('Code auto-retrieval timeout: $verificationID');
+
       },
       timeout: Duration(seconds: 60),
     );

@@ -277,11 +277,11 @@ class _AddressSearchState extends State<AddressSearch> {
         List<Location> locations = await locationFromAddress(query);
         if (locations.isNotEmpty) {
           // Handle the results
-          print("Found locations: $locations");
+
         }
       }
     } catch (e) {
-      print("Search error: $e");
+
     }
   }
 }

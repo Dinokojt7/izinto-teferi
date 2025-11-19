@@ -91,7 +91,7 @@ class _WrapperState extends State<Wrapper> {
 
       FlutterNativeSplash.remove();
     } catch (e) {
-      print('Initialization error: $e');
+
       setState(() {
         _hasError = true;
         _isInitialLoadComplete = true;
@@ -140,7 +140,7 @@ class _WrapperState extends State<Wrapper> {
       try {
         await controllerLoad().timeout(Duration(seconds: 10));
       } catch (e) {
-        print('Controller load error: $e');
+
         // Continue with other controllers even if one fails
       }
     }
@@ -154,7 +154,7 @@ class _WrapperState extends State<Wrapper> {
         _controllerLoadStatus[name] = true;
       } catch (e) {
         _controllerLoadStatus[name] = false;
-        print('Failed to load $name: $e');
+
         rethrow;
       }
     };
@@ -166,7 +166,7 @@ class _WrapperState extends State<Wrapper> {
           Provider.of<MainAddressViewController>(context, listen: false);
       await addressController.loadGuestAddressFromLocalStorage();
     } catch (e) {
-      print('Guest address load error: $e');
+
     }
   }
 
@@ -195,7 +195,7 @@ class _WrapperState extends State<Wrapper> {
       // Check addresses once
       _hasAddresses = await authService.hasAddresses();
     } catch (e) {
-      print('User profile load error: $e');
+
       setState(() {
         _hasError = true;
       });
@@ -209,7 +209,7 @@ class _WrapperState extends State<Wrapper> {
       await controller.getData();
       await controller.getAddresses();
     } catch (e) {
-      print('Profile controller load error: $e');
+
     }
   }
 
@@ -218,7 +218,7 @@ class _WrapperState extends State<Wrapper> {
     try {
       await loadFunction().timeout(Duration(seconds: 10));
     } catch (e) {
-      print('$controllerName load timeout/error: $e');
+
       // Don't rethrow - let other controllers continue loading
     }
   }
@@ -257,7 +257,7 @@ class _WrapperState extends State<Wrapper> {
           ] as Iterable<Future>,
           eagerError: false);
     } catch (e) {
-      print('Other resources load error: $e');
+
     }
   }
 

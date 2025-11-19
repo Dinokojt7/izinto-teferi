@@ -39,7 +39,7 @@ class LaundrySupportQuestionsController extends GetxController {
         _isLoaded = true;
       }
     } catch (error) {
-      print('Error fetching laundry questions: $error');
+
       _errorMessage = 'An error occurred while loading questions';
       _isLoaded = true;
     } finally {

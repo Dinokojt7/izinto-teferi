@@ -65,7 +65,7 @@ class _OTPAutoFillState extends State<OTPAutoFill> with CodeAutoFill {
   void initState() {
     super.initState();
     listenForCode();
-    print('WE ARE ON THIS ROUTE');
+
   }
 
   @override

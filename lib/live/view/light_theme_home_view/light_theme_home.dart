@@ -61,7 +61,7 @@ class _LightThemeHomeState extends State<LightThemeHome> {
         duration: Duration(seconds: 2),
       );
     } catch (e) {
-      print('Refresh error: $e');
+
       _refreshController.refreshFailed();
 
       // Show error feedback
@@ -137,7 +137,6 @@ class _LightThemeHomeState extends State<LightThemeHome> {
                     children: [
                       _buildHeading(),
                       _buildServicesGrid(homeItems),
-                      SizedBox(height: Dimensions.height30),
                       _buildPromoBanner(),
                       SizedBox(height: Dimensions.height30),
                     ],

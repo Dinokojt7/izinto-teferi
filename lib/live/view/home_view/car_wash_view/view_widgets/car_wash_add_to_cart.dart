@@ -134,7 +134,7 @@ class CarWashAddToCart extends StatelessWidget {
           break;
       }
     } catch (e) {
-      print('Haptic feedback not available: $e');
+
     }
   }
 }

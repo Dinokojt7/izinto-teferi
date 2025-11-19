@@ -57,7 +57,7 @@ class _PaymentPageState extends State<PaymentPage> {
     String referenceFormatted =
         randomLetters + orderNumber.substring(orderNumber.length - 2);
     reference = _getReference() + referenceFormatted;
-    print('New reference: $reference');
+
     Future.delayed(const Duration(seconds: 10), () {
       passReference();
     });
@@ -83,7 +83,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
         return PayStackAuthResponse.fromJson(responseData['data']);
       } else {
-        print('Here is the ERROR: ${response.body}');
+
         throw 'Payment not initiated';
       }
     } on Exception {
@@ -122,7 +122,7 @@ class _PaymentPageState extends State<PaymentPage> {
       });
       return authResponse.authorization_url;
     } catch (e) {
-      print('Error initializing transaction: $e');
+
       return e.toString();
     }
   }
@@ -143,7 +143,7 @@ class _PaymentPageState extends State<PaymentPage> {
         // print('Check response: ${response.statusCode} of ${response.body}');
         final String status = body['data']['status'];
         if (response.statusCode == 200) {
-          print('here is the result:$status');
+
 
           return status;
           break;
@@ -151,7 +151,7 @@ class _PaymentPageState extends State<PaymentPage> {
       } catch (e) {
         // print('This is the problem: $e');
         // return '$e';
-        print('Error polling for result: $e');
+
         return 'awaiting payment';
       }
       // Pause for a short duration before making the next request
@@ -246,7 +246,7 @@ class _PaymentPageState extends State<PaymentPage> {
           }
         }
       } catch (e) {
-        print('Error polling for result: $e');
+
         return 'awaiting payment';
       }
 

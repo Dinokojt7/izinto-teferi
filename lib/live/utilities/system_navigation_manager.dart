@@ -80,7 +80,7 @@ class SystemNavigationManager {
     try {
       themeApplier();
     } catch (e) {
-      print('Error applying theme: $e');
+
     }
     _isApplyingTheme = false;
   }

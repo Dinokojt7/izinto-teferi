@@ -460,7 +460,7 @@ class SubscribeNowButton extends StatefulWidget {
 class _SubscribeNowButtonState extends State<SubscribeNowButton> {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   void _onCancel(Transact transaction) {
-    print('Transaction Cancelled');
+
   }
 
   @override

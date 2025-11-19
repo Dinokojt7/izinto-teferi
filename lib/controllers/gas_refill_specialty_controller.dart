@@ -79,7 +79,7 @@ class GasRefillSpecialtyController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('GasRefillSpecialtyController Error: $message');
+
     }
 
     // Auto-retry after 3 seconds
@@ -145,7 +145,7 @@ class GasRefillSpecialtyController extends GetxController {
       update();
     } catch (e) {
       if (kDebugMode) {
-        print('Error adding gas refill item to cart: $e');
+
       }
       Get.snackbar('Error', 'Failed to add item to cart');
     }

@@ -450,7 +450,7 @@ class CarWashController extends GetxController {
         _carWashCartItems.assignAll(decoded.cast<Map<String, dynamic>>());
         update();
       } catch (e) {
-        print('Error loading car wash cart: $e');
+
       }
     }
   }
@@ -484,7 +484,7 @@ class CarWashController extends GetxController {
         'washTypeIndex': _washTypeIndex,
       });
     }
-    print('Included vehicles: ${_includedVehicles}');
+
     update();
   }
 

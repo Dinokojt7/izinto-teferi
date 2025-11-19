@@ -175,10 +175,10 @@ class _ProfileSettingsState extends State<ProfileSettings> {
     User? user = await _firebaseAuth.currentUser;
     if (user != null) {
       Position position = await determinePosition();
-      print(position.latitude);
+
 
       _address = await GetAddressFromLatLong(position);
-      print(_address);
+
 
       List<Placemark> placemark =
           await placemarkFromCoordinates(position.latitude, position.longitude);
@@ -197,7 +197,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
   GetAddressFromLatLong(Position position) async {
     List<Placemark> placemark =
         await placemarkFromCoordinates(position.latitude, position.longitude);
-    print(placemark);
+
     Placemark place = placemark[0];
     _street = '${place.street}';
     _address = '${place.subLocality}';
@@ -909,7 +909,7 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                                                             const Wrapper()),
                                                     (route) => false);
                                               } catch (e) {
-                                                print('Error: $e');
+
                                               }
                                             } else {
                                               Navigator.of(context).pop();

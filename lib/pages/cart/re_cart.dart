@@ -165,8 +165,8 @@ class _ReCartState extends State<ReCart> with SingleTickerProviderStateMixin {
           _laundryLastDate = userData['current laundry wash date'].toDate();
           _formattedLaundryLastDate =
               DateFormat('E d MMMM').format(_laundryLastDate);
-          print('Here is the status here: $_laundrySubscription');
-          print('Here is the last wash date here: $_formattedLaundryDate');
+
+
         });
     });
   }
@@ -193,8 +193,8 @@ class _ReCartState extends State<ReCart> with SingleTickerProviderStateMixin {
           _carWashLastDate = userData['current car wash wash date'].toDate();
           _formattedCarWashLastDate =
               DateFormat('E d MMMM').format(_carWashLastDate);
-          print('Here is the status here: $_carWashSubscription');
-          print('Here is the last wash date here: $_formattedCarWashDate');
+
+
         });
     });
   }

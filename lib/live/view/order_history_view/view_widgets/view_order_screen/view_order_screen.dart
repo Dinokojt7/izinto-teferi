@@ -585,7 +585,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
         );
       });
     } catch (e) {
-      print('Error opening support chat: $e');
+
 
       // Fallback: try regular navigation
       try {
@@ -596,7 +596,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
           ),
         );
       } catch (e2) {
-        print('Fallback navigation also failed: $e2');
+
       }
     }
   }
@@ -824,7 +824,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
         ),
       );
     } catch (e) {
-      print('Timeline build error: $e');
+
       return Container(
         padding: EdgeInsets.all(Dimensions.height20),
         child: Text(
@@ -953,7 +953,7 @@ class _ViewOrderScreenState extends State<ViewOrderScreen> {
     try {
       return ServiceTypeUtils.getItemsByServiceType(widget.order, serviceType);
     } catch (e) {
-      print('Error getting items list: $e');
+
       return [];
     }
   }

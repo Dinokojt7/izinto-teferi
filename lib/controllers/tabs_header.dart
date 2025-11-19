@@ -48,7 +48,7 @@ class TabsHeaderController extends GetxController {
               '✅ TabsHeaderController: Loaded ${_tabsHeaderList.length} tabs');
           if (_tabsHeaderList.isNotEmpty) {
             final firstTab = _tabsHeaderList.first;
-            print('✅ First tab: ${_getItemName(firstTab)}');
+
           }
         }
       } else {
@@ -66,7 +66,7 @@ class TabsHeaderController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('TabsHeaderController Error: $message');
+
     }
 
     // Auto-retry after 3 seconds

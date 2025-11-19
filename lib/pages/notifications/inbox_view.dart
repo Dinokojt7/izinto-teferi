@@ -74,7 +74,7 @@ class _InboxViewState extends State<InboxView> {
   void setupFirebaseMessaging() {
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Foreground message received: ${message.notification?.title}");
+
 
       // You can show a snackbar or dialog for foreground notifications
       if (message.notification != null) {
@@ -90,13 +90,13 @@ class _InboxViewState extends State<InboxView> {
         .getInitialMessage()
         .then((RemoteMessage? message) {
       if (message != null) {
-        print("App opened from terminated state: ${message.data}");
+
       }
     });
 
     // Handle when app is in background and opened via notification
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("App opened from background: ${message.data}");
+
       // You can navigate to specific screen based on message data
     });
   }
@@ -151,9 +151,9 @@ class _InboxViewState extends State<InboxView> {
           },
         ),
       );
-      print('Notification sent successfully');
+
     } catch (error) {
-      print('Error sending notification: $error');
+
     }
   }
 
@@ -195,10 +195,10 @@ class _InboxViewState extends State<InboxView> {
         updatedChatRoom.add(newMapItem);
 
         await documentReference.update({'chat room': updatedChatRoom});
-        print('Chat room updated successfully');
+
       }
     } catch (error) {
-      print('Error updating chat room: $error');
+
     }
   }
 
@@ -243,7 +243,7 @@ class _InboxViewState extends State<InboxView> {
     await FirebaseMessaging.instance.getToken().then((token) {
       setState(() {
         deviceToken = token;
-        print('Device token is $deviceToken');
+
       });
       saveToken(deviceToken!);
     });
@@ -269,12 +269,12 @@ class _InboxViewState extends State<InboxView> {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
+
     } else if (settings.authorizationStatus ==
         AuthorizationStatus.provisional) {
-      print('User granted provisional permission');
+
     } else {
-      print('User declined or has not accepted permission');
+
     }
   }
 
@@ -292,7 +292,7 @@ class _InboxViewState extends State<InboxView> {
         stream: _streamUserInfo,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasError) {
-            print('Stream error: ${snapshot.error}');
+
             return Center(
               child: Text('Error loading messages'),
             );

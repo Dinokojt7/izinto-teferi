@@ -13,7 +13,6 @@ class _CountryCodeSelectorState extends State<CountryCodeSelector> {
   final List<Map<String, String>> countries = [
     {'name': 'South Africa', 'code': '+27', 'flag': '🇿🇦'},
     {'name': 'Botswana', 'code': '+267', 'flag': '🇧🇼'},
-    {'name': 'Lesotho', 'code': '+266', 'flag': '🇱🇸'},
   ];
 
   String? selectedCountryCode;

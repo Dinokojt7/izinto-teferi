@@ -46,7 +46,7 @@ class OrderSupportController extends ChangeNotifier {
 
       return chatRoomId;
     } catch (e) {
-      print('Error creating chat room: $e');
+
       rethrow;
     }
   }
@@ -94,7 +94,7 @@ class OrderSupportController extends ChangeNotifier {
         }
       }
     } catch (e) {
-      print('Error checking admin messages: $e');
+
     }
   }
 
@@ -117,7 +117,7 @@ class OrderSupportController extends ChangeNotifier {
         },
       );
 
-      print('✅ Admin message notification sent for: $orderId');
+
 
       // Mark as notified in Firestore to prevent duplicates
       await _firestore
@@ -130,7 +130,7 @@ class OrderSupportController extends ChangeNotifier {
         'notificationSentAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('❌ Error triggering admin notification: $e');
+
     }
   }
 
@@ -180,7 +180,7 @@ class OrderSupportController extends ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      print('Error sending message: $e');
+
       rethrow;
     }
   }
@@ -227,9 +227,9 @@ class OrderSupportController extends ChangeNotifier {
         body: 'Your message has been sent to our support team.',
       );
 
-      print('✅ Support notification sent for order: $orderId');
+
     } catch (e) {
-      print('❌ Error sending support notification: $e');
+
     }
   }
 
@@ -258,9 +258,9 @@ class OrderSupportController extends ChangeNotifier {
       }
 
       await batch.commit();
-      print('✅ Messages marked as read for order: $orderId');
+
     } catch (e) {
-      print('❌ Error marking messages as read: $e');
+
     }
   }
 }

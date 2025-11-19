@@ -72,7 +72,7 @@ class LegalDocumentsController extends GetxController {
   void _handleError(String message) {
     _errorMessage.value = message;
     if (kDebugMode) {
-      print('LegalDocumentsController Error: $message');
+
     }
 
     // Auto-retry after 3 seconds

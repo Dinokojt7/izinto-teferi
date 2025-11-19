@@ -13,7 +13,7 @@ class DatabaseService {
   final CollectionReference laundryCollection =
       FirebaseFirestore.instance.collection('laundry');
   final CollectionReference promoCodeCollection =
-      FirebaseFirestore.instance.collection('promo_codes'); // Add this
+      FirebaseFirestore.instance.collection('promo_codes');
 
   //These parameters must be put in a consistent sequence otherwise they will be mixed up in the database
   Future updateUserData(
@@ -27,44 +27,90 @@ class DatabaseService {
     bool termsAccepted = false,
     DateTime? termsAcceptedAt,
   }) async {
-    // First, create the user document
-    await izintoCollection.doc(uid).set({
-      'uid': uid,
-      'name': name,
-      'surname': surname,
-      'phone': phone,
-      'email': email,
-      'loyalty': iTokens,
-      'termsAccepted': termsAccepted,
-      'isNewUser': true,
-      'telephoneSurveyConsent': false,
-      'emailMarketingConsent': false,
-      'termsAcceptedAt': termsAcceptedAt ?? FieldValue.serverTimestamp(),
-      'createdAt': Timestamp.now(),
-      'promo code': promoCode,
-      'wallet': 0, // Initialize wallet
-    });
+    try {
+      // First, create the user document
+      await izintoCollection.doc(uid).set({
+        'uid': uid,
+        'name': name ?? '',
+        'surname': surname ?? '',
+        'phone': phone ?? '',
+        'email': email ?? '',
+        'loyalty': iTokens ?? 0.0,
+        'termsAccepted': termsAccepted,
+        'isNewUser': true,
+        'telephoneSurveyConsent': false,
+        'emailMarketingConsent': false,
+        'termsAcceptedAt': termsAcceptedAt ?? FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'promo code': promoCode ?? '',
+        'wallet': 0.0, // Initialize wallet
+        'authProvider': 'phone', // Track authentication method
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
-    // Then, save the promo code to promo_codes collection
-    if (promoCode != null && promoCode.isNotEmpty) {
-      await _savePromoCodeToCollection(promoCode);
+
+
+      // Then, save the promo code to promo_codes collection if provided
+      if (promoCode != null && promoCode.isNotEmpty) {
+        await _savePromoCodeToCollection(promoCode);
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
-  // Save promo code to promo_codes collection
+  // Save promo code to promo_codes collection with enhanced error handling
   Future<void> _savePromoCodeToCollection(String promoCode) async {
     try {
+      // Check if promo code already exists to avoid duplicates
+      final existingCode = await promoCodeCollection.doc(promoCode).get();
+
+      if (existingCode.exists) {
+        return;
+      }
+
       await promoCodeCollection.doc(promoCode).set({
         'code': promoCode,
         'ownerUserId': uid,
         'createdAt': FieldValue.serverTimestamp(),
         'isActive': true,
         'timesUsed': 0,
-        'totalRewardsGiven': 0,
+        'totalRewardsGiven': 0.0,
+        'ownerName': '', // Will be updated when user completes profile
+        'ownerPhone': '', // Will be updated when user completes profile
+        'lastUsedAt': null,
       });
-      print('✅ Promo code saved to promo_codes collection: $promoCode');
     } catch (e) {
-      print('❌ Error saving promo code to collection: $e');
+      // Don't rethrow - we don't want promo code failure to break user creation
+    }
+  }
+
+  // Update promo code with user info when profile is completed
+  Future<void> updatePromoCodeWithUserInfo({
+    required String promoCode,
+    required String userName,
+    required String userSurname,
+    required String userPhone,
+  }) async {
+    try {
+      await promoCodeCollection.doc(promoCode).update({
+        'ownerName': '$userName $userSurname',
+        'ownerPhone': userPhone,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+    } catch (e) {
+
+    }
+  }
+
+  // Check if promo code exists
+  Future<bool> checkPromoCodeExists(String promoCode) async {
+    try {
+      final doc = await promoCodeCollection.doc(promoCode).get();
+      return doc.exists;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -88,7 +134,6 @@ class DatabaseService {
   }
 
   // get izinto streams
-
   Stream<List<SpecialtyModel>> get specialties {
     return laundryCollection.snapshots().map(_laundryListFromSnapshot);
   }

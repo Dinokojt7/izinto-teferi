@@ -66,7 +66,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             selectedAddress = Map<String, dynamic>.from(_addresses.first);
           }
         } catch (e) {
-          print('Error processing addresses: $e');
+
           selectedAddress = {};
         }
 

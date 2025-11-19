@@ -42,7 +42,7 @@ class _CustomerServiceViewState extends State<CustomerServiceView> {
     try {
       await _openOrderDetails(context, order);
     } catch (e) {
-      print('Error opening order details: $e');
+
     }
   }
 

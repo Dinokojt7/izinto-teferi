@@ -156,6 +156,7 @@ class _ServiceWidgetState extends State<ServiceWidget> {
                   ),
                 ),
                 Positioned(
+                  left: _quantity > 0 ? 0.0 : null,
                   right: 0.0,
                   bottom: 0.0,
                   child: GestureDetector(

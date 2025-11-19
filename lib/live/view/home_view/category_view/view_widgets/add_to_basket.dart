@@ -34,20 +34,22 @@ class AddToBasket extends StatelessWidget {
             height: 28,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(Dimensions.radius15),
-              color: Colors.black,
+              color: _isInCart ? Colors.transparent : Colors.black,
               border: Border.all(
-                color: Colors.black,
+                color: _isInCart ? Colors.transparent : Colors.black,
               ),
             ),
             child: _isInCart
                 ? null
-                : Text(
-                    '+',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: Dimensions.font20,
-                        fontFamily: 'Poppins'),
+                : Center(
+                    child: Text(
+                      '+',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: Dimensions.font20,
+                          fontFamily: 'Poppins'),
+                    ),
                   ),
           ),
           _isInCart

@@ -62,17 +62,26 @@ class _OpeningHoursState extends State<OpeningHours> {
         String suburb = '';
         String zip = '';
 
+        // FIXED: Correct variable assignment
         if (user != null && selectedAddresses.isNotEmpty) {
           street = selectedAddresses.first['street'] ?? '';
-          street = selectedAddresses.first['suburb'] ?? '';
-          street = selectedAddresses.first['zip'] ?? '';
+          suburb = selectedAddresses.first['suburb'] ?? '';
+          zip = selectedAddresses.first['zip'] ?? '';
         } else if (addressViewController.hasData) {
           street = addressViewController.street;
-          street = addressViewController.suburb;
-          street = addressViewController.zipCode;
+          suburb = addressViewController.suburb;
+          zip = addressViewController.zipCode;
         } else {
           street = 'Rivonia Blvd & Mutual Rd';
+          suburb = 'Rivonia Village';
+          zip = '2499';
         }
+
+        // Debug print to verify address data
+        print('Address Debug - Street: $street, Suburb: $suburb, Zip: $zip');
+        print(
+            'User: $user, Has Selected Addresses: ${selectedAddresses.isNotEmpty}');
+        print('Address Controller Has Data: ${addressViewController.hasData}');
 
         return Scaffold(
           backgroundColor: Colors.white.withOpacity(0.97),
@@ -126,33 +135,36 @@ class _OpeningHoursState extends State<OpeningHours> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Padding(
-                                          padding: EdgeInsets.only(bottom: 4),
-                                          child: Text(
-                                            street,
-                                            style: TextStyle(
-                                              fontSize: Dimensions.font16,
-                                              fontWeight: FontWeight.w600,
-                                              fontFamily: 'Poppins',
+                                        if (street.isNotEmpty)
+                                          Padding(
+                                            padding: EdgeInsets.only(bottom: 4),
+                                            child: Text(
+                                              street,
+                                              style: TextStyle(
+                                                fontSize: Dimensions.font16,
+                                                fontWeight: FontWeight.w600,
+                                                fontFamily: 'Poppins',
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(bottom: 4),
-                                          child: Text(
-                                            suburb,
-                                            style: TextStyle(
-                                              fontSize: Dimensions.font16 / 1.1,
-                                              fontWeight: FontWeight.w500,
-                                              fontFamily: 'Poppins',
-                                              color: Colors.grey.shade700,
+                                        if (suburb.isNotEmpty)
+                                          Padding(
+                                            padding: EdgeInsets.only(bottom: 4),
+                                            child: Text(
+                                              suburb,
+                                              style: TextStyle(
+                                                fontSize:
+                                                    Dimensions.font16 / 1.1,
+                                                fontWeight: FontWeight.w500,
+                                                fontFamily: 'Poppins',
+                                                color: Colors.grey.shade700,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
                                         if (zip.isNotEmpty)
                                           Text(
                                             zip,
@@ -165,11 +177,37 @@ class _OpeningHoursState extends State<OpeningHours> {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
+                                        // Fallback if all fields are empty
+                                        if (street.isEmpty &&
+                                            suburb.isEmpty &&
+                                            zip.isEmpty)
+                                          Text(
+                                            'No address available',
+                                            style: TextStyle(
+                                              fontSize: Dimensions.font16 / 1.1,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'Poppins',
+                                              color: Colors.grey.shade500,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ),
                                 ),
                                 // Change button with fixed width
+                                // BlueTextButton(
+                                //   text: 'Change',
+                                //   onTap: () {
+                                //     // Navigate to address selection
+                                //     Navigator.push(
+                                //       context,
+                                //       MaterialPageRoute(
+                                //         builder: (context) => SavedAddresses(),
+                                //       ),
+                                //     );
+                                //   },
+                                // ),
                               ],
                             ),
                           ),

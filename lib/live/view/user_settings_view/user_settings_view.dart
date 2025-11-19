@@ -5,6 +5,9 @@ import 'package:izinto/live/view/user_settings_view/main_app_settings.dart';
 import 'package:izinto/live/widgets/text_widgets/big_mallanna.dart';
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
+import 'package:izinto/utils/dimensions.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import '../../utilities/colors.dart';
 
 import '../../../pages/home/main_components/home_button.dart';
 import '../../../utils/colors.dart';
@@ -180,9 +183,9 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
           toolbarHeight: 200,
           elevation: 0,
           title: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Logo that disappears when scrolling up
               Opacity(
                 opacity: disappear(shrinkOffset).clamp(0.0, 1.0),
                 child: Image.asset(
@@ -190,16 +193,24 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
                   height: 25.0,
                 ),
               ),
-              SizedBox(height: 5.0),
+
+              // Space above ProfileMallana that ONLY appears when shrunk
+              Opacity(
+                opacity: appear(shrinkOffset).clamp(0.0, 1.0),
+                child: SizedBox(height: Dimensions.height20),
+              ),
+
+              // ProfileMallana - always centered
               Center(
-                // Add this Center widget to ensure BigMallanna is centered
                 child: _profileController.firstName == '' ||
                         _profileController.firstName == null
-                    ? BigMallanna(text1: 'Hello', text2: 'Welcome')
-                    : BigMallanna(
+                    ? ProfileMallana(text1: 'Hello', text2: 'Welcome')
+                    : ProfileMallana(
                         text1: '${_profileController.firstName}',
                         text2: '${_profileController.lastName}'),
               ),
+
+              // Wallet balance that appears when shrunk
               Opacity(
                 opacity: walletOpacity(shrinkOffset).clamp(0.0, 1.0),
                 child: Column(
@@ -283,16 +294,173 @@ class TabsSection extends StatelessWidget {
         dividerHeight: 0,
         labelPadding: EdgeInsets.symmetric(horizontal: 8.0),
         physics: AlwaysScrollableScrollPhysics(),
-        indicatorColor:
-            //isSpecialtiesLoaded
-            //   ?
-            //AppColors.secondary
-            // :
-            Colors.transparent,
+        indicatorColor: Colors.transparent,
         controller: _tabController,
         tabs: _tabs,
         labelColor: AppColors.fontColor,
         unselectedLabelColor: Colors.grey,
+      ),
+    );
+  }
+}
+
+class ProfileMallana extends StatelessWidget {
+  final String text1;
+  final String text2;
+  final double? size;
+  final bool isSettingsView;
+
+  const ProfileMallana({
+    Key? key,
+    required this.text1,
+    required this.text2,
+    this.size,
+    this.isSettingsView = false,
+  }) : super(key: key);
+
+  // Safe text getters with defaults
+  String get _safeText1 => text1.trim();
+  String get _safeText2 => text2.trim();
+
+  // Calculate the total character count safely
+  int get _totalCharacters => _safeText1.length + _safeText2.length;
+
+  // Check if we have any content
+  bool get _hasContent => _safeText1.isNotEmpty || _safeText2.isNotEmpty;
+
+  // More aggressive scaling based on character count
+  double get _dynamicFontSize {
+    final baseSize = size ?? Dimensions.height20 * 2.2;
+    final totalChars = _totalCharacters;
+
+    if (totalChars <= 12) {
+      return baseSize; // Normal size for short names
+    } else if (totalChars <= 20) {
+      return baseSize * 0.8; // Reduce for medium names
+    } else if (totalChars <= 30) {
+      return baseSize * 0.6; // Further reduce for long names
+    } else {
+      return baseSize * 0.4; // Minimum for very long names
+    }
+  }
+
+  // More aggressive min font size
+  double get _minFontSize {
+    final totalChars = _totalCharacters;
+
+    if (totalChars <= 12) {
+      return 18.0;
+    } else if (totalChars <= 20) {
+      return 14.0;
+    } else if (totalChars <= 30) {
+      return 10.0;
+    } else {
+      return 8.0;
+    }
+  }
+
+  // Calculate max width based on screen size
+  double get _maxWidth {
+    // Use 80% of screen width as maximum constraint
+    return Dimensions.screenWidth * 0.8;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_hasContent) {
+      return _buildPlaceholder();
+    }
+
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: _maxWidth, // Constrain the maximum width
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min, // Use minimum width needed
+        children: [
+          // First Text Part - Flexible to prevent overflow
+          Flexible(
+            child: _buildAutoSizeText(
+              text: _safeText1.toUpperCase(),
+              color: Colors.white,
+            ),
+          ),
+
+          SizedBox(width: Dimensions.width10 * 1.5),
+
+          // Second Text Part - Flexible to prevent overflow
+          Flexible(
+            child: _buildAutoSizeText(
+              text: _safeText2.toUpperCase(),
+              color: LiveColors.secondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoSizeText({
+    required String text,
+    required Color color,
+  }) {
+    return AutoSizeText(
+      text,
+      maxLines: 1,
+      minFontSize: _minFontSize,
+      overflow: TextOverflow.ellipsis, // Use ellipsis if still too long
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: _dynamicFontSize,
+        fontFamily: 'Cabin',
+        color: color,
+        fontWeight: FontWeight.w900,
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: _maxWidth,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: _buildStaticText(
+              text: 'Hello',
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(width: Dimensions.width10 * 1.5),
+          Flexible(
+            child: _buildStaticText(
+              text: 'Welcome',
+              color: LiveColors.secondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStaticText({
+    required String text,
+    required Color color,
+  }) {
+    return Text(
+      text,
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: size ?? Dimensions.height20 * 2.2,
+        fontFamily: 'Cabin',
+        color: color,
+        fontWeight: FontWeight.w900,
       ),
     );
   }

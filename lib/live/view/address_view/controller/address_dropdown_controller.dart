@@ -77,7 +77,7 @@ class MainAddressViewController extends ChangeNotifier {
   String _customLabel = 'Add new label...';
   String get customLabel => _customLabel;
 
-  String _additionalInfo = 'Additional information';
+  String _additionalInfo = 'Additional info';
   String get additionalInfo => _additionalInfo;
 
   String _searchStatusText = '';

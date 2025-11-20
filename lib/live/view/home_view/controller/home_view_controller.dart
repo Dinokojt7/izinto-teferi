@@ -7,7 +7,6 @@ import 'package:izinto/live/view/profile_view/controller/profile_view_controller
 import 'package:izinto/live/widgets/bottom_remove_sheet.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../widgets/bottom_delete_sheet.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../auth_view/phone_auth_view.dart';

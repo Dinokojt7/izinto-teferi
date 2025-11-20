@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../utils/colors.dart';
-import '../../../utils/dimensions.dart';
-import '../../../widgets/texts/small_text.dart';
+import '../../utils/colors.dart';
+import '../../utils/dimensions.dart';
+import '../../widgets/texts/small_text.dart';
 
 class NoItems extends StatelessWidget {
   const NoItems({

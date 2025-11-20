@@ -12,8 +12,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../services/map_function.dart';
-import '../../../models/rudimentary_address_model.dart';
-import '../../../utilities/generic_system_navigation.dart';
 import '../../home_view/home_view.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
 import '../save_address.dart';

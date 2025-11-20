@@ -12,8 +12,6 @@ import '../../../utilities/generic_snackbar.dart';
 import '../../../wrapper.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
 import '../../profile_view/profile_view.dart';
-import '../view_widgets/otp_screen.dart';
-import '../../../../pages/auth/phone_auth.dart';
 import '../../../../services/firebase_auth_methods.dart';
 import '../../home_view/home_view.dart';
 
@@ -152,7 +150,6 @@ class PhoneAuthViewController extends ChangeNotifier {
     try {
       String formattedPhone = _formatPhoneNumber(phoneNumber);
 
-
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: formattedPhone,
         verificationCompleted: (PhoneAuthCredential credential) async {
@@ -195,7 +192,6 @@ class PhoneAuthViewController extends ChangeNotifier {
           }
         },
         codeSent: (String verificationId, int? resendToken) {
-
           _verificationCode = verificationId;
           if (context.mounted) {
             Navigator.of(context).pushReplacement(
@@ -212,7 +208,6 @@ class PhoneAuthViewController extends ChangeNotifier {
           notifyListeners();
         },
         verificationFailed: (FirebaseAuthException e) {
-
           _isInitialized = false;
           if (context.mounted) {
             GenericSnackBar().showCustomSnackBar(
@@ -225,13 +220,11 @@ class PhoneAuthViewController extends ChangeNotifier {
           notifyListeners();
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-
           _verificationCode = verificationId;
         },
         timeout: Duration(seconds: 60),
       );
     } catch (e) {
-
       _isInitialized = false;
       if (context.mounted) {
         Get.snackbar(
@@ -282,10 +275,7 @@ class PhoneAuthViewController extends ChangeNotifier {
         'termsAccepted': termsAccepted,
         'termsAcceptedAt': FieldValue.serverTimestamp(),
       });
-
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   void onPageChange() {

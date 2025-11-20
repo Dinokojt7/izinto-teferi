@@ -1,32 +1,19 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_places_suggestions_autocomplete_field/google_places_suggestions_autocomplete_field.dart';
-import 'package:http/http.dart';
 import 'package:geocoding/geocoding.dart'; // Updated import
 import 'package:izinto/live/utilities/colors.dart';
-import 'package:izinto/live/view/checkout_view/view_widgets/generic_white_container.dart';
-import 'package:izinto/live/widgets/buttons/blue_text_button.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
-import '../../../../base/transitions.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../controller/address_dropdown_controller.dart';
 import 'show_results_dialog.dart';
-import '../../../widgets/text_widgets/heading_style_text.dart';
 import '../../../../logger.dart';
-import '../../../../services/map_location_picker.dart';
 import '../../../../utils/dimensions.dart';
-import '../../../../widgets/location/address_details_view.dart';
-import '../../../../pages/options/autocomplete_view.dart';
 
 // Custom result class to replace GeocodingResult
 class CustomGeocodingResult {

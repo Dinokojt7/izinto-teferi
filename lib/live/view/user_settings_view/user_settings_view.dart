@@ -9,7 +9,7 @@ import 'package:izinto/utils/dimensions.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import '../../utilities/colors.dart';
 
-import '../../../pages/home/main_components/home_button.dart';
+import '../../widgets/home_button.dart';
 import '../../../utils/colors.dart';
 import '../../../utils/dimensions.dart';
 import '../../utilities/live_dimensions.dart';

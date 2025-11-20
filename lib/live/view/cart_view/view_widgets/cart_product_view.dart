@@ -9,7 +9,6 @@ import '../../../../controllers/new_cart_controller.dart';
 import '../../../../controllers/temperature_controller.dart';
 import '../../../../models/new_cart_model.dart';
 import '../../../../models/new_specialty_model.dart';
-import '../../../../pages/cart/cart_processes_and_widgets/no_items.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../../widgets/miscellaneous/app_icon.dart';
 import '../../../../widgets/texts/small_text.dart';

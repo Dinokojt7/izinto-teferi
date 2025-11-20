@@ -9,22 +9,13 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:izinto/live/view/profile_view/profile_view.dart';
 import 'package:izinto/models/user.dart';
-import 'package:izinto/pages/auth/phone_auth.dart';
-import 'package:izinto/pages/auth/get_started.dart';
-import 'package:izinto/pages/home/specialty_page_body.dart';
 import 'package:izinto/routes/route_helper.dart';
 import 'package:izinto/services/firebase_storage_service.dart';
 import 'package:provider/provider.dart';
 import '../base/show_snackbar.dart';
 import '../live/utilities/generic_snackbar.dart';
-import '../live/view/auth_view/view_widgets/countdown_controller.dart';
-import '../live/view/auth_view/view_widgets/otp_screen.dart';
 import '../live/view/home_view/home_view.dart';
 import '../live/view/profile_view/controller/profile_view_controller.dart';
-import '../pages/auth/otp_screen.dart';
-import '../pages/home/home_page.dart';
-import '../pages/on_boarding/location_access.dart';
-import '../pages/options/profile_settings.dart';
 import '../utils/app_dialog.dart';
 import '../utils/dimensions.dart';
 import '../utils/showOtpDialog.dart';
@@ -47,19 +38,6 @@ class FirebaseAuthMethods {
       randomNumber += numbers[_random.nextInt(numbers.length)];
     }
     return randomNumber;
-  }
-
-  //GETTING USER INSTANCE FROM FIREBASE
-  handleAuthState() {
-    return StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (BuildContext context, snapshot) {
-          if (snapshot.hasData) {
-            return SpecialtyPageBody();
-          } else {
-            return const GetStarted();
-          }
-        });
   }
 
   //CREATE USER OBJ BASED ON FIREBASE USER
@@ -162,7 +140,6 @@ class FirebaseAuthMethods {
 
       return docSnapshot.exists;
     } catch (e) {
-
       return false;
     }
   }
@@ -320,69 +297,7 @@ class FirebaseAuthMethods {
         'termsAccepted': termsAccepted,
         'termsAcceptedAt': FieldValue.serverTimestamp(),
       });
-    } catch (e) {
-
-    }
-  }
-
-  // PHONE SIGN IN
-  Future<dynamic> phoneAuthLogin(
-      BuildContext context, String phoneNumber) async {
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      verificationCompleted: (PhoneAuthCredential credential) async {},
-      verificationFailed: (e) {
-        showSnackBar(context, e.message!);
-      },
-      codeSent: ((verificationId, int? resendToken) async {
-        this.verificationId.value = verificationId;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OtpScreen(
-              phone: phoneNumber,
-              verificationId: verificationId,
-            ),
-          ),
-        );
-      }),
-      codeAutoRetrievalTimeout: (verificationId) {
-        this.verificationId.value = verificationId;
-      },
-    );
-  }
-
-  Future<dynamic> signIinWithPhone(
-      BuildContext context, String phoneNumber) async {
-    try {
-      await _auth.verifyPhoneNumber(
-          phoneNumber: phoneNumber,
-          verificationCompleted: (PhoneAuthCredential credential) async {
-            await _auth.signInWithCredential(credential);
-          },
-          verificationFailed: (e) {
-            showSnackBar(context, e.message!);
-          },
-          codeSent: (verificationId, int? resendToken) {
-            this.verificationId.value = verificationId;
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OTPAutoFill(
-                    verificationId: verificationId, phone: phoneNumber),
-              ),
-            );
-          },
-          codeAutoRetrievalTimeout: (verificationId) {});
-    } on FirebaseAuthException catch (e) {
-      GenericSnackBar().showCustomSnackBar(
-        null,
-        context,
-        'Phone sign-in failed: ${e.message}',
-        false,
-      );
-    }
+    } catch (e) {}
   }
 
   // Resend otp code from inside the otp view

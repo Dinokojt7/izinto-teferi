@@ -1,11 +1,8 @@
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:izinto/widgets/main_progress_indicator.dart';
 
 import '../../../utils/dimensions.dart';
-import '../../auxiliery_classes/mini_circular_progress_indicator.dart';
 import '../save_button_loader.dart';
-import 'main_action_button.dart';
 import '../text_widgets/heading_style_text.dart';
 
 class SaveButton extends StatefulWidget {

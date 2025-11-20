@@ -4,9 +4,6 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/models/new_specialty_model.dart';
 
-import '../../../../controllers/cart_controller.dart';
-import '../../../../models/popular_specialty_model.dart';
-import '../../../../widgets/bottom_delete_sheet.dart';
 import '../../../widgets/bottom_remove_sheet.dart';
 
 class CartActionsController extends ChangeNotifier {

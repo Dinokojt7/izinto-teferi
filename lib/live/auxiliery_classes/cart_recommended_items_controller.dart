@@ -1,4 +1,3 @@
-// lib/live/auxiliery_classes/cart_recommended_items_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/recommendation_controller.dart';

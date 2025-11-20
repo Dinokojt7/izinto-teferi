@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../controllers/auth_controller.dart';
-import '../controllers/cart_controller.dart';
 import 'dimensions.dart';
 
 void appDialog({

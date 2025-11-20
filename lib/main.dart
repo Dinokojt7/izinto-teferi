@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
-import 'package:izinto/bindings/initial_binding.dart';
 import 'package:izinto/controllers/car_specialty_controller.dart';
 import 'package:izinto/controllers/cart_controller.dart';
 import 'package:izinto/controllers/checkout_controller.dart';
@@ -20,10 +19,8 @@ import 'package:izinto/controllers/recommended_specialty_controller.dart';
 import 'package:izinto/controllers/sneakers_blankets_controller.dart';
 import 'package:izinto/controllers/subscription_plans_controller.dart';
 import 'package:izinto/controllers/tabs_header.dart';
-import 'package:izinto/data_uploader_screen.dart';
 import 'package:izinto/helpers/dependencies.dart' as dep;
 import 'package:izinto/live/auxiliery_classes/cart_recommended_items_controller.dart';
-import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/view/auth_view/phone_auth_view.dart';
 import 'package:izinto/live/view/checkout_view/controller/checkout_view_controller.dart';
 import 'package:izinto/live/view/checkout_view/controller/riderTip_controller.dart';
@@ -36,15 +33,6 @@ import 'package:izinto/live/view/profile_view/controller/profile_view_controller
 import 'package:izinto/live/view/profile_view/profile_view.dart';
 import 'package:izinto/live/view/user_settings_view/controller/user_settings_controller.dart';
 import 'package:izinto/models/user.dart';
-import 'package:izinto/pages/cart/cart_page.dart';
-import 'package:izinto/pages/cart/cart_processes_and_widgets/cart_view_controller.dart';
-import 'package:izinto/pages/checkout/order_success.dart';
-import 'package:izinto/pages/checkout/payment_page.dart';
-import 'package:izinto/pages/home/home_route.dart';
-import 'package:izinto/live/wrapper.dart';
-
-import 'package:izinto/pages/options/profile_settings.dart';
-import 'package:izinto/pages/splash/splash_screen.dart';
 import 'package:izinto/routes/route_helper.dart';
 import 'package:izinto/services/auth_service.dart';
 import 'package:izinto/services/dependency_injection.dart';
@@ -55,9 +43,7 @@ import 'package:izinto/services/notification_service.dart';
 import 'package:izinto/services/phone_auth_methods.dart';
 import 'package:izinto/services/subscription_methods.dart';
 import 'package:izinto/utils/colors.dart';
-import 'package:izinto/widgets/location/address_details_view.dart';
 import 'package:provider/provider.dart';
-import 'controllers/car_wash_support_questions_controller.dart';
 import 'controllers/carpet_care_specialty_controller.dart';
 import 'controllers/gas_refill_specialty_controller.dart';
 import 'controllers/home_items_controller.dart';
@@ -73,25 +59,20 @@ import 'live/view/auth_view/controller/phone_auth_view_controller.dart';
 import 'live/view/cart_view/controller/cart_actions_controller.dart';
 import 'live/view/home_view/category_view/controller/category_view_controller.dart';
 import 'live/view/order_support/controller/order_support_controller.dart';
+import 'live/wrapper.dart';
 import 'models/subscription_model.dart';
 
 /// Initialize Firebase Messaging and setup notification handlers
 Future<void> setupFirebaseMessaging() async {
-
-
   final notificationService = NotificationService();
   await notificationService.initialize();
 
   // Setup chat message listeners
   notificationService.setupChatMessageListener();
-
-
 }
 
 /// Handle foreground messages
 void handleForegroundMessage(RemoteMessage message) {
-
-
   // For example, using GetX:
   if (message.notification != null) {
     Get.snackbar(
@@ -109,15 +90,12 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   // Handle background message
 
-
   // You can process the background message here
   // For example, update local data, show local notification using system APIs, etc.
 
   // Note: Since we removed flutter_local_notifications, you might want to use
   // the system's native notification capabilities or handle data messages directly
-  if (message.data.isNotEmpty) {
-
-  }
+  if (message.data.isNotEmpty) {}
 }
 
 Future<void> main() async {
@@ -145,7 +123,6 @@ Future<void> main() async {
 
   // Handle when app is opened from background state
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-
     // Handle the message, e.g., navigate to specific screen
   });
 
@@ -193,148 +170,130 @@ class MyApp extends StatelessWidget {
                           return GetBuilder<CarWashController>(builder: (_) {
                             return GetBuilder<RecommendedSpecialtyController>(
                                 builder: (_) {
-                              return GetBuilder<
-                                      CarWashSupportQuestionsController>(
+                              return GetBuilder<NewCartController>(
                                   builder: (_) {
-                                return GetBuilder<NewCartController>(
-                                    builder: (_) {
-                                  return GetBuilder<PhoneAuthMethods>(
-                                      builder: (_) {
-                                    return StreamProvider<UserModel?>.value(
-                                        value: FirebaseAuthMethods().user,
-                                        initialData: UserModel(uid: ''),
-                                        builder: (context, snapshot) {
-                                          return MultiProvider(
-                                            providers: [
-                                              StreamProvider<UserModel?>.value(
-                                                value:
-                                                    FirebaseAuthMethods().user,
-                                                initialData: UserModel(uid: ''),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  PhoneAuthViewController>(
-                                                create: (_) =>
-                                                    PhoneAuthViewController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  ProfileViewController>(
-                                                create: (_) =>
-                                                    ProfileViewController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  MainAddressViewController>(
-                                                create: (_) =>
-                                                    MainAddressViewController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  CategoryViewController>(
-                                                create: (_) =>
-                                                    CategoryViewController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  RiderTipController>(
-                                                create: (_) =>
-                                                    RiderTipController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  CheckoutViewController>(
-                                                create: (_) =>
-                                                    CheckoutViewController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  CartViewController>(
-                                                create: (_) =>
-                                                    CartViewController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  CartRecommendedItemsController>(
-                                                create: (_) =>
-                                                    CartRecommendedItemsController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  CheckoutController>(
-                                                create: (_) =>
-                                                    CheckoutController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  UserDataController>(
-                                                create: (_) =>
-                                                    UserDataController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  HomeViewController>(
-                                                create: (_) =>
-                                                    HomeViewController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  CartRecommendedItemsController>(
-                                                create: (_) =>
-                                                    CartRecommendedItemsController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  CartActionsController>(
-                                                create: (_) =>
-                                                    CartActionsController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  UserSettingsController>(
-                                                create: (_) =>
-                                                    UserSettingsController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  OrderHistoryController>(
-                                                create: (_) =>
-                                                    OrderHistoryController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  OrderSupportController>(
-                                                create: (_) =>
-                                                    OrderSupportController(),
-                                              ),
-                                              ChangeNotifierProvider<
-                                                  OrderSupportController>(
-                                                create: (_) =>
-                                                    OrderSupportController(),
-                                              ),
-                                              Provider<NotificationService>(
-                                                create: (_) =>
-                                                    NotificationService(),
-                                              ),
-                                              Provider<AuthService>(
-                                                  create: (_) => AuthService()),
-                                            ],
-                                            child: GetMaterialApp(
-                                              debugShowCheckedModeBanner: false,
-                                              navigatorObservers: [
-                                                SystemNavigationObserver()
-                                              ],
-                                              title: 'Izinto',
-                                              home: Wrapper(),
-                                              routes: {
-                                                '/login': (context) =>
-                                                    const PhoneAuthView(),
-                                                '/home': (context) =>
-                                                    const HomeView(),
-                                                '/profile': (context) =>
-                                                    const ProfileView(),
-                                                '/guest-access': (context) =>
-                                                    const GuestAccess(),
-                                              },
-                                              theme: ThemeData(
-                                                colorScheme:
-                                                    ColorScheme.fromSeed(
-                                                  seedColor: Colors.white,
-                                                  // base for a white theme
-                                                  // Your primary color
-                                                  brightness: Brightness.light,
-                                                ),
-                                              ),
-                                              getPages: RouteHelper.routes,
+                                return StreamProvider<UserModel?>.value(
+                                    value: FirebaseAuthMethods().user,
+                                    initialData: UserModel(uid: ''),
+                                    builder: (context, snapshot) {
+                                      return MultiProvider(
+                                        providers: [
+                                          StreamProvider<UserModel?>.value(
+                                            value: FirebaseAuthMethods().user,
+                                            initialData: UserModel(uid: ''),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              PhoneAuthViewController>(
+                                            create: (_) =>
+                                                PhoneAuthViewController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              ProfileViewController>(
+                                            create: (_) =>
+                                                ProfileViewController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              MainAddressViewController>(
+                                            create: (_) =>
+                                                MainAddressViewController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              CategoryViewController>(
+                                            create: (_) =>
+                                                CategoryViewController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              RiderTipController>(
+                                            create: (_) => RiderTipController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              CheckoutViewController>(
+                                            create: (_) =>
+                                                CheckoutViewController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              CartRecommendedItemsController>(
+                                            create: (_) =>
+                                                CartRecommendedItemsController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              CheckoutController>(
+                                            create: (_) => CheckoutController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              UserDataController>(
+                                            create: (_) => UserDataController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              HomeViewController>(
+                                            create: (_) => HomeViewController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              CartRecommendedItemsController>(
+                                            create: (_) =>
+                                                CartRecommendedItemsController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              CartActionsController>(
+                                            create: (_) =>
+                                                CartActionsController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              UserSettingsController>(
+                                            create: (_) =>
+                                                UserSettingsController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              OrderHistoryController>(
+                                            create: (_) =>
+                                                OrderHistoryController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              OrderSupportController>(
+                                            create: (_) =>
+                                                OrderSupportController(),
+                                          ),
+                                          ChangeNotifierProvider<
+                                              OrderSupportController>(
+                                            create: (_) =>
+                                                OrderSupportController(),
+                                          ),
+                                          Provider<NotificationService>(
+                                            create: (_) =>
+                                                NotificationService(),
+                                          ),
+                                          Provider<AuthService>(
+                                              create: (_) => AuthService()),
+                                        ],
+                                        child: GetMaterialApp(
+                                          debugShowCheckedModeBanner: false,
+                                          navigatorObservers: [
+                                            SystemNavigationObserver()
+                                          ],
+                                          title: 'Izinto',
+                                          home: Wrapper(),
+                                          routes: {
+                                            '/login': (context) =>
+                                                const PhoneAuthView(),
+                                            '/home': (context) =>
+                                                const HomeView(),
+                                            '/profile': (context) =>
+                                                const ProfileView(),
+                                            '/guest-access': (context) =>
+                                                const GuestAccess(),
+                                          },
+                                          theme: ThemeData(
+                                            colorScheme: ColorScheme.fromSeed(
+                                              seedColor: Colors.white,
+                                              // base for a white theme
+                                              // Your primary color
+                                              brightness: Brightness.light,
                                             ),
-                                          );
-                                        });
-                                  });
-                                });
+                                          ),
+                                          getPages: RouteHelper.routes,
+                                        ),
+                                      );
+                                    });
                               });
                             });
                           });

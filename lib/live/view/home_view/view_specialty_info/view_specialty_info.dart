@@ -9,7 +9,6 @@ import 'package:izinto/models/new_specialty_model.dart';
 import 'package:izinto/models/popular_specialty_model.dart';
 import 'package:izinto/models/recommended_specialty_model.dart';
 import 'package:izinto/utils/dimensions.dart';
-import 'package:izinto/widgets/texts/expandable_text.dart';
 import 'package:izinto/widgets/texts/small_text.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/foundation.dart';

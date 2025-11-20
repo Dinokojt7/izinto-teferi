@@ -7,7 +7,6 @@ import 'package:izinto/live/view/address_view/controller/address_dropdown_contro
 import 'package:izinto/live/view/address_view/saved_addresses.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:izinto/live/view/profile_view/profile_view.dart';
-import 'package:izinto/pages/options/location_settings.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../../controllers/recommended_specialty_controller.dart';

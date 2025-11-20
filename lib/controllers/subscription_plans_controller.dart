@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import '../helpers/data/repository/subscription_plan_repo.dart';
 import '../models/subscription_plans_model.dart';
-import '../models/support_questions_model.dart';
 
 class SubscriptionPlansController extends GetxController {
   final SubscriptionPlansRepo subscriptionPlansRepo;
@@ -21,8 +20,6 @@ class SubscriptionPlansController extends GetxController {
 
       _isLoaded = true;
       update();
-    } else {
-
-    }
+    } else {}
   }
 }

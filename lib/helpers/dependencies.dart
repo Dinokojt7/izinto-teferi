@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:izinto/controllers/auth_controller.dart';
 import 'package:izinto/controllers/cart_controller.dart';
 import 'package:izinto/controllers/carpet_care_specialty_controller.dart';
 import 'package:izinto/controllers/gas_refill_specialty_controller.dart';
@@ -26,7 +25,6 @@ import 'package:izinto/helpers/data/repository/tabs_header_repo.dart';
 import 'package:izinto/live/view/order_support/controller/order_support_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/car_specialty_controller.dart';
-import '../controllers/car_wash_support_questions_controller.dart';
 import '../controllers/favorite_controller.dart';
 import '../controllers/legal_documents_controller.dart';
 import '../controllers/new_cart_controller.dart';
@@ -84,7 +82,6 @@ Future<void> init() async {
   Get.lazyPut(() =>
       NewRecommendedSpecialtyController(recommendedSpecialtyRepo: Get.find()));
   //controller
-  Get.lazyPut(() => AuthController(authRepo: Get.find()));
 
   Get.lazyPut(() =>
       RecommendedSpecialtyController(recommendedSpecialtyRepo: Get.find()));
@@ -123,10 +120,7 @@ Future<void> init() async {
   Get.lazyPut(() => TabsHeaderController(tabsHeaderRepo: Get.find()));
   Get.lazyPut(() => LaundrySupportQuestionsController(
       laundrySupportQuestionsRepo: Get.find()));
-  Get.lazyPut(() => CarWashSupportQuestionsController(
-      carWashSupportQuestionsRepo: Get.find()));
   Get.lazyPut(
       () => SubscriptionPlansController(subscriptionPlansRepo: Get.find()));
   Get.lazyPut(() => HomeItemsController(homeItemsRepo: Get.find()));
-  Get.lazyPut(() => PhoneAuthMethods());
 }

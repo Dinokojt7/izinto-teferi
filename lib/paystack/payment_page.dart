@@ -10,7 +10,6 @@ import 'package:izinto/paystack/paystack_autoresponse.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../pages/cart/cart_processes_and_widgets/cart_view_controller.dart';
 import '../transaction/trasnaction_model.dart';
 import '../utils/app_constants.dart';
 
@@ -83,7 +82,6 @@ class _PaymentPageState extends State<PaymentPage> {
 
         return PayStackAuthResponse.fromJson(responseData['data']);
       } else {
-
         throw 'Payment not initiated';
       }
     } on Exception {
@@ -122,7 +120,6 @@ class _PaymentPageState extends State<PaymentPage> {
       });
       return authResponse.authorization_url;
     } catch (e) {
-
       return e.toString();
     }
   }
@@ -143,8 +140,6 @@ class _PaymentPageState extends State<PaymentPage> {
         // print('Check response: ${response.statusCode} of ${response.body}');
         final String status = body['data']['status'];
         if (response.statusCode == 200) {
-
-
           return status;
           break;
         }
@@ -213,10 +208,10 @@ class _PaymentPageState extends State<PaymentPage> {
     if (verify == 'success') {
       sendSubscription();
       updateConfirmation(2);
-      Provider.of<CartViewController>(context, listen: false).showDialog();
+      //  Provider.of<CartViewController>(context, listen: false).showDialog();
     } else {
       updateConfirmation(0);
-      Provider.of<CartViewController>(context, listen: false).showDialog();
+      //  Provider.of<CartViewController>(context, listen: false).showDialog();
       setState(() {
         widget.switchValues.value[widget.index] = false;
       });
@@ -246,7 +241,6 @@ class _PaymentPageState extends State<PaymentPage> {
           }
         }
       } catch (e) {
-
         return 'awaiting payment';
       }
 

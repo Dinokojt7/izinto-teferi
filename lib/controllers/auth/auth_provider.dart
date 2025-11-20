@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../base/show_snackbar.dart';
-import '../../live/view/auth_view/view_widgets/countdown_controller.dart';
 import '../../models/user.dart';
 import '../../services/firebase_storage_service.dart';
 
@@ -26,34 +25,6 @@ class AuthProvider extends ChangeNotifier {
     final SharedPreferences s = await SharedPreferences.getInstance();
     _isSignedIn = s.getBool('is_signedin') ?? false;
     notifyListeners();
-  }
-
-  //sign in
-  void signIinWithPhone(BuildContext context, String phoneNumber) async {
-    try {
-      await _firebaseAuth.verifyPhoneNumber(
-          phoneNumber: phoneNumber,
-          verificationCompleted: (PhoneAuthCredential credential) async {
-            await _firebaseAuth.signInWithCredential(credential);
-          },
-          verificationFailed: (e) {
-            showSnackBar(context, e.message!);
-          },
-          codeSent: (verificationId, int? resendToken) {
-// this.verificationId.value = verificationId;
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OTPAutoFill(
-                    verificationId: verificationId, phone: phoneNumber),
-              ),
-            );
-          },
-          codeAutoRetrievalTimeout: (verificationId) {});
-    } on FirebaseAuthException catch (e) {
-      showSnackBar(context, e.message!);
-    }
   }
 
   // verify otp
@@ -91,10 +62,8 @@ class AuthProvider extends ChangeNotifier {
         await _firebaseFirestore.collection('users').doc(_uid).get();
 
     if (snapshot.exists) {
-
       return true;
     } else {
-
       return false;
     }
   }

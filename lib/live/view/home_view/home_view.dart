@@ -1,23 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:izinto/live/auxiliery_classes/live_progress_indicator.dart';
-import 'package:izinto/live/view/home_view/sliver_home_page.dart';
 import 'package:izinto/live/view/home_view/view_widgets/main_scaffold.dart';
-import 'package:izinto/live/view/user_settings_view/user_settings_view.dart';
-import 'package:izinto/live/widgets/lock_screen.dart';
 import 'package:provider/provider.dart';
-import '../../../controllers/cart_controller.dart';
-import '../../../models/user.dart';
-import '../../utilities/generic_system_navigation.dart';
-import '../address_view/controller/address_dropdown_controller.dart';
-import '../cart_view/cart_view_page.dart';
-import '../checkout_view/checkout_page.dart';
 import '../profile_view/controller/profile_view_controller.dart';
-import '../profile_view/profile_view.dart';
-import 'controller/home_view_controller.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);

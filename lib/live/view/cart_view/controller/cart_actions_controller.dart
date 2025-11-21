@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/models/new_specialty_model.dart';
 

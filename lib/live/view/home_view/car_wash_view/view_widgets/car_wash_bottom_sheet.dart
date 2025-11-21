@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:izinto/live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
 import 'package:izinto/utils/dimensions.dart';
-import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:izinto/live/widgets/top_nortch.dart';
-import 'package:izinto/widgets/texts/small_text.dart';
 
 class CarWashBottomSheet extends StatelessWidget {
   final String headerText;

@@ -1,14 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:izinto/live/view/checkout_view/view_widgets/generic_white_container.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/widgets/buttons/delete_widget.dart';
 import 'package:izinto/live/view/profile_view/view_widgets/marketing_consent_form.dart';
 import 'package:izinto/live/view/profile_view/view_widgets/text_input_container.dart';
-import 'package:izinto/live/widgets/buttons/main_action_button.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../utils/dimensions.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';

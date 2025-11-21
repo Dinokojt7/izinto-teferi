@@ -1,11 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../utilities/colors.dart';
 import '../../../utilities/generic_system_navigation.dart';
-import '../../../widgets/text_widgets/heading_style_text.dart';
 import '../../user_settings_view/screens/legal_documents/legal_document_screen.dart';
 
 class DialogTextWidget extends StatefulWidget {

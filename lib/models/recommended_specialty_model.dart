@@ -17,10 +17,8 @@ class RecommendedSpecialtyModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.stores != null) {
-      data['Stores'] = this.stores.map((v) => v.toJson()).toList();
-    }
-    return data;
+    data['Stores'] = this.stores.map((v) => v.toJson()).toList();
+      return data;
   }
 }
 
@@ -61,10 +59,8 @@ class Stores {
     data['DisplayLogo'] = this.displayLogo;
     data['Description'] = this.description;
     data['Location'] = this.location;
-    if (this.specialties != null) {
-      data['Specialties'] = this.specialties.map((v) => v.toJson()).toList();
-    }
-    return data;
+    data['Specialties'] = this.specialties.map((v) => v.toJson()).toList();
+      return data;
   }
 }
 

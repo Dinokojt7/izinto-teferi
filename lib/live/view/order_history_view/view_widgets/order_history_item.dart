@@ -3,14 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_order_screen.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/service_type_row.dart';
-import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../utilities/colors.dart';
-import '../../../utilities/generic_system_navigation.dart';
-import '../../../widgets/buttons/save_button.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 import '../../order_support/order_support_chat.dart';
 

@@ -5,10 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 
-import '../../../../controllers/cart_controller.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/bottom_remove_sheet.dart';

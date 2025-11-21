@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:izinto/live/view/cart_view/controller/cart_actions_controller.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/wash_spec_section.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
-import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:izinto/live/widgets/top_nortch.dart';
 
 import 'package:provider/provider.dart';

@@ -12,11 +12,9 @@ import '../../widgets/generic_center_dialog.dart';
 import '../../widgets/generic_header_row.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
 import '../home_view/controller/home_view_controller.dart';
-import '../home_view/sliver_home_page.dart';
 import '../order_history_view/controller/order_history_controller.dart';
 import '../order_history_view/view_widgets/latest_order_item.dart'; // Import the LatestOrderItem
 import '../order_history_view/view_widgets/view_order_screen/view_order_screen.dart';
-import 'opening_hours.dart';
 
 class CustomerServiceView extends StatefulWidget {
   final String promoCode;

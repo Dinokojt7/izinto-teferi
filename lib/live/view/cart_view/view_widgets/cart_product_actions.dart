@@ -3,11 +3,8 @@ import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../controllers/cart_controller.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../../widgets/miscellaneous/app_icon.dart';
-import '../../../widgets/text_widgets/heading_style_text.dart';
-import '../../home_view/category_view/controller/category_view_controller.dart';
 import '../controller/cart_actions_controller.dart';
 
 class CartProductActions extends StatelessWidget {

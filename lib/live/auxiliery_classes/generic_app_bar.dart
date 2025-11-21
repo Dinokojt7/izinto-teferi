@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:izinto/live/utilities/generic_snackbar.dart';
 
 import '../../utils/dimensions.dart';
-import '../utilities/colors.dart';
 import '../widgets/icons/back_arrow.dart';
 import '../widgets/text_widgets/heading_style_text.dart';
-import '../widgets/text_widgets/primary_style_text.dart';
 
 class GenericAppBar extends StatelessWidget {
   final String? heading;

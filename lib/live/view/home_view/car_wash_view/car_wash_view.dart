@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_add_to_cart.dart';
-import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_bottom_sheet.dart';
 import 'package:izinto/live/widgets/text_widgets/introduction_text.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
 import 'package:izinto/utils/dimensions.dart';
 import 'package:izinto/live/utilities/colors.dart';
@@ -13,7 +11,6 @@ import 'package:izinto/live/widgets/icons/back_arrow.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 
 import '../../../../controllers/recommended_specialty_controller.dart';
-import '../../../../models/new_specialty_model.dart';
 import '../../../../models/user.dart';
 import '../../../../widgets/texts/small_text.dart';
 import '../../../utilities/generic_snackbar.dart';
@@ -611,17 +608,24 @@ class _CarWashViewState extends State<CarWashView> {
       child: Column(
         children: [
           SizedBox(height: Dimensions.height20 / 3),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Stack(
+            alignment: Alignment.center,
             children: [
-              BackArrow(
-                iconColor: Colors.black,
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
+              // Back arrow - left aligned
+              Align(
+                alignment: Alignment.centerLeft,
+                child: BackArrow(
+                  iconColor: Colors.black,
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
               ),
-              SizedBox(width: Dimensions.width20 * 1.2),
-              Expanded(
+
+              // Centered address section
+              Positioned(
+                left: 50, // Space for back arrow
+                right: 50, // Space for search icon
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -632,58 +636,38 @@ class _CarWashViewState extends State<CarWashView> {
                     ),
                     SizedBox(width: Dimensions.width20 / 4),
                     Flexible(
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: HeadingStyleText(
-                              text: street,
-                              size: Dimensions.font20 / 1.5,
-                              family: 'Poppins',
-                              weight: FontWeight.w600,
-                              maxLines: 1,
-                              overFlow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: Dimensions.width10),
-                          Flexible(
-                            child: HeadingStyleText(
-                              text: suburb,
-                              size: Dimensions.font20 / 1.5,
-                              family: 'Poppins',
-                              weight: FontWeight.w300,
-                              color: Colors.black,
-                              maxLines: 1,
-                              overFlow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: _buildAddressDisplay(context, street, suburb),
                     ),
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: () async {
-                  if (user == null) {
-                    GenericSnackBar().showCustomSnackBar(() {
-                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                      homeViewController.onIndependentPageNavigation(
-                          context, PhoneAuthView());
-                    }, context, 'Please login to continue', false);
-                  } else {
-                    Get.to(
-                      () => SavedAddresses(),
-                      transition: Transition.circularReveal,
-                      duration: Duration(milliseconds: 500),
-                    );
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Icon(
-                    MdiIcons.magnify,
-                    color: Colors.black12.withOpacity(0.8),
-                    size: 26,
+
+              // Search icon - right aligned
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () async {
+                    if (user == null) {
+                      GenericSnackBar().showCustomSnackBar(() {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        homeViewController.onIndependentPageNavigation(
+                            context, PhoneAuthView());
+                      }, context, 'Please login to continue', false);
+                    } else {
+                      Get.to(
+                        () => SavedAddresses(),
+                        transition: Transition.circularReveal,
+                        duration: Duration(milliseconds: 500),
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Icon(
+                      MdiIcons.magnify,
+                      color: Colors.black12.withOpacity(0.8),
+                      size: 26,
+                    ),
                   ),
                 ),
               ),
@@ -691,6 +675,80 @@ class _CarWashViewState extends State<CarWashView> {
           )
         ],
       ),
+    );
+  }
+
+// Helper method to handle address display for both user and guest scenarios
+  Widget _buildAddressDisplay(
+      BuildContext context, String street, String suburb) {
+    final user = Provider.of<UserModel?>(context);
+
+    return Consumer<MainAddressViewController>(
+      builder: (context, addressViewController, child) {
+        return Consumer<ProfileViewController>(
+          builder: (context, profileController, child) {
+            // Get addresses based on user status
+            String displayStreet = street;
+            String displaySuburb = suburb;
+
+            // If user is logged in, use their saved addresses
+            if (user != null) {
+              final userAddresses = profileController.savedAddresses;
+              final selectedAddresses = userAddresses
+                  .where((address) => address['selected'] == true)
+                  .toList();
+
+              if (selectedAddresses.isNotEmpty) {
+                displayStreet =
+                    selectedAddresses.first['street'] ?? 'Select address';
+                displaySuburb = selectedAddresses.first['suburb'] ?? '';
+              } else {
+                displayStreet = 'Select address';
+                displaySuburb = '';
+              }
+            }
+            // If user is null (guest), use guest address from local storage
+            else if (addressViewController.hasData) {
+              displayStreet = addressViewController.street;
+              displaySuburb = addressViewController.suburb ?? '';
+            }
+            // Fallback address
+            else {
+              displayStreet = 'Rivonia Blvd & Mutual Rd';
+              displaySuburb = 'Sandton';
+            }
+
+            return Row(
+              children: [
+                Flexible(
+                  child: HeadingStyleText(
+                    text: displayStreet,
+                    size: Dimensions.font20 / 1.5,
+                    family: 'Poppins',
+                    weight: FontWeight.w600,
+                    maxLines: 1,
+                    overFlow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (displaySuburb.isNotEmpty) ...[
+                  SizedBox(width: Dimensions.width10),
+                  Flexible(
+                    child: HeadingStyleText(
+                      text: displaySuburb,
+                      size: Dimensions.font20 / 1.5,
+                      family: 'Poppins',
+                      weight: FontWeight.w300,
+                      color: Colors.black,
+                      maxLines: 1,
+                      overFlow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

@@ -43,10 +43,8 @@ class AuthProvider extends ChangeNotifier {
 
       User? user = (await _firebaseAuth.signInWithCredential(credential)).user!;
 
-      if (user != null) {
-        _uid = user.uid;
-      }
-
+      _uid = user.uid;
+    
       _isLoading = false;
       notifyListeners();
     } on FirebaseAuthException catch (e) {

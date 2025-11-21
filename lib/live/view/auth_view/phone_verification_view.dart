@@ -19,7 +19,6 @@ import '../../../utils/dimensions.dart';
 import '../../utilities/colors.dart';
 import '../../widgets/text_widgets/introduction_text.dart';
 import '../../wrapper.dart';
-import '../home_view/home_view.dart';
 import '../profile_view/controller/profile_view_controller.dart';
 import '../profile_view/profile_view.dart';
 import 'controller/phone_auth_view_controller.dart';
@@ -57,15 +56,12 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
   Future<void> _getAppSignature() async {
     try {
       _appSignature = await SmsAutoFill().getAppSignature;
-
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   void _listenForCode() {
     SmsAutoFill().code.listen((code) {
-      if (code != null && code.length == 6) {
+      if (code.length == 6) {
         _pinPutController.text = code;
         _verifyOTP(code);
       }
@@ -133,7 +129,7 @@ class _PhoneVerificationViewState extends State<PhoneVerificationView> {
           Get.offAll(() => Wrapper());
         }
       }
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       GenericSnackBar().showCustomSnackBar(
           null, context, 'Invalid OTP. Please try again.', false);
       // Clear the OTP field on error

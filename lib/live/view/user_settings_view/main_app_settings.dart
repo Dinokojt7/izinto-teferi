@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/address_view/saved_addresses.dart';
-import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/view/profile_view/profile_view.dart';
 import 'package:izinto/live/view/user_settings_view/screens/legal_documents/legal_document_screen.dart';
-import 'package:izinto/live/view/user_settings_view/view_widgets/settings_heading.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_section.dart';
-import 'package:izinto/services/firebase_auth_methods.dart';
 import 'package:provider/provider.dart';
 
 import '../../../utils/dimensions.dart';

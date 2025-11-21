@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/utilities/generic_snackbar.dart';
 import '../../../../controllers/new_cart_controller.dart';
 import '../../../../models/new_cart_model.dart';
@@ -84,25 +83,23 @@ class CheckoutViewController extends ChangeNotifier {
           continue;
         }
 
-        if (item is NewCartModel) {
-          // Create a safe serializable version of the cart item
-          final serializableItem = {
-            'id': item.id,
-            'name': item.name,
-            'price': item.price,
-            'time': item.time,
-            'img': item.img,
-            'type': item.type,
-            'material': item.material,
-            'quantity': item.quantity,
-            'isExist': item.isExist,
-            'provider': item.provider,
-            // Handle specialty field carefully
-            'specialty': _serializeSpecialty(item.specialty),
-          };
-          cartItems.add(serializableItem);
-        }
-      }
+        // Create a safe serializable version of the cart item
+        final serializableItem = {
+          'id': item.id,
+          'name': item.name,
+          'price': item.price,
+          'time': item.time,
+          'img': item.img,
+          'type': item.type,
+          'material': item.material,
+          'quantity': item.quantity,
+          'isExist': item.isExist,
+          'provider': item.provider,
+          // Handle specialty field carefully
+          'specialty': _serializeSpecialty(item.specialty),
+        };
+        cartItems.add(serializableItem);
+            }
 
       // Build order object
       final order = {
@@ -234,7 +231,7 @@ class CheckoutViewController extends ChangeNotifier {
       notifyListeners();
 
       return order;
-    } catch (error, stackTrace) {
+    } catch (error) {
       _isLoadingIndicator = false;
       notifyListeners();
       rethrow;
@@ -575,7 +572,7 @@ class CheckoutViewController extends ChangeNotifier {
           'timestamp': DateTime.now().toIso8601String(),
         },
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       // Don't rethrow - we don't want notification failures to break order creation
     }
   }

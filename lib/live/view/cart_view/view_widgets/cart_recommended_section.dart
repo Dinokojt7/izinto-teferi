@@ -1,26 +1,20 @@
 // Updated CartRecommendedSection widget
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
-import '../../../../controllers/laundry_specialty_controller.dart';
 import '../../../../controllers/new_cart_controller.dart';
 import '../../../../controllers/recommendation_controller.dart';
-import '../../../../controllers/recommended_specialty_controller.dart';
 import '../../../../models/new_specialty_model.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../auxiliery_classes/cart_recommended_items_controller.dart';
 import '../../../utilities/colors.dart';
-import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/buttons/blue_text_button.dart';
 import '../../../widgets/generic_header_row.dart';
-import '../../../widgets/hyperText_row.dart';
 import '../../../widgets/hypertext_column.dart';
 import '../../../widgets/text_widgets/heading_style_text.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
 import '../../home_view/category_view/view_widgets/add_to_basket.dart';
-import '../../home_view/controller/home_view_controller.dart';
 import '../../home_view/view_specialty_info/view_specialty_info.dart';
 import '../all_recommendations_page.dart';
 

@@ -14,7 +14,7 @@ class PurchaseApi {
       final current = offerings.current;
 
       return current == null ? [] : [current];
-    } on Exception catch (e) {
+    } on Exception {
       return [];
     }
   }

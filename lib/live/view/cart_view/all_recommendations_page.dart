@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/recommendation_controller.dart';
 import 'package:izinto/live/view/cart_view/view_widgets/recommended_service_widget.dart';
-import 'package:izinto/live/view/home_view/category_view/service_widget.dart';
-import 'package:izinto/live/widgets/generic_header_row.dart';
-import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 import 'package:izinto/utils/dimensions.dart';
 
 import '../../auxiliery_classes/generic_app_bar.dart';

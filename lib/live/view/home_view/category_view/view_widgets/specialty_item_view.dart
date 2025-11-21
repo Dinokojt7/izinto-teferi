@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:izinto/live/view/home_view/car_wash_view/car_wash_view.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/service_detail_display.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/try_this_service_widget.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
@@ -14,7 +11,6 @@ import '../../../../widgets/text_widgets/description_text.dart';
 import '../../../../widgets/text_widgets/heading_style_text.dart';
 import '../../../../widgets/text_widgets/introduction_text.dart';
 import '../../../../widgets/text_widgets/small_black_bold.dart';
-import 'cta_button.dart';
 
 class SpecialityItemView extends StatelessWidget {
   final String serviceViewed;

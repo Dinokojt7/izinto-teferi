@@ -3,8 +3,6 @@ import 'package:izinto/live/view/checkout_view/controller/checkout_view_controll
 import 'package:provider/provider.dart';
 
 import '../../../../utils/dimensions.dart';
-import '../../../utilities/colors.dart';
-import '../../../widgets/text_widgets/heading_style_text.dart';
 
 class ServiceTipSection extends StatelessWidget {
   const ServiceTipSection({Key? key}) : super(key: key);

@@ -1,22 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:provider/provider.dart';
-import 'package:izinto/live/auxiliery_classes/main_address.dart';
-import 'package:izinto/live/auxiliery_classes/show_eta.dart';
-import 'package:izinto/live/view/address_view/controller/address_dropdown_controller.dart';
-import 'package:izinto/live/view/address_view/saved_addresses.dart';
-import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
-import 'package:izinto/live/view/profile_view/profile_view.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-import '../../../../controllers/recommended_specialty_controller.dart';
-import '../../../../models/user.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../auxiliery_classes/generic_app_bar.dart';
-import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
-import '../../auth_view/phone_auth_view.dart';
-import '../../profile_view/controller/profile_view_controller.dart';
 
 class ServiceAreas extends StatefulWidget {
   const ServiceAreas({Key? key}) : super(key: key);

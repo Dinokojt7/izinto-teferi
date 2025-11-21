@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/add_to_basket.dart';
-import 'package:provider/provider.dart';
 
-import '../../../../controllers/cart_controller.dart';
-import '../../../../controllers/laundry_specialty_controller.dart';
-import '../../../../controllers/popular_specialty_controller.dart';
-import '../../../../controllers/recommended_specialty_controller.dart';
 import '../../../../models/new_specialty_model.dart';
 import '../../../../models/popular_specialty_model.dart';
 import '../../../../models/recommended_specialty_model.dart';
@@ -16,7 +10,6 @@ import '../../../../utils/dimensions.dart';
 import '../../../../widgets/miscellaneous/app_icon.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/text_widgets/small_black_text.dart';
-import '../controller/home_view_controller.dart';
 import '../view_specialty_info/view_specialty_info.dart';
 
 class ServiceWidget extends StatefulWidget {

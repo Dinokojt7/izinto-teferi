@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../utils/dimensions.dart';
 
-import 'package:flutter/material.dart';
 
-import '../../../../utils/dimensions.dart';
 
 class GenericWhiteContainer extends StatelessWidget {
   final Widget child;

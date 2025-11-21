@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:izinto/live/view/profile_view/view_widgets/marketing_consent_form.dart';
-import 'package:izinto/live/widgets/generic_center_dialog.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../utils/dimensions.dart';

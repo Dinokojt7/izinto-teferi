@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/view/user_settings_view/controller/user_settings_controller.dart';
 import 'package:izinto/live/view/user_settings_view/main_app_settings.dart';
-import 'package:izinto/live/widgets/text_widgets/big_mallanna.dart';
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 import 'package:izinto/utils/dimensions.dart';
@@ -11,11 +10,9 @@ import '../../utilities/colors.dart';
 
 import '../../widgets/home_button.dart';
 import '../../../utils/colors.dart';
-import '../../../utils/dimensions.dart';
 import '../../utilities/live_dimensions.dart';
 import '../../widgets/no_user_page.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
-import '../../widgets/text_widgets/profile_big_text.dart';
 import 'customer_service_view.dart';
 
 class UserSettingsView extends StatefulWidget {
@@ -202,8 +199,7 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 
               // ProfileMallana - always centered
               Center(
-                child: _profileController.firstName == '' ||
-                        _profileController.firstName == null
+                child: _profileController.firstName == ''
                     ? ProfileMallana(text1: 'Hello', text2: 'Welcome')
                     : ProfileMallana(
                         text1: '${_profileController.firstName}',

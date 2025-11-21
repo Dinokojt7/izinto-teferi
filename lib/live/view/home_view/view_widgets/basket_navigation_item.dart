@@ -4,7 +4,6 @@ import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../controllers/cart_controller.dart';
 import '../../../../utils/dimensions.dart';
 import '../../../widgets/text_widgets/heading_style_text.dart';
 

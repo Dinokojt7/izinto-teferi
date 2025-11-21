@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../utils/dimensions.dart';
-import '../utilities/colors.dart';
 
 class StandardDialog extends StatelessWidget {
   const StandardDialog({Key? key}) : super(key: key);

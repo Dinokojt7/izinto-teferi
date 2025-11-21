@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:izinto/utils/dimensions.dart';
 
 class SpecIcon extends StatelessWidget {
   final String image;

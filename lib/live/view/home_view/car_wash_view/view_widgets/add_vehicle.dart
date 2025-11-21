@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
-import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/controller/car_wash_controller.dart';
-import 'package:izinto/widgets/texts/small_text.dart';
-import 'package:provider/provider.dart';
 
-import '../../../../../controllers/cart_controller.dart';
 import '../../../../../controllers/new_cart_controller.dart';
-import '../../../../../models/popular_specialty_model.dart';
 import '../../../../../utils/dimensions.dart';
 import '../../../../../widgets/miscellaneous/app_icon.dart';
-import '../../../cart_view/controller/cart_actions_controller.dart';
-import '../../../cart_view/view_widgets/cart_product_actions.dart';
 
 class AddVehicle extends StatefulWidget {
   final List? specialtyList;

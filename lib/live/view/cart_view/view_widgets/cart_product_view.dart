@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-import '../../../../controllers/cart_controller.dart';
 import '../../../../controllers/favorite_controller.dart';
-import '../../../../controllers/new_cart_controller.dart';
 import '../../../../controllers/temperature_controller.dart';
 import '../../../../models/new_cart_model.dart';
 import '../../../../models/new_specialty_model.dart';

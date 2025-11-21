@@ -400,7 +400,7 @@ class _EditAddressState extends State<EditAddress> {
     ];
 
     // Remove null or empty values and join
-    return items.where((item) => item != null && item!.isNotEmpty).join(', ');
+    return items.where((item) => item != null && item.isNotEmpty).join(', ');
   }
 
   Future<void> _saveEditedAddress(BuildContext context, int index) async {

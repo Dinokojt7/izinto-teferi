@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/specification_column.dart';
-import 'package:provider/provider.dart';
 
 import '../../../../../utils/dimensions.dart';
 import '../../../../utilities/colors.dart';

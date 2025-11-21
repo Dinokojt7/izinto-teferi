@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/simple/get_state.dart';
-import 'package:izinto/live/utilities/live_dimensions.dart';
 import 'package:izinto/live/widgets/buttons/header_text_button.dart';
-import 'package:izinto/live/widgets/buttons/highlight_button.dart';
 import 'package:izinto/utils/dimensions.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../controllers/laundry_specialty_controller.dart';
 import '../../../../controllers/popular_specialty_controller.dart';
-import '../../../../controllers/sneakers_blankets_controller.dart';
 import '../../../../controllers/tabs_header.dart';
 import '../../../utilities/colors.dart';
-import '../../../widgets/icons/back_arrow.dart';
 import '../../../widgets/icons/tabs_header_back_arrow.dart';
 import 'controller/category_view_controller.dart';
 

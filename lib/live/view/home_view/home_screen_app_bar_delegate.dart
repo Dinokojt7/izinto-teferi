@@ -1,16 +1,8 @@
-import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:izinto/live/view/home_view/main_address_view.dart';
-import 'package:izinto/live/widgets/text_widgets/primary_style_text.dart';
 import '../../../controllers/recommended_specialty_controller.dart';
-import '../../../utils/colors.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../../../utils/dimensions.dart';
-import '../../../widgets/texts/big_text.dart';
-import '../../../widgets/texts/small_text.dart';
-import '../../utilities/colors.dart';
-import '../../widgets/text_widgets/big_mallanna.dart';
 import 'carousel_with_indicator.dart';
 
 class HomeScreenAppBarDelegate extends SliverPersistentHeaderDelegate {

@@ -174,7 +174,7 @@ class _FavoriteItemViewState extends State<FavoriteItemView> {
       return item;
     } else if (item is Map) {
       // Convert map back to NewSpecialtyModel
-      final map = item as Map;
+      final map = item;
       return NewSpecialtyModel(
         id: map['id'],
         name: map['name'],

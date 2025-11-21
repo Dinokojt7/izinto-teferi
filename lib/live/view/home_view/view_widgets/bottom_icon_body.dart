@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/material.dart';
 
 class BottomIconBody extends StatelessWidget {
   final String iconString;

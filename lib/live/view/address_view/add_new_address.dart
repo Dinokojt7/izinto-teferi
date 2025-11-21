@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:izinto/live/auxiliery_classes/live_progress_indicator.dart';
 import 'package:provider/provider.dart';
-import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/lock_screen.dart';
-import '../profile_view/controller/profile_view_controller.dart';
 import 'view_widgets/map_location_picker.dart';
 import '../../../services/map_function.dart';
 import '../../../utils/app_constants.dart';

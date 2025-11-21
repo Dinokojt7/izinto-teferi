@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/widgets/bottom_remove_sheet.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +9,6 @@ import 'package:provider/provider.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../auth_view/phone_auth_view.dart';
-import '../../checkout_view/checkout_page.dart';
 import '../view_widgets/main_scaffold.dart';
 
 class HomeViewController extends ChangeNotifier {

@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:izinto/helpers/data/repository/popular_specialty_repo.dart';
 
 import '../helpers/data/repository/sneakers_blankets_repo.dart';
 import '../models/popular_specialty_model.dart';

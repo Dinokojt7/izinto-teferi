@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:location/location.dart';
 
 import 'location_model.dart';
@@ -16,12 +15,10 @@ class LocationServer {
   LocationServer() {
     location.requestPermission().then((value) {
       location.onLocationChanged.listen((locationData) {
-        if (locationData != null) {
-          _locationController.add(UserLocation(
-              longitude: locationData.latitude!,
-              latitude: locationData.longitude!));
-        }
-      });
+        _locationController.add(UserLocation(
+            longitude: locationData.latitude!,
+            latitude: locationData.longitude!));
+            });
     });
   }
 

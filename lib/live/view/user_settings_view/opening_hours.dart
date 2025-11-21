@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:izinto/live/view/checkout_view/controller/checkout_view_controller.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/user.dart';
 import '../../../utils/dimensions.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';
-import '../../widgets/buttons/blue_text_button.dart';
 import '../../widgets/generic_header_row.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
 import '../address_view/controller/address_dropdown_controller.dart';
-import '../address_view/saved_addresses.dart';
-import '../checkout_view/view_widgets/checkout_page_address.dart';
-import '../checkout_view/view_widgets/generic_white_container.dart';
 import '../home_view/controller/home_view_controller.dart';
 import '../profile_view/controller/profile_view_controller.dart';
 

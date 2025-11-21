@@ -1,8 +1,6 @@
 import 'package:get/get.dart';
 import 'package:izinto/helpers/data/repository/cart_repo.dart';
 import 'package:izinto/models/new_cart_model.dart';
-import 'package:izinto/models/popular_specialty_model.dart';
-import 'package:izinto/models/new_specialty_model.dart';
 
 import '../live/utilities/price_helper.dart';
 import '../live/view/checkout_view/view_widgets/call_checkout.dart';

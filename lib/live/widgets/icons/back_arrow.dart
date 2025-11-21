@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:izinto/utils/dimensions.dart';
 
 class BackArrow extends StatefulWidget {
   final Color? iconColor;
@@ -29,7 +28,7 @@ class _BackArrowState extends State<BackArrow> {
       _isTapped = true;
     });
 
-    widget.onTap!();
+    widget.onTap();
 
     // Optional: Reset border visibility after a short delay
     Future.delayed(const Duration(milliseconds: 200), () {

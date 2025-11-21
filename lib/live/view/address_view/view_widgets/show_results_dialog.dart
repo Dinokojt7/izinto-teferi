@@ -1,17 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:izinto/live/view/address_view/edit_address.dart';
-import 'package:izinto/live/view/address_view/save_address.dart';
 import 'package:izinto/live/view/home_view/home_view.dart';
 import 'package:izinto/live/view/home_view/view_widgets/operating_areas.dart';
-import 'package:izinto/live/view/user_settings_view/opening_hours.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../models/user.dart';
 import '../../../../utils/dimensions.dart';
-import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/buttons/blue_text_button.dart';
 import '../../../widgets/text_widgets/heading_style_text.dart';
 import '../controller/address_dropdown_controller.dart';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/legal_documents_controller.dart';
 import 'package:izinto/utils/dimensions.dart';

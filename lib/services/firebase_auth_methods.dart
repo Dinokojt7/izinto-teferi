@@ -2,23 +2,18 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:izinto/live/view/profile_view/profile_view.dart';
 import 'package:izinto/models/user.dart';
-import 'package:izinto/routes/route_helper.dart';
 import 'package:izinto/services/firebase_storage_service.dart';
 import 'package:provider/provider.dart';
 import '../base/show_snackbar.dart';
 import '../live/utilities/generic_snackbar.dart';
 import '../live/view/home_view/home_view.dart';
 import '../live/view/profile_view/controller/profile_view_controller.dart';
-import '../utils/app_dialog.dart';
 import '../utils/dimensions.dart';
-import '../utils/showOtpDialog.dart';
 
 class FirebaseAuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -271,14 +266,14 @@ class FirebaseAuthMethods {
         errorMessage,
         false,
       );
-    } on GoogleSignInException catch (e) {
+    } on GoogleSignInException {
       GenericSnackBar().showCustomSnackBar(
         null,
         context,
         'Google Sign-In failed. Please try again.',
         false,
       );
-    } catch (e, stackTrace) {
+    } catch (e) {
       GenericSnackBar().showCustomSnackBar(
         null,
         context,

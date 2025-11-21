@@ -34,11 +34,9 @@ class PhoneAuthMethods extends GetxController {
 
       User? user = (await _firebaseAuth.signInWithCredential(credential)).user!;
 
-      if (user != null) {
-        _uid = user.uid;
-        onSuccess();
-      }
-
+      _uid = user.uid;
+      onSuccess();
+    
       _isLoading = false;
       update();
     } on FirebaseAuthException catch (e) {

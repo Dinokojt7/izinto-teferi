@@ -1,11 +1,7 @@
-import 'package:device_preview/device_preview.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/car_specialty_controller.dart';
 import 'package:izinto/controllers/cart_controller.dart';
@@ -37,22 +33,13 @@ import 'package:izinto/routes/route_helper.dart';
 import 'package:izinto/services/auth_service.dart';
 import 'package:izinto/services/dependency_injection.dart';
 import 'package:izinto/services/firebase_auth_methods.dart';
-import 'package:izinto/services/location/location_model.dart';
-import 'package:izinto/services/location/location_service.dart';
 import 'package:izinto/services/notification_service.dart';
-import 'package:izinto/services/phone_auth_methods.dart';
-import 'package:izinto/services/subscription_methods.dart';
-import 'package:izinto/utils/colors.dart';
 import 'package:provider/provider.dart';
-import 'controllers/carpet_care_specialty_controller.dart';
-import 'controllers/gas_refill_specialty_controller.dart';
 import 'controllers/home_items_controller.dart';
 import 'controllers/laundry_support_questions_controller.dart';
-import 'controllers/pet_care_specialty_controller.dart';
 import 'controllers/size_selection_controller.dart';
 import 'controllers/user_data_controller.dart';
 import 'firebase_options.dart';
-import 'live/utilities/generic_system_navigation.dart';
 import 'live/utilities/system_navigaton_observer.dart';
 import 'live/view/address_view/controller/address_dropdown_controller.dart';
 import 'live/view/auth_view/controller/phone_auth_view_controller.dart';
@@ -60,7 +47,6 @@ import 'live/view/cart_view/controller/cart_actions_controller.dart';
 import 'live/view/home_view/category_view/controller/category_view_controller.dart';
 import 'live/view/order_support/controller/order_support_controller.dart';
 import 'live/wrapper.dart';
-import 'models/subscription_model.dart';
 
 /// Initialize Firebase Messaging and setup notification handlers
 Future<void> setupFirebaseMessaging() async {

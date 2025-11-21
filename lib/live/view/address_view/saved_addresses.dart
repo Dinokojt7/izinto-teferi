@@ -1,8 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/address_view/add_new_address.dart';
 import 'package:izinto/live/view/address_view/controller/address_dropdown_controller.dart';
 import 'package:izinto/live/view/address_view/view_widgets/saved_address_widget.dart';
@@ -14,7 +11,6 @@ import 'package:provider/provider.dart';
 import '../../../utils/dimensions.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';
 import '../../utilities/generic_system_navigation.dart';
-import '../../widgets/buttons/main_action_button.dart';
 
 class SavedAddresses extends StatefulWidget {
   const SavedAddresses({Key? key}) : super(key: key);

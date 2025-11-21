@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/auxiliery_classes/live_progress_indicator.dart';
-import 'package:izinto/live/auxiliery_classes/mini_circular_progress_indicator.dart';
 import 'package:izinto/live/view/auth_view/view_widgets/view_as_guest.dart';
 import 'package:izinto/live/view/home_view/guest_access.dart';
 import 'package:izinto/live/widgets/text_widgets/description_text.dart';
@@ -16,13 +14,10 @@ import 'package:izinto/live/view/auth_view/view_widgets/top_logo.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:provider/provider.dart';
 
-import '../../../services/firebase_auth_methods.dart';
 import '../../../utils/dimensions.dart';
 import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/generic_text_field.dart';
 import '../address_view/controller/address_dropdown_controller.dart';
-import '../home_view/controller/home_view_controller.dart';
-import '../home_view/home_view.dart';
 import 'controller/phone_auth_view_controller.dart';
 
 class PhoneAuthView extends StatefulWidget {

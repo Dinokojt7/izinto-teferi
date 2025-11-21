@@ -6,7 +6,6 @@ import '../../../models/user.dart';
 import '../../../utils/dimensions.dart';
 import '../../../widgets/texts/small_text.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';
-import '../../utilities/colors.dart';
 import '../../widgets/generic_center_dialog.dart';
 import '../../widgets/no_user_page.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';

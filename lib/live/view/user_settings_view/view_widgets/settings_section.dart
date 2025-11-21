@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/setting_section_button.dart';
 
 import '../../../../utils/dimensions.dart';
-import '../../checkout_view/view_widgets/generic_white_container.dart';
 
 class settingsSection extends StatefulWidget {
   final void Function() onTap;

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:izinto/live/utilities/colors.dart';
 
 import '../../../../../utils/dimensions.dart';
-import '../../../../widgets/save_button_loader.dart';
 import '../../../../widgets/text_widgets/heading_style_text.dart';
 
 class CTAButton extends StatelessWidget {

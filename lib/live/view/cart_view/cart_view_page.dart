@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/view/cart_view/view_widgets/cart_heading.dart';
@@ -8,7 +7,6 @@ import 'package:izinto/live/view/cart_view/view_widgets/cart_product_view.dart';
 import 'package:izinto/live/view/cart_view/view_widgets/cart_recommended_section.dart';
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
-import '../../../controllers/cart_controller.dart';
 import '../../../controllers/favorite_controller.dart';
 import '../../../controllers/size_selection_controller.dart';
 import '../../../controllers/temperature_controller.dart';

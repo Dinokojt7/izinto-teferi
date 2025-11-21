@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:izinto/live/utilities/generic_snackbar.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:izinto/live/view/home_view/view_widgets/new_item_view.dart';
-import 'package:izinto/live/view/user_settings_view/opening_hours.dart';
 import 'package:izinto/models/user.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/new_specialty_model.dart';
-import '../../../models/popular_specialty_model.dart';
 import '../../../utils/dimensions.dart';
-import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/text_widgets/small_black_text.dart';
 import '../auth_view/phone_auth_view.dart';
 import 'category_view/category_view.dart';
@@ -109,7 +105,7 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
             _homeController.navigateToNestedWidget(context, CategoryView());
           } else if (widget.index == 1) {
             // FIXED: Check if user is null (not logged in)
-            if (user?.uid != null && user!.uid!.isNotEmpty) {
+            if (user?.uid != null && user!.uid.isNotEmpty) {
               _homeController.onIndependentPageNavigation(
                 context,
                 NewItemView(

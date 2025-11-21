@@ -1,23 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/home_view/category_view/material_tabs_container.dart';
-import 'package:izinto/live/view/home_view/category_view/view_widgets/cta_button.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/page_view_items.dart';
-import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../controllers/laundry_specialty_controller.dart';
 import '../../../../controllers/popular_specialty_controller.dart';
 import '../../../../utils/colors.dart';
-import '../../../../utils/dimensions.dart';
-import '../../../utilities/live_dimensions.dart';
 import '../../../widgets/buttons/highlight_button.dart';
-import '../../../widgets/generic_header_row.dart';
-import '../../../widgets/text_widgets/description_text.dart';
-import '../../../widgets/text_widgets/heading_style_text.dart';
-import '../../../widgets/text_widgets/introduction_text.dart';
-import '../../../widgets/text_widgets/small_black_bold.dart';
 import 'controller/category_view_controller.dart';
 import 'material_tabs_header.dart';
 

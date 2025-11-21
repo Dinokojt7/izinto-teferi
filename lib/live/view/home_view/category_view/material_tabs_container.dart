@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:izinto/controllers/sneakers_blankets_controller.dart';
-import 'package:izinto/live/utilities/live_dimensions.dart';
 import 'package:izinto/live/widgets/buttons/highlight_button.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../controllers/laundry_specialty_controller.dart';
 import '../../../../controllers/popular_specialty_controller.dart';
 import 'controller/category_view_controller.dart';
 

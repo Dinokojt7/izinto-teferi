@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/favourites_view/favourites_view.dart';
-import 'package:izinto/live/view/favourites_view/favourites_view.dart';
-import 'package:izinto/live/view/inbox_view/inbox_view.dart';
 import 'package:izinto/live/view/light_theme_home_view/light_theme_home.dart';
 import 'package:provider/provider.dart';
 
@@ -13,13 +11,9 @@ import '../../../utilities/colors.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../../utilities/system_navigation_manager.dart';
 import '../../cart_view/cart_view_page.dart';
-import '../../checkout_view/checkout_page.dart';
 import '../../order_history_view/order_history_view.dart';
-import '../../profile_view/profile_view.dart';
-import '../../user_settings_view/opening_hours.dart';
 import '../../user_settings_view/user_settings_view.dart';
 import '../controller/home_view_controller.dart';
-import '../sliver_home_page.dart';
 import 'basket_navigation_item.dart';
 import 'bottom_icon_body.dart';
 

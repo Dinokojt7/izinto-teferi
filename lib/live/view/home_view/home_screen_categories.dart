@@ -3,7 +3,6 @@ import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:izinto/live/view/home_view/specialty_widget.dart';
 
 import '../../../controllers/home_items_controller.dart';
-import '../../../controllers/laundry_specialty_controller.dart';
 
 class HomeScreenCategories extends StatelessWidget {
   const HomeScreenCategories({Key? key}) : super(key: key);

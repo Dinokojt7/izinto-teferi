@@ -1,14 +1,11 @@
 // order_support_chat.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../utils/dimensions.dart';
-import '../../../../services/notification_service.dart';
 import '../../../../models/user.dart';
 import '../../utilities/colors.dart';
 import 'controller/order_support_controller.dart';
@@ -275,7 +272,7 @@ class _OrderSupportChatState extends State<OrderSupportChat> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  dateSeparator!,
+                  dateSeparator,
                   style: TextStyle(
                     fontSize: Dimensions.font16 / 1.3,
                     color: Colors.grey.shade600,

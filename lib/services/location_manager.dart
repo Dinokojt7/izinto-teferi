@@ -1,12 +1,9 @@
 import 'dart:convert';
 
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
 
-import 'package:izinto/logger.dart';
 
 Future<Position> determinePosition() async {
   bool serviceEnabled;

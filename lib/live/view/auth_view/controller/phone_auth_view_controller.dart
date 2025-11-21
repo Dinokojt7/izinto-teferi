@@ -13,7 +13,6 @@ import '../../../wrapper.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
 import '../../profile_view/profile_view.dart';
 import '../../../../services/firebase_auth_methods.dart';
-import '../../home_view/home_view.dart';
 
 class PhoneAuthViewController extends ChangeNotifier {
   bool _isInitialized = false;
@@ -194,7 +193,7 @@ class PhoneAuthViewController extends ChangeNotifier {
         codeSent: (String verificationId, int? resendToken) {
           _verificationCode = verificationId;
           if (context.mounted) {
-            Navigator.of(context).pushReplacement(
+            Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => PhoneVerificationView(
                   phone: formattedPhone,

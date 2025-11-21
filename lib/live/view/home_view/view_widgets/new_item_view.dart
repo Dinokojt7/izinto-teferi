@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:izinto/controllers/size_selection_controller.dart';
 import 'package:izinto/models/new_specialty_model.dart';
 import 'package:izinto/utils/dimensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
-import '../../../utilities/colors.dart';
 import '../../../utilities/generic_system_navigation.dart';
 import '../../../widgets/icons/back_arrow.dart';
 import '../../../widgets/text_widgets/introduction_text.dart';

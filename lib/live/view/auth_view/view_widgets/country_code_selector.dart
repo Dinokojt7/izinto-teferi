@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../utils/dimensions.dart';
-import '../../../widgets/text_widgets/heading_style_text.dart';
 
 class CountryCodeSelector extends StatefulWidget {
   @override

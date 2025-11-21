@@ -21,11 +21,9 @@ import 'package:provider/provider.dart';
 
 import '../../../utils/dimensions.dart';
 import '../../auxiliery_classes/live_progress_indicator.dart';
-import '../../utilities/colors.dart';
 import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/hyperText_row.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
-import '../home_view/controller/home_view_controller.dart';
 import 'view_widgets/order_summary_details.dart';
 
 class CheckoutPage extends StatefulWidget {

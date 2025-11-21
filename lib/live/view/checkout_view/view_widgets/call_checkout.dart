@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/utilities/generic_snackbar.dart';
-import 'package:izinto/live/view/checkout_view/checkout_page.dart';
-import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:provider/provider.dart';
 import '../../../../controllers/new_cart_controller.dart';
 import '../../../../models/new_cart_model.dart';

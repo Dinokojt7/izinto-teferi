@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:izinto/controllers/favorite_controller.dart';
 import 'package:izinto/controllers/new_cart_controller.dart';
 import 'package:izinto/controllers/size_selection_controller.dart';
@@ -13,12 +12,9 @@ import 'package:izinto/widgets/texts/small_text.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../utilities/colors.dart';
 import '../../../utilities/generic_snackbar.dart';
 import '../../../utilities/generic_system_navigation.dart';
-import '../../../widgets/buttons/cart_action_button.dart';
 import '../../../widgets/expandable_text_widget.dart';
-import '../../../widgets/generic_header_row.dart';
 import '../../../widgets/icons/back_arrow.dart';
 import '../../../widgets/text_widgets/introduction_text.dart';
 

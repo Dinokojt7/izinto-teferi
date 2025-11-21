@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../utils/dimensions.dart';
-import 'main_action_button.dart';
 import '../text_widgets/heading_style_text.dart';
 
 class CartActionButton extends StatelessWidget {

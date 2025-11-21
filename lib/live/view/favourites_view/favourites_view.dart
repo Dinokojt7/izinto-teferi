@@ -4,11 +4,8 @@ import 'package:get/get.dart';
 import 'package:izinto/controllers/favorite_controller.dart';
 import 'package:izinto/live/view/favourites_view/view_widgets/favourite_item_view.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
-import 'package:izinto/models/new_specialty_model.dart';
 import 'package:izinto/utils/dimensions.dart';
-import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/widgets/generic_header_row.dart';
-import 'package:izinto/live/widgets/text_widgets/introduction_text.dart';
 import 'package:izinto/live/widgets/generic_center_dialog.dart';
 import 'package:izinto/live/widgets/no_user_page.dart';
 import 'package:provider/provider.dart';
@@ -18,9 +15,6 @@ import '../../../widgets/texts/small_text.dart';
 import '../../auxiliery_classes/generic_app_bar.dart';
 import '../../widgets/buttons/blue_text_button.dart';
 import '../../widgets/text_widgets/heading_style_text.dart';
-import '../home_view/sliver_home_page.dart';
-import '../home_view/view_specialty_info/view_specialty_info.dart'
-    show ViewSpecialtyInfo;
 
 class FavoritesView extends StatelessWidget {
   const FavoritesView({Key? key}) : super(key: key);

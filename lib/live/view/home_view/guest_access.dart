@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:provider/provider.dart';
 
 import '../../../utils/dimensions.dart';
-import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/icons/back_arrow.dart';
 import '../../widgets/text_widgets/description_text.dart';
 import '../../widgets/text_widgets/introduction_text.dart';

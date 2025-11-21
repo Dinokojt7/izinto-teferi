@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/view/frequently_asked_questions/frequently_asked_questions.dart';
 import 'package:izinto/live/view/user_settings_view/screens/customer_service_screen.dart';
 import 'package:izinto/live/view/user_settings_view/view_widgets/settings_heading.dart';
@@ -8,7 +7,6 @@ import 'package:izinto/live/view/user_settings_view/view_widgets/settings_sectio
 import 'package:provider/provider.dart';
 
 import '../../../../utils/dimensions.dart';
-import '../../../utilities/generic_system_navigation.dart';
 import '../../home_view/controller/home_view_controller.dart';
 import '../opening_hours.dart';
 

@@ -1,5 +1,3 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
 
 class OnBoardImages {
   static final String screen1 = 'assets/image/onboard_facilities.jpg';

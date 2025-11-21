@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/icons/back_arrow.dart';
-import '../widgets/text_widgets/heading_style_text.dart';
-import '../widgets/text_widgets/primary_style_text.dart';
 
 class LogoAppBar extends StatelessWidget {
   final Color? textColor;

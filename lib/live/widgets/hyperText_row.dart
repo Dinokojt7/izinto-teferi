@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:izinto/live/widgets/text_widgets/heading_style_text.dart';
 
 import '../../utils/dimensions.dart';

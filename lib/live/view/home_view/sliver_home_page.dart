@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:izinto/live/utilities/colors.dart';
 import 'package:izinto/live/view/home_view/home_screen_app_bar_delegate.dart';
 
 import '../../../utils/dimensions.dart';

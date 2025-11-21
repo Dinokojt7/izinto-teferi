@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:izinto/live/auxiliery_classes/live_progress_indicator.dart';
 import 'package:izinto/live/utilities/generic_system_navigation.dart';
 import 'package:izinto/live/view/address_view/controller/address_dropdown_controller.dart';
 import 'package:izinto/live/view/address_view/view_widgets/address_label.dart';
@@ -12,15 +9,10 @@ import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:provider/provider.dart';
 
 import '../../../utils/dimensions.dart';
-import '../../auxiliery_classes/generic_app_bar.dart';
 import '../../utilities/colors.dart';
 import '../../widgets/icons/back_arrow.dart';
-import '../../widgets/lock_screen.dart';
 import '../../widgets/text_widgets/description_text.dart';
-import '../../widgets/text_widgets/heading_style_text.dart';
 import '../../widgets/text_widgets/introduction_text.dart';
-import '../../wrapper.dart';
-import '../home_view/home_view.dart';
 import '../profile_view/controller/profile_view_controller.dart';
 
 class SaveAddress extends StatefulWidget {

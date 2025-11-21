@@ -73,7 +73,7 @@ class GenericCenterDialog extends StatelessWidget {
                   isActive: true,
                   description: buttonText,
                   isAuthScreen: false,
-                  onTap: callBack!,
+                  onTap: callBack,
                 )
               ],
             ),

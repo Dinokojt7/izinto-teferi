@@ -87,8 +87,23 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   //FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+// DEBUG: Use explicit Firebase options
+  print('🟡 Starting Firebase initialization...');
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyDQY8tW-zImz3hIPxw8z5QgQErJRl1NHrk',
+        appId: '1:406571227857:android:374fb323036907e6a603f0',
+        messagingSenderId: '406571227857',
+        projectId: 'izinto-domestically',
+        storageBucket: 'izinto-domestically.appspot.com',
+      ),
+    );
+    print('✅ Firebase initialized successfully!');
+  } catch (e, stack) {
+    print('❌ Firebase initialization FAILED: $e');
+    print('Stack trace: $stack');
+  }
   // Setup Firebase Messaging
   await setupFirebaseMessaging();
 

@@ -114,50 +114,63 @@ class PhoneAuthViewController extends ChangeNotifier {
   }
 
   // HANDLE REVIEWER LOGIN (BYPASSES OTP)
+// REPLACE THE CURRENT _handleReviewerLogin WITH THIS:
   Future<void> _handleReviewerLogin(BuildContext context) async {
     try {
       _isInitialized = true;
       notifyListeners();
 
-      // Create a mock phone auth credential for reviewer
-      final AuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: "reviewer_bypass",
-        smsCode: reviewerVerificationCode,
-      );
+      // METHOD 1: Try anonymous auth first (more reliable)
+      try {
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInAnonymously();
+        print('✅ Anonymous auth success: ${userCredential.user?.uid}');
 
-      // Sign in with the mock credential
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+        // Create user document for anonymous user
+        await _createPhoneUserDocument(
+          uid: userCredential.user!.uid,
+          phoneNumber: reviewerPhoneNumber,
+          termsAccepted: true,
+          promoCode: "N" + "U" + generateRandomNumber(),
+        );
 
-      if (userCredential.user != null) {
-        User? user = userCredential.user;
-        final _uniquePromoCode = "N" + "U" + generateRandomNumber();
+        await _loadProfileData(context);
+        Get.offAll(() => Wrapper());
+        return;
+      } catch (e) {
+        print('❌ Anonymous auth failed: $e');
+      }
 
-        // Check if user document exists
-        final bool _hasFirebaseDocument =
-            await _checkUserDocumentExists(user!.uid);
+      // METHOD 2: Fallback to custom token
+      try {
+        // Create a custom token (you might need a backend for this)
+        // For now, use a simple workaround - create a new user with email/password
+        final randomEmail =
+            "reviewer${DateTime.now().millisecondsSinceEpoch}@izinto.app";
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: randomEmail,
+          password: "reviewer123",
+        );
 
-        if (userCredential.additionalUserInfo!.isNewUser ||
-            !_hasFirebaseDocument) {
-          await _createPhoneUserDocument(
-            uid: user.uid,
-            phoneNumber: reviewerPhoneNumber,
-            termsAccepted: true, // Auto-accept for reviewers
-            promoCode: _uniquePromoCode,
-          );
-          await _loadProfileData(context);
-          Get.offAll(() => ProfileView());
-        } else {
-          await _loadProfileData(context);
-          await _updateUserTermsAcceptance(user.uid, true);
-          Get.offAll(() => Wrapper());
-        }
+        print('✅ Custom user created: ${userCredential.user?.uid}');
 
+        await _createPhoneUserDocument(
+          uid: userCredential.user!.uid,
+          phoneNumber: reviewerPhoneNumber,
+          termsAccepted: true,
+          promoCode: "N" + "U" + generateRandomNumber(),
+        );
+
+        await _loadProfileData(context);
+        Get.offAll(() => Wrapper());
+      } catch (e) {
+        print('❌ All auth methods failed: $e');
         GenericSnackBar().showCustomSnackBar(
           null,
           context,
-          'Reviewer access granted',
-          true,
+          'Reviewer login failed. Please check Firebase configuration.',
+          false,
         );
       }
 
@@ -168,14 +181,13 @@ class PhoneAuthViewController extends ChangeNotifier {
       GenericSnackBar().showCustomSnackBar(
         null,
         context,
-        'Reviewer login failed: $e',
+        'Reviewer login error: $e',
         false,
       );
       notifyListeners();
     }
-  }
+  } // Check if user document exists in Firestore
 
-// Check if user document exists in Firestore
   Future<bool> _checkUserDocumentExists(String uid) async {
     try {
       final docSnapshot =

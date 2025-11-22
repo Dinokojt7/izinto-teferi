@@ -1,3 +1,5 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -87,8 +89,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   //FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-// DEBUG: Use explicit Firebase options
-  print('🟡 Starting Firebase initialization...');
+  // DEBUG: Use explicit Firebase options
   try {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
@@ -99,11 +100,11 @@ Future<void> main() async {
         storageBucket: 'izinto-domestically.appspot.com',
       ),
     );
-    print('✅ Firebase initialized successfully!');
-  } catch (e, stack) {
-    print('❌ Firebase initialization FAILED: $e');
-    print('Stack trace: $stack');
-  }
+  } catch (e, stack) {}
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: const AndroidPlayIntegrityProvider(),
+  );
+  await FirebaseAuth.instance.setLanguageCode("en");
   // Setup Firebase Messaging
   await setupFirebaseMessaging();
 
@@ -117,7 +118,8 @@ Future<void> main() async {
   FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
     if (message != null) {
       print(
-          'App opened from terminated state with message: ${message.messageId}');
+        'App opened from terminated state with message: ${message.messageId}',
+      );
       // Handle the message, e.g., navigate to specific screen
     }
   });
@@ -130,14 +132,16 @@ Future<void> main() async {
   await dep.init();
   NetworkInjection.init();
 
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.transparent, // navigation bar color
-    statusBarColor: Colors.transparent, // status bar color
-    statusBarBrightness: Brightness.light, //status bar brightness
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarIconBrightness:
-        Brightness.light, //status barIcon Brightness
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent, // navigation bar color
+      statusBarColor: Colors.transparent, // status bar color
+      statusBarBrightness: Brightness.light, //status bar brightness
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness:
+          Brightness.light, //status barIcon Brightness
+    ),
+  );
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -155,159 +159,228 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.find<CartController>().getCartData();
 
-    return GetBuilder<SneakersBlanketsController>(builder: (_) {
-      return GetBuilder<PopularSpecialtyController>(builder: (_) {
-        return GetBuilder<RecommendationController>(builder: (_) {
-          return GetBuilder<LaundrySpecialtyController>(builder: (_) {
-            return GetBuilder<CarSpecialtyController>(builder: (_) {
-              return GetBuilder<SubscriptionPlansController>(builder: (_) {
-                return GetBuilder<TabsHeaderController>(builder: (_) {
-                  return GetBuilder<LegalDocumentsController>(builder: (_) {
-                    return GetBuilder<LaundrySupportQuestionsController>(
-                        builder: (_) {
-                      return GetBuilder<HomeItemsController>(builder: (_) {
-                        return GetBuilder<SizeSelectionController>(
-                            builder: (_) {
-                          return GetBuilder<CarWashController>(builder: (_) {
-                            return GetBuilder<RecommendedSpecialtyController>(
-                                builder: (_) {
-                              return GetBuilder<NewCartController>(
+    return GetBuilder<SneakersBlanketsController>(
+      builder: (_) {
+        return GetBuilder<PopularSpecialtyController>(
+          builder: (_) {
+            return GetBuilder<RecommendationController>(
+              builder: (_) {
+                return GetBuilder<LaundrySpecialtyController>(
+                  builder: (_) {
+                    return GetBuilder<CarSpecialtyController>(
+                      builder: (_) {
+                        return GetBuilder<SubscriptionPlansController>(
+                          builder: (_) {
+                            return GetBuilder<TabsHeaderController>(
+                              builder: (_) {
+                                return GetBuilder<LegalDocumentsController>(
                                   builder: (_) {
-                                return StreamProvider<UserModel?>.value(
-                                    value: FirebaseAuthMethods().user,
-                                    initialData: UserModel(uid: ''),
-                                    builder: (context, snapshot) {
-                                      return MultiProvider(
-                                        providers: [
-                                          StreamProvider<UserModel?>.value(
-                                            value: FirebaseAuthMethods().user,
-                                            initialData: UserModel(uid: ''),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              PhoneAuthViewController>(
-                                            create: (_) =>
-                                                PhoneAuthViewController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              ProfileViewController>(
-                                            create: (_) =>
-                                                ProfileViewController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              MainAddressViewController>(
-                                            create: (_) =>
-                                                MainAddressViewController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              CategoryViewController>(
-                                            create: (_) =>
-                                                CategoryViewController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              RiderTipController>(
-                                            create: (_) => RiderTipController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              CheckoutViewController>(
-                                            create: (_) =>
-                                                CheckoutViewController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              CartRecommendedItemsController>(
-                                            create: (_) =>
-                                                CartRecommendedItemsController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              CheckoutController>(
-                                            create: (_) => CheckoutController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              UserDataController>(
-                                            create: (_) => UserDataController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              HomeViewController>(
-                                            create: (_) => HomeViewController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              CartRecommendedItemsController>(
-                                            create: (_) =>
-                                                CartRecommendedItemsController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              CartActionsController>(
-                                            create: (_) =>
-                                                CartActionsController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              UserSettingsController>(
-                                            create: (_) =>
-                                                UserSettingsController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              OrderHistoryController>(
-                                            create: (_) =>
-                                                OrderHistoryController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              OrderSupportController>(
-                                            create: (_) =>
-                                                OrderSupportController(),
-                                          ),
-                                          ChangeNotifierProvider<
-                                              OrderSupportController>(
-                                            create: (_) =>
-                                                OrderSupportController(),
-                                          ),
-                                          Provider<NotificationService>(
-                                            create: (_) =>
-                                                NotificationService(),
-                                          ),
-                                          Provider<AuthService>(
-                                              create: (_) => AuthService()),
-                                        ],
-                                        child: GetMaterialApp(
-                                          debugShowCheckedModeBanner: false,
-                                          navigatorObservers: [
-                                            SystemNavigationObserver()
-                                          ],
-                                          title: 'Izinto',
-                                          home: Wrapper(),
-                                          routes: {
-                                            '/login': (context) =>
-                                                const PhoneAuthView(),
-                                            '/home': (context) =>
-                                                const HomeView(),
-                                            '/profile': (context) =>
-                                                const ProfileView(),
-                                            '/guest-access': (context) =>
-                                                const GuestAccess(),
+                                    return GetBuilder<
+                                        LaundrySupportQuestionsController>(
+                                      builder: (_) {
+                                        return GetBuilder<HomeItemsController>(
+                                          builder: (_) {
+                                            return GetBuilder<
+                                                SizeSelectionController>(
+                                              builder: (_) {
+                                                return GetBuilder<
+                                                    CarWashController>(
+                                                  builder: (_) {
+                                                    return GetBuilder<
+                                                        RecommendedSpecialtyController>(
+                                                      builder: (_) {
+                                                        return GetBuilder<
+                                                            NewCartController>(
+                                                          builder: (_) {
+                                                            return StreamProvider<
+                                                                UserModel?>.value(
+                                                              value:
+                                                                  FirebaseAuthMethods()
+                                                                      .user,
+                                                              initialData:
+                                                                  UserModel(
+                                                                uid: '',
+                                                              ),
+                                                              builder: (context,
+                                                                  snapshot) {
+                                                                return MultiProvider(
+                                                                  providers: [
+                                                                    StreamProvider<
+                                                                        UserModel?>.value(
+                                                                      value: FirebaseAuthMethods()
+                                                                          .user,
+                                                                      initialData:
+                                                                          UserModel(
+                                                                        uid: '',
+                                                                      ),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        PhoneAuthViewController>(
+                                                                      create: (_) =>
+                                                                          PhoneAuthViewController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        ProfileViewController>(
+                                                                      create: (_) =>
+                                                                          ProfileViewController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        MainAddressViewController>(
+                                                                      create: (_) =>
+                                                                          MainAddressViewController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        CategoryViewController>(
+                                                                      create: (_) =>
+                                                                          CategoryViewController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        RiderTipController>(
+                                                                      create: (_) =>
+                                                                          RiderTipController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        CheckoutViewController>(
+                                                                      create: (_) =>
+                                                                          CheckoutViewController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        CartRecommendedItemsController>(
+                                                                      create: (_) =>
+                                                                          CartRecommendedItemsController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        CheckoutController>(
+                                                                      create: (_) =>
+                                                                          CheckoutController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        UserDataController>(
+                                                                      create: (_) =>
+                                                                          UserDataController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        HomeViewController>(
+                                                                      create: (_) =>
+                                                                          HomeViewController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        CartRecommendedItemsController>(
+                                                                      create: (_) =>
+                                                                          CartRecommendedItemsController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        CartActionsController>(
+                                                                      create: (_) =>
+                                                                          CartActionsController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        UserSettingsController>(
+                                                                      create: (_) =>
+                                                                          UserSettingsController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        OrderHistoryController>(
+                                                                      create: (_) =>
+                                                                          OrderHistoryController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        OrderSupportController>(
+                                                                      create: (_) =>
+                                                                          OrderSupportController(),
+                                                                    ),
+                                                                    ChangeNotifierProvider<
+                                                                        OrderSupportController>(
+                                                                      create: (_) =>
+                                                                          OrderSupportController(),
+                                                                    ),
+                                                                    Provider<
+                                                                        NotificationService>(
+                                                                      create: (_) =>
+                                                                          NotificationService(),
+                                                                    ),
+                                                                    Provider<
+                                                                        AuthService>(
+                                                                      create: (_) =>
+                                                                          AuthService(),
+                                                                    ),
+                                                                  ],
+                                                                  child:
+                                                                      GetMaterialApp(
+                                                                    debugShowCheckedModeBanner:
+                                                                        false,
+                                                                    navigatorObservers: [
+                                                                      SystemNavigationObserver(),
+                                                                    ],
+                                                                    title:
+                                                                        'Izinto',
+                                                                    home:
+                                                                        Wrapper(),
+                                                                    routes: {
+                                                                      '/login': (
+                                                                        context,
+                                                                      ) =>
+                                                                          const PhoneAuthView(),
+                                                                      '/home': (
+                                                                        context,
+                                                                      ) =>
+                                                                          const HomeView(),
+                                                                      '/profile': (
+                                                                        context,
+                                                                      ) =>
+                                                                          const ProfileView(),
+                                                                      '/guest-access': (
+                                                                        context,
+                                                                      ) =>
+                                                                          const GuestAccess(),
+                                                                    },
+                                                                    theme:
+                                                                        ThemeData(
+                                                                      colorScheme:
+                                                                          ColorScheme
+                                                                              .fromSeed(
+                                                                        seedColor:
+                                                                            Colors.white,
+                                                                        // base for a white theme
+                                                                        // Your primary color
+                                                                        brightness:
+                                                                            Brightness.light,
+                                                                      ),
+                                                                    ),
+                                                                    getPages:
+                                                                        RouteHelper
+                                                                            .routes,
+                                                                  ),
+                                                                );
+                                                              },
+                                                            );
+                                                          },
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            );
                                           },
-                                          theme: ThemeData(
-                                            colorScheme: ColorScheme.fromSeed(
-                                              seedColor: Colors.white,
-                                              // base for a white theme
-                                              // Your primary color
-                                              brightness: Brightness.light,
-                                            ),
-                                          ),
-                                          getPages: RouteHelper.routes,
-                                        ),
-                                      );
-                                    });
-                              });
-                            });
-                          });
-                        });
-                      });
-                    });
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 }

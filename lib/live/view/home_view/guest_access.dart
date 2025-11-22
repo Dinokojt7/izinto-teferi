@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/widgets/buttons/save_button.dart';
 import 'package:provider/provider.dart';
-
 import '../../../utils/dimensions.dart';
+import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/icons/back_arrow.dart';
 import '../../widgets/text_widgets/description_text.dart';
 import '../../widgets/text_widgets/introduction_text.dart';
@@ -11,7 +11,8 @@ import '../address_view/add_new_address.dart';
 import '../address_view/controller/address_dropdown_controller.dart';
 
 class GuestAccess extends StatefulWidget {
-  const GuestAccess({Key? key}) : super(key: key);
+  final bool isFromWrapper;
+  const GuestAccess({Key? key, this.isFromWrapper = false}) : super(key: key);
 
   @override
   State<GuestAccess> createState() => _GuestAccessState();
@@ -22,8 +23,13 @@ class _GuestAccessState extends State<GuestAccess> {
 
   @override
   void initState() {
-    // SystemNavigation()
-    //     .applyCustomSystemChromeSettings(Colors.white, Brightness.dark);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemNavigation().applyCustomSystemChromeSettings(
+          Colors.white.withOpacity(0.95),
+          Brightness.dark,
+          Colors.transparent,
+          Brightness.dark);
+    });
     super.initState();
   }
 
@@ -67,15 +73,16 @@ class _GuestAccessState extends State<GuestAccess> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            BackArrow(
-                              iconColor: Colors.black,
-                              onTap: () {
-                                setState(() {
-                                  _statusBarColor = Colors.black;
-                                });
-                                Navigator.of(context).pop();
-                              },
-                            ),
+                            if (!widget.isFromWrapper)
+                              BackArrow(
+                                iconColor: Colors.black,
+                                onTap: () {
+                                  setState(() {
+                                    _statusBarColor = Colors.black;
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                              ),
                           ],
                         ),
                         SizedBox(

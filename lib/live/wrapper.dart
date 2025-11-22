@@ -354,7 +354,7 @@ class _WrapperState extends State<Wrapper> {
     if (!hasBasicInfo) {
       return const ProfileView();
     } else if (!_hasAddresses) {
-      return const GuestAccess();
+      return const GuestAccess(isFromWrapper: true);
     } else {
       return const HomeView();
     }

@@ -22,6 +22,11 @@ class PhoneAuthViewController extends ChangeNotifier {
   bool _showTermsDialog = false;
   TextEditingController phoneNumberController = TextEditingController();
 
+  // REVIEWER MODE SETTINGS
+  static const String reviewerPhoneNumber = "+27123456789";
+  static const String reviewerVerificationCode = "123456";
+  bool _isReviewerMode = false;
+
   bool get isInitialized => _isInitialized;
   bool get isValid => _isValid;
   bool get isActive => _isActive;
@@ -30,6 +35,21 @@ class PhoneAuthViewController extends ChangeNotifier {
 
   bool _isGoogleAuth = false;
   bool get isGoogleAuth => _isGoogleAuth;
+
+  // REVIEWER MODE ACTIVATION
+  void activateReviewerMode() {
+    _isReviewerMode = true;
+    phoneNumberController.text = reviewerPhoneNumber;
+    validatePhoneNumber(); // This will set _isValid to true
+    notifyListeners();
+  }
+
+  void deactivateReviewerMode() {
+    _isReviewerMode = false;
+    phoneNumberController.clear();
+    validatePhoneNumber();
+    notifyListeners();
+  }
 
   Future<void> setAuthContextToGoogle() async {
     _isGoogleAuth = true;
@@ -75,6 +95,13 @@ class PhoneAuthViewController extends ChangeNotifier {
       _isInitialized = false;
     } else {
       if (_isValid) {
+        // CHECK FOR REVIEWER MODE
+        if (_isReviewerMode &&
+            phoneNumberController.text == reviewerPhoneNumber) {
+          await _handleReviewerLogin(widgetContext);
+          return;
+        }
+
         await onShowTermsDialog();
         _isInitialized = true;
         String phoneNumber = phoneNumberController.text;
@@ -84,6 +111,68 @@ class PhoneAuthViewController extends ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  // HANDLE REVIEWER LOGIN (BYPASSES OTP)
+  Future<void> _handleReviewerLogin(BuildContext context) async {
+    try {
+      _isInitialized = true;
+      notifyListeners();
+
+      // Create a mock phone auth credential for reviewer
+      final AuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: "reviewer_bypass",
+        smsCode: reviewerVerificationCode,
+      );
+
+      // Sign in with the mock credential
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        User? user = userCredential.user;
+        final _uniquePromoCode = "N" + "U" + generateRandomNumber();
+
+        // Check if user document exists
+        final bool _hasFirebaseDocument =
+            await _checkUserDocumentExists(user!.uid);
+
+        if (userCredential.additionalUserInfo!.isNewUser ||
+            !_hasFirebaseDocument) {
+          await _createPhoneUserDocument(
+            uid: user.uid,
+            phoneNumber: reviewerPhoneNumber,
+            termsAccepted: true, // Auto-accept for reviewers
+            promoCode: _uniquePromoCode,
+          );
+          await _loadProfileData(context);
+          Get.offAll(() => ProfileView());
+        } else {
+          await _loadProfileData(context);
+          await _updateUserTermsAcceptance(user.uid, true);
+          Get.offAll(() => Wrapper());
+        }
+
+        GenericSnackBar().showCustomSnackBar(
+          null,
+          context,
+          'Reviewer access granted',
+          true,
+        );
+      }
+
+      _isInitialized = false;
+      notifyListeners();
+    } catch (e) {
+      _isInitialized = false;
+      GenericSnackBar().showCustomSnackBar(
+        null,
+        context,
+        'Reviewer login failed: $e',
+        false,
+      );
+      notifyListeners();
+    }
   }
 
 // Check if user document exists in Firestore
@@ -98,7 +187,6 @@ class PhoneAuthViewController extends ChangeNotifier {
   }
 
 // Create user document for phone authentication
-  // Create user document for phone authentication using DatabaseService
   Future<void> _createPhoneUserDocument({
     required String uid,
     required String phoneNumber,
@@ -106,21 +194,30 @@ class PhoneAuthViewController extends ChangeNotifier {
     required String promoCode,
   }) async {
     try {
-      // Use DatabaseService to create user document and save promo code
       await DatabaseService(uid: uid).updateUserData(
-        '', // name - empty for phone auth users to fill in later
-        '', // surname - empty for phone auth users to fill in later
-        phoneNumber, // phone number
-        '', // email - empty for phone auth
-        'Subscribe', // subscription status
-        0.0, // iTokens
-        promoCode, // promo code - this will trigger _savePromoCodeToCollection
+        "Google",
+        // name - pre-filled for reviewers
+        "Reviewer",
+        // surname - pre-filled for reviewers
+        phoneNumber,
+        "reviewer@izinto.app",
+        // email - pre-filled for reviewers
+        'Subscribe',
+        0.0,
+        promoCode,
         termsAccepted: termsAccepted,
         termsAcceptedAt: DateTime.now(),
       );
     } catch (e) {
       rethrow;
     }
+  }
+
+  // TEMPORARY METHOD FOR EASIER REVIEWER ACCESS
+  bool isReviewerPhoneNumber(String phoneNumber) {
+    return phoneNumber == reviewerPhoneNumber ||
+        phoneNumber == "27123456789" ||
+        phoneNumber == "0123456789";
   }
 
 // Load profile data (reuse existing method)
@@ -285,6 +382,13 @@ class PhoneAuthViewController extends ChangeNotifier {
   // Function to validate phone number
   void validatePhoneNumber() {
     String phoneNumber = phoneNumberController.text;
+
+    // REVIEWER PHONE NUMBER BYPASS
+    if (phoneNumber == "+27123456789" || phoneNumber == "27123456789") {
+      _isValid = true;
+      notifyListeners();
+      return;
+    }
 
     if (phoneNumber.startsWith('0')) {
       _isValid = phoneNumber.length == 10;

@@ -87,8 +87,38 @@ class _PhoneAuthViewState extends State<PhoneAuthView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // REVIEWER ACCESS BUTTON ADDED HERE
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: Dimensions.height10),
+                          child: TextButton(
+                            onPressed: () {
+                              controller.activateReviewerMode();
+                              Get.snackbar(
+                                'Reviewer Mode Activated',
+                                'Phone number auto-filled for testing',
+                                backgroundColor: Colors.blue[100],
+                                colorText: Colors.black,
+                                duration: Duration(seconds: 2),
+                              );
+                            },
+                            child: Text(
+                              'Reviewer Access',
+                              style: TextStyle(
+                                fontSize: Dimensions.font16 / 1.1,
+                                fontFamily: 'Poppins',
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.height10),
                       TopLogo(),
-                      SizedBox(height: Dimensions.height45 * 1.6),
+                      SizedBox(
+                          height: Dimensions.height45 * 1.4), // Reduced spacing
                       IntroductionText(
                           text: 'Hi! Let\'s start with your phone number'),
                       SizedBox(
@@ -146,8 +176,16 @@ class _PhoneAuthViewState extends State<PhoneAuthView> {
                         onTap: () async {
                           if (controller.isValid) {
                             FocusScope.of(context).unfocus();
-                            await controller.resetAuthContext();
-                            controller.displayTermsDialog();
+
+                            // CHECK FOR REVIEWER MODE FIRST
+                            if (controller.phoneNumberController.text ==
+                                "+27123456789") {
+                              await controller.onConfirmButtonTapped(
+                                  widgetContext); // Direct login
+                            } else {
+                              await controller.resetAuthContext();
+                              controller.displayTermsDialog(); // Normal flow
+                            }
                           }
                         },
                       ),

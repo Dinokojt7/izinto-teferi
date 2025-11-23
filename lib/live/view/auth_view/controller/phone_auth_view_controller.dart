@@ -98,7 +98,7 @@ class PhoneAuthViewController extends ChangeNotifier {
         // CHECK FOR REVIEWER MODE
         if (_isReviewerMode &&
             phoneNumberController.text == reviewerPhoneNumber) {
-          await _handleReviewerLogin(widgetContext);
+          await handleReviewerLogin(widgetContext);
           return;
         }
 
@@ -113,9 +113,14 @@ class PhoneAuthViewController extends ChangeNotifier {
     notifyListeners();
   }
 
+// Reset the loader state
+  Future<void> resetLoader() async {
+    _isInitialized = false;
+    notifyListeners();
+  }
+
   // HANDLE REVIEWER LOGIN (BYPASSES OTP)
-// REPLACE THE CURRENT _handleReviewerLogin WITH THIS:
-  Future<void> _handleReviewerLogin(BuildContext context) async {
+  Future<void> handleReviewerLogin(BuildContext context) async {
     try {
       _isInitialized = true;
       notifyListeners();
@@ -138,7 +143,7 @@ class PhoneAuthViewController extends ChangeNotifier {
         Get.offAll(() => Wrapper());
         return;
       } catch (e) {
-        print('❌ Anonymous auth failed: $e');
+        resetLoader(); // Reset on error
       }
 
       // METHOD 2: Fallback to custom token

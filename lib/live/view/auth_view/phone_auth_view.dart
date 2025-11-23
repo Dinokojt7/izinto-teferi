@@ -177,14 +177,17 @@ class _PhoneAuthViewState extends State<PhoneAuthView> {
                           if (controller.isValid) {
                             FocusScope.of(context).unfocus();
 
-                            // CHECK FOR REVIEWER MODE FIRST
+                            // CHECK FOR REVIEWER MODE - DIRECT LOGIN, NO TERMS DIALOG
                             if (controller.phoneNumberController.text ==
                                 "+27123456789") {
-                              await controller.onConfirmButtonTapped(
-                                  widgetContext); // Direct login
+                              await controller
+                                  .resetAuthContext(); // Ensure no Google context
+                              await controller.handleReviewerLogin(
+                                  widgetContext); // Direct to reviewer login
                             } else {
                               await controller.resetAuthContext();
-                              controller.displayTermsDialog(); // Normal flow
+                              controller
+                                  .displayTermsDialog(); // Normal flow with terms
                             }
                           }
                         },

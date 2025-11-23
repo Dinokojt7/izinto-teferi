@@ -570,31 +570,52 @@ class ProfileViewController extends ChangeNotifier {
   }
 
   bool isValidPhone(String phoneNumber) {
-    var _isValid = false;
-    if (phoneNumber.startsWith('0')) {
-      _isValid = phoneNumber.length == 10;
-    } else if (phoneNumber.startsWith('+27')) {
-      if (phoneNumber.startsWith('+270')) {
-        _isValid = phoneNumber.length == 13;
-      } else if (phoneNumber[3] != '1') {
-        _isValid = phoneNumber.length == 12;
-      } else {
-        _isValid = false;
-      }
-    } else if (phoneNumber.startsWith('27')) {
-      if (phoneNumber.startsWith('270')) {
-        _isValid = phoneNumber.length == 12;
-      } else if (phoneNumber[2] != '1') {
-        _isValid = phoneNumber.length == 11;
-      } else {
-        _isValid = false;
-      }
-    } else if (phoneNumber[0] != '1') {
-      _isValid = phoneNumber.length == 9;
-    } else {
-      _isValid = false;
+    // Remove all non-digit characters except +
+    String cleaned = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+
+    // Handle South African numbers with +27
+    if (cleaned.startsWith('+27')) {
+      // +27 followed by 9 digits (total 12 characters including +27)
+      return cleaned.length == 12 &&
+          RegExp(r'^\+27[1-9]\d{8}$').hasMatch(cleaned);
     }
-    return _isValid;
+
+    // Handle South African numbers without + (27)
+    else if (cleaned.startsWith('27')) {
+      // 27 followed by 9 digits (total 11 characters)
+      return cleaned.length == 11 &&
+          RegExp(r'^27[1-9]\d{8}$').hasMatch(cleaned);
+    }
+
+    // Handle local South African numbers (0...)
+    else if (cleaned.startsWith('0')) {
+      // 0 followed by 9 digits (total 10 characters)
+      return cleaned.length == 10 && RegExp(r'^0[1-9]\d{8}$').hasMatch(cleaned);
+    }
+
+    // Handle Botswana numbers (+267)
+    else if (cleaned.startsWith('+267')) {
+      // +267 followed by 7 or 8 digits
+      return cleaned.length >= 11 &&
+          cleaned.length <= 12 &&
+          RegExp(r'^\+267[1-9]\d{6,7}$').hasMatch(cleaned);
+    }
+
+    // Handle other international numbers (general validation)
+    else if (cleaned.startsWith('+')) {
+      // Basic international validation: + followed by 7-15 digits
+      return cleaned.length >= 8 &&
+          cleaned.length <= 16 &&
+          RegExp(r'^\+\d{7,15}$').hasMatch(cleaned);
+    }
+
+    // Handle numbers without country code (assume local)
+    else {
+      // 7-15 digits for local numbers
+      return cleaned.length >= 7 &&
+          cleaned.length <= 15 &&
+          RegExp(r'^[1-9]\d{6,14}$').hasMatch(cleaned);
+    }
   }
 
   Future<Map<String, dynamic>?> getUserProfileData(String userId) async {

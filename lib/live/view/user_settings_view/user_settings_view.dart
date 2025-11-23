@@ -29,12 +29,19 @@ class _UserSettingsViewState extends State<UserSettingsView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+
+    final settingsController =
+        Provider.of<UserSettingsController>(context, listen: false);
+
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: settingsController.currentActiveTab, // Sync with controller
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _tabController.addListener(() {
-        Provider.of<UserSettingsController>(context, listen: false)
-            .getActiveTab(_tabController.index);
+        settingsController.getActiveTab(_tabController.index);
       });
     });
   }
@@ -47,6 +54,13 @@ class _UserSettingsViewState extends State<UserSettingsView>
 
   @override
   Widget build(BuildContext context) {
+    final settingsController = Provider.of<UserSettingsController>(context);
+
+    // Sync TabController with controller state when widget rebuilds
+    if (_tabController.index != settingsController.currentActiveTab) {
+      _tabController.index = settingsController.currentActiveTab;
+    }
+
     return Consumer<ProfileViewController>(
       builder: (context, _profileController, child) {
         try {

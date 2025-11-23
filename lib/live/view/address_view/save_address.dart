@@ -224,6 +224,8 @@ class _SaveAddressState extends State<SaveAddress> {
 
   Future<void> _saveAddress(
       BuildContext context, MainAddressViewController addressController) async {
+    addressController.closeDropdown();
+
     setState(() {
       _isSaving = true;
     });
@@ -233,7 +235,6 @@ class _SaveAddressState extends State<SaveAddress> {
       await addressController.saveSelectedAddress(context);
       // No need to call saveNewAddress separately - it's handled in saveSelectedAddress
     } catch (e) {
-
       // Show error message to user
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

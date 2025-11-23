@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:izinto/live/view/auth_view/controller/phone_auth_view_controller.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/widgets/bottom_remove_sheet.dart';
 import 'package:provider/provider.dart';
@@ -174,7 +175,12 @@ class HomeViewController extends ChangeNotifier {
               var removeUserData =
                   Provider.of<ProfileViewController>(context, listen: false)
                       .removeUserData();
+              var resetLoader =
+                  Provider.of<PhoneAuthViewController>(context, listen: false)
+                      .resetLoader();
+
               await removeUserData;
+              await resetLoader;
               await _auth.signOut();
 
               // Navigate to PhoneAuthView and remove all routes

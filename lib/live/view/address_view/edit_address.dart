@@ -359,7 +359,12 @@ class _EditAddressState extends State<EditAddress> {
               description: 'Save Changes',
               isAuthScreen: false,
               onTap: () async {
+                final addressController =
+                    Provider.of<MainAddressViewController>(context,
+                        listen: false);
                 await _saveEditedAddress(context, widget.index);
+                addressController.closeDropdown();
+
                 Navigator.of(context).pop();
               },
             ),

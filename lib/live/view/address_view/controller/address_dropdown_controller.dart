@@ -324,6 +324,14 @@ class MainAddressViewController extends ChangeNotifier {
     notifyListeners();
   }
 
+  //Close Dropdown on Address Save
+  void closeDropdown() {
+    if (_isDropdownOpen) {
+      _isDropdownOpen = false;
+      notifyListeners();
+    }
+  }
+
   void clearLabel() {
     _isDropdownOpen = false;
     notifyListeners();

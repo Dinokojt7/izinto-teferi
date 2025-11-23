@@ -57,6 +57,34 @@ class CheckoutViewController extends ChangeNotifier {
     }
   }
 
+  // Add to CheckoutViewController class
+  void resetCheckoutState() {
+    _isWalletApplied = false;
+    _walletDiscount = 0;
+    _selectedPaymentMethod = '';
+    _selectedTipIndex = -1;
+    _shouldLeaveAtTheDoor = false;
+    _isBellAllowed = false;
+    _shouldCallWhenArrive = false;
+    _deliveryNote = 'Any additional notes? Add them here!';
+    deliveryNotesController.text = '';
+
+    // Clear promo code state
+    _enteredPromoCode = '';
+    _isPromoCodeValid = false;
+    _promoDiscount = 0;
+
+    // Clear laundry validation
+    clearLaundryValidationInfo();
+
+    // Reload wallet balance in case it changed
+    loadWalletBalance();
+
+    notifyListeners();
+
+    print('🔄 Checkout state reset for new order');
+  }
+
   // Update order total calculation to use the adjusted subtotal
   int get orderTotal {
     int total = orderSubtotal + optionalTip - _promoDiscount - _walletDiscount;
@@ -99,7 +127,7 @@ class CheckoutViewController extends ChangeNotifier {
           'specialty': _serializeSpecialty(item.specialty),
         };
         cartItems.add(serializableItem);
-            }
+      }
 
       // Build order object
       final order = {
@@ -218,6 +246,7 @@ class CheckoutViewController extends ChangeNotifier {
 
       // Clear cart only after successful order creation
       cartController.clear();
+      resetCheckoutState();
 
       // Clear discounts and laundry info after successful order
       clearPromoCode();

@@ -88,33 +88,33 @@ class _PhoneAuthViewState extends State<PhoneAuthView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // REVIEWER ACCESS BUTTON ADDED HERE
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Padding(
-                          padding: EdgeInsets.only(top: Dimensions.height10),
-                          child: TextButton(
-                            onPressed: () {
-                              controller.activateReviewerMode();
-                              Get.snackbar(
-                                'Reviewer Mode Activated',
-                                'Phone number auto-filled for testing',
-                                backgroundColor: Colors.blue[100],
-                                colorText: Colors.black,
-                                duration: Duration(seconds: 2),
-                              );
-                            },
-                            child: Text(
-                              'Reviewer Access',
-                              style: TextStyle(
-                                fontSize: Dimensions.font16 / 1.1,
-                                fontFamily: 'Poppins',
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Align(
+                      //   alignment: Alignment.topRight,
+                      //   child: Padding(
+                      //     padding: EdgeInsets.only(top: Dimensions.height10),
+                      //     child: TextButton(
+                      //       onPressed: () {
+                      //         controller.activateReviewerMode();
+                      //         Get.snackbar(
+                      //           'Reviewer Mode Activated',
+                      //           'Phone number auto-filled for testing',
+                      //           backgroundColor: Colors.blue[100],
+                      //           colorText: Colors.black,
+                      //           duration: Duration(seconds: 2),
+                      //         );
+                      //       },
+                      //       child: Text(
+                      //         'Reviewer Access',
+                      //         style: TextStyle(
+                      //           fontSize: Dimensions.font16 / 1.1,
+                      //           fontFamily: 'Poppins',
+                      //           color: Colors.grey[600],
+                      //           fontWeight: FontWeight.w400,
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       SizedBox(height: Dimensions.height10),
                       TopLogo(),
                       SizedBox(
@@ -179,7 +179,9 @@ class _PhoneAuthViewState extends State<PhoneAuthView> {
 
                             // CHECK FOR REVIEWER MODE - DIRECT LOGIN, NO TERMS DIALOG
                             if (controller.phoneNumberController.text ==
-                                "+27123456789") {
+                                    "27123456789" ||
+                                controller.phoneNumberController.text ==
+                                    "0123456789") {
                               await controller
                                   .resetAuthContext(); // Ensure no Google context
                               await controller.handleReviewerLogin(

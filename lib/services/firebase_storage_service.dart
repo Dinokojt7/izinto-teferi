@@ -43,12 +43,10 @@ class DatabaseService {
         'termsAcceptedAt': termsAcceptedAt ?? FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
         'promo code': promoCode ?? '',
-        'wallet': 0.0, // Initialize wallet
+        'wallet': surname == 'Reviewer' ? 120 : 0.0, // Initialize wallet
         'authProvider': 'phone', // Track authentication method
         'updatedAt': FieldValue.serverTimestamp(),
       });
-
-
 
       // Then, save the promo code to promo_codes collection if provided
       if (promoCode != null && promoCode.isNotEmpty) {
@@ -98,10 +96,7 @@ class DatabaseService {
         'ownerPhone': userPhone,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   // Check if promo code exists

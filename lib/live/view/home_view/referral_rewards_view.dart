@@ -108,10 +108,7 @@ class _SpecialtyWidgetState extends State<SpecialtyWidget> {
             if (user?.uid != null && user!.uid.isNotEmpty) {
               _homeController.onIndependentPageNavigation(
                 context,
-                NewItemView(
-                  index: widget.index,
-                  homeItemList: widget.homeItemList,
-                ),
+                ReferralRewardsView(),
               );
             } else {
               GenericSnackBar().showCustomSnackBar(() {

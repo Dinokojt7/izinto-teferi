@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
-import 'package:izinto/live/view/home_view/specialty_widget.dart';
+import 'package:izinto/live/view/home_view/referral_rewards_view.dart';
 
 import '../../../controllers/home_items_controller.dart';
 

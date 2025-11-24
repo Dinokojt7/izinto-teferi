@@ -216,7 +216,7 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
             ],
           ),
           centerTitle: true,
-        );cd desk
+        );
       },
     );
   }

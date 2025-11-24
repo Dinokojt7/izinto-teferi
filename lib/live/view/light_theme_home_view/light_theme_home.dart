@@ -11,7 +11,7 @@ import '../../utilities/generic_system_navigation.dart';
 import '../../widgets/text_widgets/big_mallanna.dart';
 import '../../widgets/text_widgets/primary_style_text.dart';
 import '../home_view/main_address_view.dart';
-import '../home_view/specialty_widget.dart';
+import '../home_view/referral_rewards_view.dart';
 import '../profile_view/controller/profile_view_controller.dart';
 
 class LightThemeHome extends StatefulWidget {
@@ -52,7 +52,6 @@ class _LightThemeHomeState extends State<LightThemeHome> {
         duration: Duration(seconds: 2),
       );
     } catch (e) {
-
       _refreshController.refreshFailed();
 
       // Show error feedback

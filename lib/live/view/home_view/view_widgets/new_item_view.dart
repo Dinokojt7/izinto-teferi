@@ -10,58 +10,47 @@ import '../../../widgets/text_widgets/introduction_text.dart';
 import '../../profile_view/controller/profile_view_controller.dart';
 import '../controller/home_view_controller.dart';
 
-class NewItemView extends StatefulWidget {
-  final int? index;
-  final List? homeItemList;
-  final dynamic item;
+class ReferralRewardsView extends StatefulWidget {
   final bool shouldReturnToBlack;
 
-  const NewItemView({
+  const ReferralRewardsView({
     Key? key,
-    this.index,
-    this.homeItemList,
-    this.item,
     this.shouldReturnToBlack = true,
   }) : super(key: key);
 
   @override
-  State<NewItemView> createState() => _NewItemViewState();
+  State<ReferralRewardsView> createState() => _ReferralRewardsViewState();
 }
 
-class _NewItemViewState extends State<NewItemView> {
-  dynamic get item {
-    try {
-      if (widget.item != null) {
-        return widget.item;
+class _ReferralRewardsViewState extends State<ReferralRewardsView> {
+  // Static data - no backend fetch needed
+  final Map<String, dynamic> _referralData = {
+    "title": "Share & Earn Together",
+    "subtitle": "Give R50, Get R50 - Everyone Wins!",
+    "description":
+        "Spread the word about Izinto and both you and your friends benefit. When they use your code for their first service booking, you both receive special rewards to use on your next home service orders.",
+    "features": [
+      {
+        "icon": "assets/image/gift.png",
+        "header": "You Earn R50 Credit",
+        "description":
+            "When your friend completes their first service booking using your code, you'll receive R50 in Izinto service credit applicable to laundry, cleaning, or any home service."
+      },
+      {
+        "icon": "assets/image/discount.png",
+        "header": "They Save R50 Instantly",
+        "description":
+            "Your friend gets R50 off their first service order when they spend R500 or more. Perfect for trying our premium home services."
       }
-
-      if (widget.index != null &&
-          widget.homeItemList != null &&
-          widget.index! < widget.homeItemList!.length) {
-        return widget.homeItemList![widget.index!];
-      }
-
-      throw Exception('NewItemView: Could not resolve item.');
-    } catch (e) {
-      if (kDebugMode) {
-
-      }
-      return _createFallbackItem();
-    }
-  }
-
-  NewSpecialtyModel _createFallbackItem() {
-    return NewSpecialtyModel(
-      id: -1,
-      name: 'Item Not Available',
-      introduction: 'This item could not be loaded properly.',
-      price: [0],
-      size: ['Standard'],
-      provider: 'assets/image/placeholder.png',
-      type: 'Unavailable',
-      material: 'Unknown',
-    );
-  }
+    ],
+    "howItWorks": [
+      "Share your unique promo code with friends & family",
+      "They enter your code when booking their first service",
+      "Their order must be R500+ to qualify for the R50 discount",
+      "Once completed, you receive R50 service credit within 24 hours",
+      "Use your credit on any Izinto home service - laundry, cleaning, pet care & more"
+    ]
+  };
 
   void _handleBackNavigation(BuildContext context) {
     try {
@@ -94,30 +83,16 @@ class _NewItemViewState extends State<NewItemView> {
 
   @override
   void initState() {
-    setState(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        SystemNavigation().applyCustomSystemChromeSettings(
-            Colors.white.withOpacity(0.95),
-            Brightness.dark,
-            Colors.white,
-            Brightness.dark);
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Set transparent status bar initially for the header image
+      SystemNavigation().applyCustomSystemChromeSettings(Colors.transparent,
+          Brightness.dark, Colors.transparent, Brightness.dark);
     });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    ReleaseDebug.logItem('NewItemView', item);
-
-    if (item == null) {
-      return _buildErrorScreen('Item data is null', _onTap);
-    }
-
-    if (_isItemInvalid(item)) {
-      return _buildErrorScreen('Item data is incomplete or invalid', _onTap);
-    }
-
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
@@ -128,147 +103,137 @@ class _NewItemViewState extends State<NewItemView> {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              toolbarHeight: 50,
-              title: Padding(
-                padding: EdgeInsets.only(right: Dimensions.width10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    BackArrow(iconColor: Colors.black, onTap: _onTap),
-                    // Removed favorite icon
-                  ],
+        body: NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            // Change status bar to white when scrolling up
+            if (scrollNotification.metrics.pixels > 100) {
+              SystemNavigation().applyCustomSystemChromeSettings(
+                  Colors.white, Brightness.dark, Colors.white, Brightness.dark);
+            } else {
+              // Reset to transparent when at top
+              SystemNavigation().applyCustomSystemChromeSettings(
+                  Colors.transparent,
+                  Brightness.dark,
+                  Colors.transparent,
+                  Brightness.dark);
+            }
+            return false;
+          },
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                toolbarHeight: 50,
+                title: Padding(
+                  padding: EdgeInsets.only(right: Dimensions.width10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      BackArrow(iconColor: Colors.black, onTap: _onTap),
+                    ],
+                  ),
+                ),
+                pinned: true,
+                backgroundColor: Colors.white,
+                expandedHeight: 200,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _buildHeaderImage(),
                 ),
               ),
-              pinned: true,
-              backgroundColor: Colors.white.withOpacity(0.1),
-              expandedHeight: 300,
-              flexibleSpace: FlexibleSpaceBar(
-                background: _buildProductImage(item),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  Center(
-                    child: IntroductionText(
-                      align: TextAlign.center,
-                      text: widget.homeItemList?[widget.index!].material,
-                      textSize: Dimensions.font20 * 1.2,
-                    ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Dimensions.width20,
+                    vertical: Dimensions.height20,
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      left: Dimensions.width20,
-                      right: Dimensions.width20,
-                      bottom: Dimensions.height20,
-                    ),
-                    child: _buildContent(item),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title
+                      Center(
+                        child: IntroductionText(
+                          align: TextAlign.center,
+                          text: _referralData['title'],
+                          textSize: Dimensions.font20 * 1.3,
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.height10),
+
+                      // Subtitle
+                      Center(
+                        child: Text(
+                          _referralData['subtitle'],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: Dimensions.font16 / 1.1,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Poppins',
+                            color: Colors.green.shade700,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.height30),
+
+                      // Description
+                      Text(
+                        _referralData['description'],
+                        style: TextStyle(
+                          fontSize: Dimensions.font16 / 1.2,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Poppins',
+                          color: Colors.grey.shade700,
+                          height: 1.5,
+                        ),
+                      ),
+                      SizedBox(height: Dimensions.height30),
+
+                      // Features
+                      _buildFeaturesSection(),
+                      SizedBox(height: Dimensions.height30),
+
+                      // How It Works
+                      _buildHowItWorksSection(),
+                    ],
                   ),
-                ],
-              ),
-            )
-          ],
+                ),
+              )
+            ],
+          ),
         ),
         bottomNavigationBar: _buildPromoCodeSection(context),
       ),
     );
   }
 
-  Widget _buildContent(dynamic item) {
-    try {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: Dimensions.height30),
-
-          // Centered size text
-          Center(
-            child: Text(
-              textAlign: TextAlign.center,
-              _getSizeText(item),
-              style: TextStyle(
-                fontSize: Dimensions.font16 / 1.2,
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Poppins',
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ),
-          SizedBox(height: Dimensions.height30),
-
-          // Features list
-          _buildFeaturesList(item),
-        ],
-      );
-    } catch (e) {
-      return Column(
-        children: [
-          Text('Error displaying content', style: TextStyle(color: Colors.red)),
-          SizedBox(height: 20),
-          Text('Details: $e'),
-        ],
-      );
-    }
+  Widget _buildHeaderImage() {
+    return Container(
+      color: Colors.blue.shade50,
+      child: Center(
+        child: Image.asset(
+          'assets/image/promo-line.png',
+          width: 150,
+          height: 350,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              Icons.people_alt_rounded,
+              size: 80,
+              color: Colors.blue.shade300,
+            );
+          },
+        ),
+      ),
+    );
   }
 
-  // Replace the entire _buildFeaturesList and related methods with this:
-
-  Widget _buildFeaturesList(dynamic item) {
-    final details = _getDetails(item);
-
-    if (details == null || details.isEmpty) {
-      return Container(
-        padding: EdgeInsets.all(Dimensions.width20),
-        child: Text(
-          'No features available',
-          style: TextStyle(
-            color: Colors.grey.shade500,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-      );
-    }
-
-    // Extract the data from the details
-    List<String> promoIncludes = [];
-    List<String> items = [];
-    List<String> specialFeatures = [];
-
-    for (var section in details) {
-      final header = section.keys.first;
-      final content = section[header];
-
-      if (content is List) {
-        if (header == "Promo Includes") {
-          promoIncludes = List<String>.from(content);
-        } else if (header == "Items") {
-          items = List<String>.from(content);
-        } else if (header == "Special Features") {
-          specialFeatures = List<String>.from(content);
-        }
-      }
-    }
-
-    // We only have 2 features, so create exactly 2 rows
-    List<Map<String, dynamic>> features = [];
-    for (int i = 0; i < 2; i++) {
-      features.add({
-        'icon': specialFeatures.isNotEmpty && i < specialFeatures.length
-            ? specialFeatures[i]
-            : '',
-        'header': promoIncludes.isNotEmpty && i < promoIncludes.length
-            ? promoIncludes[i]
-            : 'Feature ${i + 1}',
-        'description': items.isNotEmpty && i < items.length ? items[i] : '',
-      });
-    }
-
+  Widget _buildFeaturesSection() {
     return Column(
-      children: features.map((feature) => _buildFeatureRow(feature)).toList(),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: Dimensions.height20),
+        ..._referralData['features']
+            .map<Widget>((feature) => _buildFeatureRow(feature))
+            .toList(),
+      ],
     );
   }
 
@@ -278,19 +243,8 @@ class _NewItemViewState extends State<NewItemView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon container
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Color(0xFF56C6FF).withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: _buildFeatureIcon(feature['icon']),
-            ),
-          ),
-
+          // Icon container with circular background
+          _buildFeatureIcon(feature['icon']),
           SizedBox(width: Dimensions.width15),
 
           // Text content
@@ -331,13 +285,23 @@ class _NewItemViewState extends State<NewItemView> {
 
   Widget _buildFeatureIcon(String iconPath) {
     if (iconPath.isNotEmpty && iconPath.contains('.png')) {
-      return Image.asset(
-        iconPath,
-        width: 20,
-        height: 20,
-        errorBuilder: (context, error, stackTrace) {
-          return _getDefaultIcon(iconPath);
-        },
+      return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Image.asset(
+            iconPath,
+            width: 24,
+            height: 24,
+            errorBuilder: (context, error, stackTrace) {
+              return _getDefaultIcon(iconPath);
+            },
+          ),
+        ),
       );
     }
 
@@ -345,30 +309,120 @@ class _NewItemViewState extends State<NewItemView> {
   }
 
   Widget _getDefaultIcon(String iconPath) {
-    // Use different default icons based on the image path
-    if (iconPath.contains('wallet')) {
-      return Icon(Icons.account_balance_wallet,
-          color: Color(0xFF56C6FF), size: 20);
-    } else if (iconPath.contains('coupon')) {
-      return Icon(Icons.local_offer, color: Color(0xFF56C6FF), size: 20);
+    // Container for consistent circular background
+    Widget _wrapWithBackground(Widget child) {
+      return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          shape: BoxShape.circle,
+        ),
+        child: Center(child: child),
+      );
     }
 
-    return Icon(Icons.check_circle_outline, color: Color(0xFF56C6FF), size: 20);
+    if (iconPath.contains('gift')) {
+      return _wrapWithBackground(
+        Image.asset(
+          'assets/image/wallet.png',
+          width: 24,
+          height: 24,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(Icons.card_giftcard,
+                color: Colors.blue.shade700, size: 24);
+          },
+        ),
+      );
+    } else if (iconPath.contains('discount')) {
+      return _wrapWithBackground(
+        Image.asset(
+          'assets/image/coupon.png',
+          width: 24,
+          height: 24,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(Icons.percent_rounded,
+                color: Colors.blue.shade700, size: 24);
+          },
+        ),
+      );
+    } else if (iconPath.contains('wallet') || iconPath.contains('earn')) {
+      return _wrapWithBackground(
+        Image.asset(
+          'assets/image/wallet.png',
+          width: 24,
+          height: 24,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(Icons.account_balance_wallet,
+                color: Colors.blue.shade700, size: 24);
+          },
+        ),
+      );
+    }
+
+    // Default for celebrations
+    return _wrapWithBackground(
+      Icon(Icons.celebration_rounded, color: Colors.blue.shade700, size: 24),
+    );
   }
 
-// Keep your existing _getDetails method
-  List<Map<String, dynamic>>? _getDetails(dynamic item) {
-    try {
-      if (item.details != null && item.details is List) {
-        return List<Map<String, dynamic>>.from(item.details);
-      }
-      return null;
-    } catch (e) {
-      if (kDebugMode) {
-
-      }
-      return null;
-    }
+  Widget _buildHowItWorksSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Simple Steps to Earn Together',
+          style: TextStyle(
+            fontSize: Dimensions.font16 * 1.1,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Poppins',
+            color: Colors.black87,
+          ),
+        ),
+        SizedBox(height: Dimensions.height20),
+        ...List.generate(
+            _referralData['howItWorks'].length,
+            (index) => Padding(
+                  padding: EdgeInsets.only(bottom: Dimensions.height15),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade700,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: Dimensions.width15),
+                      Expanded(
+                        child: Text(
+                          _referralData['howItWorks'][index],
+                          style: TextStyle(
+                            fontSize: Dimensions.font16 / 1.2,
+                            fontWeight: FontWeight.w400,
+                            fontFamily: 'Poppins',
+                            color: Colors.grey.shade700,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+      ],
+    );
   }
 
   Widget _buildPromoCodeSection(BuildContext context) {
@@ -378,216 +432,103 @@ class _NewItemViewState extends State<NewItemView> {
 
         return Container(
           margin: EdgeInsets.symmetric(
-              horizontal: Dimensions.width20, vertical: Dimensions.height10),
+              horizontal: Dimensions.width20, vertical: Dimensions.height20),
           padding: EdgeInsets.symmetric(
-              horizontal: Dimensions.width20,
-              vertical: Dimensions.height20 / 3),
+              horizontal: Dimensions.width20, vertical: Dimensions.height20),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(Dimensions.radius15),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Promo code text
-              Expanded(
-                child: Text(
-                  promoCode.isNotEmpty ? promoCode : 'No promo code',
-                  style: TextStyle(
-                    fontSize: Dimensions.font16,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Poppins',
-                    color: Colors.black87,
-                  ),
+              Text(
+                'Your Unique Referral Code',
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.1,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                  color: Colors.blue.shade900,
                 ),
               ),
-
-              SizedBox(width: Dimensions.width15),
-
-              // Copy button
-              if (promoCode.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    Provider.of<HomeViewController>(context, listen: false)
-                        .copyPromoCodeToClip(context, promoCode);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: Dimensions.width15,
-                      vertical: Dimensions.height10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(Dimensions.radius15 * 1.1),
-                    ),
-                    child: Text(
-                      'Copy',
-                      style: TextStyle(
-                        fontSize: Dimensions.font16 / 1.1,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Poppins',
-                        color: Colors.black87,
+              SizedBox(height: Dimensions.height10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Promo code text
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Dimensions.width15,
+                        vertical: Dimensions.height10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.circular(Dimensions.radius20 / 2),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Text(
+                        promoCode.isNotEmpty
+                            ? promoCode
+                            : 'Generating your code...',
+                        style: TextStyle(
+                          fontSize: Dimensions.font16 / 1.1,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
+                          color: Colors.blue.shade900,
+                        ),
                       ),
                     ),
                   ),
+
+                  SizedBox(width: Dimensions.width15),
+
+                  // Copy button
+                  if (promoCode.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        Provider.of<HomeViewController>(context, listen: false)
+                            .copyPromoCodeToClip(context, promoCode);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: Dimensions.width20,
+                          vertical: Dimensions.height15 / 1.35,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade700,
+                          borderRadius:
+                              BorderRadius.circular(Dimensions.radius20 / 2),
+                        ),
+                        child: Text(
+                          'Copy',
+                          style: TextStyle(
+                            fontSize: Dimensions.font16 / 1.1,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Poppins',
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(height: Dimensions.height10),
+              Text(
+                'Share this code with friends & family to start earning together!',
+                style: TextStyle(
+                  fontSize: Dimensions.font16 / 1.2,
+                  fontWeight: FontWeight.w400,
+                  fontFamily: 'Poppins',
+                  color: Colors.blue.shade700,
                 ),
+              ),
             ],
           ),
         );
       },
     );
-  }
-
-  String _getSizeText(dynamic item) {
-    try {
-      if (item.size != null && item.size is List && item.size.isNotEmpty) {
-        return item.size[0]?.toString() ?? '';
-      }
-      return '';
-    } catch (e) {
-      return '';
-    }
-  }
-
-// Update the _buildFeatureContent method to handle different content types
-  Widget _buildFeatureContent(dynamic content, String header) {
-    try {
-      if (content is List) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: content.map<Widget>((item) {
-            if (item is String && item.isNotEmpty) {
-              return Padding(
-                padding: EdgeInsets.only(bottom: Dimensions.height10 / 2),
-                child: Text(
-                  item,
-                  style: TextStyle(
-                    fontSize: Dimensions.font16 / 1.1,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: 'Poppins',
-                    color: Colors.grey.shade600,
-                    height: 1.4,
-                  ),
-                ),
-              );
-            }
-            return SizedBox.shrink();
-          }).toList(),
-        );
-      } else if (content is String) {
-        // Handle case where content is a single string instead of list
-        return Text(
-          content,
-          style: TextStyle(
-            fontSize: Dimensions.font16 / 1.1,
-            fontWeight: FontWeight.w400,
-            fontFamily: 'Poppins',
-            color: Colors.grey.shade600,
-            height: 1.4,
-          ),
-        );
-      }
-
-      return SizedBox.shrink();
-    } catch (e) {
-      if (kDebugMode) {
-
-      }
-      return SizedBox.shrink();
-    }
-  }
-
-// Keep the _isSpecialFeatures method
-  bool _isSpecialFeatures(String header) {
-    return header.toLowerCase().contains('special');
-  }
-
-  String _safeGetIntroduction(dynamic item) {
-    try {
-      return item.introduction?.toString() ?? 'No description available.';
-    } catch (e) {
-      return 'No description available.';
-    }
-  }
-
-  // Validation method
-  bool _isItemInvalid(dynamic item) {
-    try {
-      return item.id == null ||
-          item.name == null ||
-          item.name.toString().isEmpty ||
-          item.provider == null;
-    } catch (e) {
-      return true;
-    }
-  }
-
-  // Error screen
-  Widget _buildErrorScreen(String message, onTap) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackArrow(
-          iconColor: Colors.black,
-          onTap: onTap,
-        ),
-        title: Text('Error'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red),
-            SizedBox(height: 20),
-            Text(
-              'Could not load item',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Go Back'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProductImage(dynamic item) {
-    return Image.asset(
-      item.provider, // Using provider instead of img
-      width: double.maxFinite,
-      fit: BoxFit.scaleDown,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          color: Colors.grey[100],
-          child: Center(
-            child: Icon(
-              Icons.image_not_supported,
-              color: Colors.grey[400],
-              size: 60,
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-// Helper class for release mode debugging
-class ReleaseDebug {
-  static void logItem(String tag, dynamic item) {
-    if (kDebugMode) {
-
-    }
   }
 }

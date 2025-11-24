@@ -85,41 +85,6 @@ class _MainAppSettingsState extends State<MainAppSettings> {
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(left: 20.0, top: 10.0, right: 20.0),
-            child: GenericHeaderRow(
-              headingChild: HeadingStyleText(
-                text: 'Payments',
-                weight: FontWeight.w600,
-              ),
-            ),
-          ),
-          SizedBox(
-            height: Dimensions.height20,
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 16.0, right: 16.0),
-            child: Column(
-              children: [
-                settingsSection(
-                  subHeading: 'Your Wallet',
-                  onTap: () {
-                    Provider.of<HomeViewController>(context, listen: false)
-                        .navigateToNestedWidget(
-                      context,
-                      GeneralInformationPage(
-                        title: 'Your wallet',
-                        heading: 'Pay with your Izinto Wallet',
-                        information:
-                            'Izinto Wallet is our credit facility. Your refunds and promo code rewards are credited into your Izinto Wallet which you can then use to pay for future reservations. You can pay using Izinto Wallet during checkout. ',
-                        pageType: PageType.wallet,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
           SizedBox(
             height: Dimensions.height30,
           ),

@@ -43,7 +43,7 @@ class DatabaseService {
         'termsAcceptedAt': termsAcceptedAt ?? FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
         'promo code': promoCode ?? '',
-        'wallet': surname == 'Reviewer' ? 120 : 0.0, // Initialize wallet
+        'wallet': 0.0, // Initialize wallet
         'authProvider': 'phone', // Track authentication method
         'updatedAt': FieldValue.serverTimestamp(),
       });

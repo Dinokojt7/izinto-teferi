@@ -133,15 +133,8 @@ class _ServiceAreasState extends State<ServiceAreas> {
           width: double.infinity,
           padding: EdgeInsets.all(Dimensions.width15),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(Dimensions.radius15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -30,8 +30,10 @@ class _UserSettingsViewState extends State<UserSettingsView>
   void initState() {
     super.initState();
 
-    final settingsController =
-        Provider.of<UserSettingsController>(context, listen: false);
+    final settingsController = Provider.of<UserSettingsController>(
+      context,
+      listen: false,
+    );
 
     _tabController = TabController(
       length: 2,
@@ -95,7 +97,8 @@ class _UserSettingsViewState extends State<UserSettingsView>
                       child: Column(
                         children: [
                           CustomerServiceView(
-                              promoCode: _profileController.promoCode),
+                            promoCode: _profileController.promoCode,
+                          ),
                           // Additional widgets can go here if necessary
                         ],
                       ),
@@ -136,18 +139,8 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     final size = 60;
     final top = expandedHeight - shrinkOffset - size / 2;
     List<Widget> _tabs = [
-      Tab(
-        child: HomeButton(
-          title: 'Orders',
-          activeScreen: 0,
-        ),
-      ),
-      Tab(
-        child: HomeButton(
-          title: 'Settings',
-          activeScreen: 1,
-        ),
-      ),
+      Tab(child: HomeButton(title: 'Orders', activeScreen: 0)),
+      Tab(child: HomeButton(title: 'Settings', activeScreen: 1)),
     ];
     return Stack(
       fit: StackFit.expand,
@@ -162,7 +155,7 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
           left: 80.0,
           right: 80.0,
           child: buildFloatingTabBar(shrinkOffset, _tabs),
-        )
+        ),
       ],
     );
   }
@@ -199,51 +192,31 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
               // Logo that disappears when scrolling up
               Opacity(
                 opacity: disappear(shrinkOffset).clamp(0.0, 1.0),
-                child: Image.asset(
-                  'assets/logos/logomark.png',
-                  height: 25.0,
-                ),
+                child: Image.asset('assets/logos/logomark.png', height: 25.0),
               ),
 
               // Space above ProfileMallana that ONLY appears when shrunk
               Opacity(
                 opacity: appear(shrinkOffset).clamp(0.0, 1.0),
-                child: SizedBox(height: Dimensions.height20),
+                child: SizedBox(height: Dimensions.height10),
               ),
-
               // ProfileMallana - always centered
               Center(
                 child: _profileController.firstName == ''
                     ? ProfileMallana(text1: 'Hello', text2: 'Welcome')
                     : ProfileMallana(
                         text1: '${_profileController.firstName}',
-                        text2: '${_profileController.lastName}'),
+                        text2: '${_profileController.lastName}',
+                      ),
               ),
-
-              // Wallet balance that appears when shrunk
               Opacity(
-                opacity: walletOpacity(shrinkOffset).clamp(0.0, 1.0),
-                child: Column(
-                  children: [
-                    SizedBox(height: 5.0),
-                    HeadingStyleText(
-                      text: _profileController.walletBalance > 0
-                          ? 'Wallet: R${_profileController.walletBalance},00'
-                          : 'Wallet: R0,00',
-                      size: Dimensions.font20 / 1.3,
-                      family: 'Poppins',
-                      color: Colors.white,
-                      weight: FontWeight.w300,
-                      align: TextAlign.center,
-                    ),
-                    SizedBox(height: Dimensions.height30),
-                  ],
-                ),
+                opacity: appear(shrinkOffset).clamp(0.0, 1.0),
+                child: SizedBox(height: Dimensions.height20),
               ),
             ],
           ),
           centerTitle: true,
-        );
+        );cd desk
       },
     );
   }
@@ -266,16 +239,16 @@ class CustomSliverAppBarDelegate extends SliverPersistentHeaderDelegate {
           height: Dimensions.height45 * 1.5,
           width: Dimensions.screenWidth / 2.2,
           child: Card(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(LiveDimensions.radius30 * 2),
-              ),
-              child: TabsSection(
-                isSpecialtiesLoaded: true,
-                tabController: tabController,
-                tabs: tabs,
-              )),
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(LiveDimensions.radius30 * 2),
+            ),
+            child: TabsSection(
+              isSpecialtiesLoaded: true,
+              tabController: tabController,
+              tabs: tabs,
+            ),
+          ),
         ),
       );
 }
@@ -411,10 +384,7 @@ class ProfileMallana extends StatelessWidget {
     );
   }
 
-  Widget _buildAutoSizeText({
-    required String text,
-    required Color color,
-  }) {
+  Widget _buildAutoSizeText({required String text, required Color color}) {
     return AutoSizeText(
       text,
       maxLines: 1,
@@ -432,18 +402,13 @@ class ProfileMallana extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return Container(
-      constraints: BoxConstraints(
-        maxWidth: _maxWidth,
-      ),
+      constraints: BoxConstraints(maxWidth: _maxWidth),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Flexible(
-            child: _buildStaticText(
-              text: 'Hello',
-              color: Colors.white,
-            ),
+            child: _buildStaticText(text: 'Hello', color: Colors.white),
           ),
           SizedBox(width: Dimensions.width10 * 1.5),
           Flexible(
@@ -457,10 +422,7 @@ class ProfileMallana extends StatelessWidget {
     );
   }
 
-  Widget _buildStaticText({
-    required String text,
-    required Color color,
-  }) {
+  Widget _buildStaticText({required String text, required Color color}) {
     return Text(
       text,
       overflow: TextOverflow.ellipsis,

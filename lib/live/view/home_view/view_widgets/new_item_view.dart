@@ -159,21 +159,6 @@ class _ReferralRewardsViewState extends State<ReferralRewardsView> {
                       ),
                       SizedBox(height: Dimensions.height10),
 
-                      // Subtitle
-                      Center(
-                        child: Text(
-                          _referralData['subtitle'],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: Dimensions.font16 / 1.1,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Poppins',
-                            color: Colors.green.shade700,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: Dimensions.height30),
-
                       // Description
                       Text(
                         _referralData['description'],
@@ -517,7 +502,7 @@ class _ReferralRewardsViewState extends State<ReferralRewardsView> {
               ),
               SizedBox(height: Dimensions.height10),
               Text(
-                'Share this code with friends & family to start earning together!',
+                'Share a referral code with friends & family to get a R50 on your next order!',
                 style: TextStyle(
                   fontSize: Dimensions.font16 / 1.2,
                   fontWeight: FontWeight.w400,

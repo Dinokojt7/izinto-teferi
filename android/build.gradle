@@ -30,7 +30,6 @@ allprojects {
         }
     }
 
-    // ADD THIS TO FORCE ALL PLUGINS TO USE BUILDCONFIG
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             android {

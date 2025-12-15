@@ -296,8 +296,6 @@ class MainAddressViewController extends ChangeNotifier {
         _hasData = true;
         notifyListeners();
 
-        print(
-            'Address successfully processed: $_street, $_suburb, $_town, $_zipCode');
       } else {
         await _handleAddressParsingError('No placemark found for coordinates');
       }

@@ -22,11 +22,6 @@ class PhoneAuthViewController extends ChangeNotifier {
   bool _showTermsDialog = false;
   TextEditingController phoneNumberController = TextEditingController();
 
-  // REVIEWER MODE SETTINGS
-  static const String reviewerPhoneNumber = "+27123456789";
-  static const String reviewerVerificationCode = "123456";
-  bool _isReviewerMode = false;
-
   bool get isInitialized => _isInitialized;
   bool get isValid => _isValid;
   bool get isActive => _isActive;
@@ -35,21 +30,6 @@ class PhoneAuthViewController extends ChangeNotifier {
 
   bool _isGoogleAuth = false;
   bool get isGoogleAuth => _isGoogleAuth;
-
-  // REVIEWER MODE ACTIVATION
-  void activateReviewerMode() {
-    _isReviewerMode = true;
-    phoneNumberController.text = reviewerPhoneNumber;
-    validatePhoneNumber(); // This will set _isValid to true
-    notifyListeners();
-  }
-
-  void deactivateReviewerMode() {
-    _isReviewerMode = false;
-    phoneNumberController.clear();
-    validatePhoneNumber();
-    notifyListeners();
-  }
 
   Future<void> setAuthContextToGoogle() async {
     _isGoogleAuth = true;
@@ -95,13 +75,6 @@ class PhoneAuthViewController extends ChangeNotifier {
       _isInitialized = false;
     } else {
       if (_isValid) {
-        // CHECK FOR REVIEWER MODE
-        if (_isReviewerMode &&
-            phoneNumberController.text == reviewerPhoneNumber) {
-          await handleReviewerLogin(widgetContext);
-          return;
-        }
-
         await onShowTermsDialog();
         _isInitialized = true;
         String phoneNumber = phoneNumberController.text;
@@ -118,80 +91,6 @@ class PhoneAuthViewController extends ChangeNotifier {
     _isInitialized = false;
     notifyListeners();
   }
-
-  // HANDLE REVIEWER LOGIN (BYPASSES OTP)
-  Future<void> handleReviewerLogin(BuildContext context) async {
-    try {
-      _isInitialized = true;
-      notifyListeners();
-
-      // METHOD 1: Try anonymous auth first (more reliable)
-      try {
-        UserCredential userCredential =
-            await FirebaseAuth.instance.signInAnonymously();
-        print('✅ Anonymous auth success: ${userCredential.user?.uid}');
-
-        // Create user document for anonymous user
-        await _createPhoneUserDocument(
-          uid: userCredential.user!.uid,
-          phoneNumber: reviewerPhoneNumber,
-          termsAccepted: true,
-          promoCode: "N" + "U" + generateRandomNumber(),
-        );
-
-        await _loadProfileData(context);
-        Get.offAll(() => Wrapper());
-        return;
-      } catch (e) {
-        resetLoader(); // Reset on error
-      }
-
-      // METHOD 2: Fallback to custom token
-      try {
-        // Create a custom token (you might need a backend for this)
-        // For now, use a simple workaround - create a new user with email/password
-        final randomEmail =
-            "reviewer${DateTime.now().millisecondsSinceEpoch}@izinto.app";
-        UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: randomEmail,
-          password: "reviewer123",
-        );
-
-        print('✅ Custom user created: ${userCredential.user?.uid}');
-
-        await _createPhoneUserDocument(
-          uid: userCredential.user!.uid,
-          phoneNumber: reviewerPhoneNumber,
-          termsAccepted: true,
-          promoCode: "N" + "U" + generateRandomNumber(),
-        );
-
-        await _loadProfileData(context);
-        Get.offAll(() => Wrapper());
-      } catch (e) {
-        print('❌ All auth methods failed: $e');
-        GenericSnackBar().showCustomSnackBar(
-          null,
-          context,
-          'Reviewer login failed. Please check Firebase configuration.',
-          false,
-        );
-      }
-
-      _isInitialized = false;
-      notifyListeners();
-    } catch (e) {
-      _isInitialized = false;
-      GenericSnackBar().showCustomSnackBar(
-        null,
-        context,
-        'Reviewer login error: $e',
-        false,
-      );
-      notifyListeners();
-    }
-  } // Check if user document exists in Firestore
 
   Future<bool> _checkUserDocumentExists(String uid) async {
     try {
@@ -228,13 +127,6 @@ class PhoneAuthViewController extends ChangeNotifier {
     } catch (e) {
       rethrow;
     }
-  }
-
-  // TEMPORARY METHOD FOR EASIER REVIEWER ACCESS
-  bool isReviewerPhoneNumber(String phoneNumber) {
-    return phoneNumber == reviewerPhoneNumber ||
-        phoneNumber == "27123456789" ||
-        phoneNumber == "0123456789";
   }
 
 // Load profile data (reuse existing method)

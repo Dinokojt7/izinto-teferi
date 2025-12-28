@@ -34,6 +34,7 @@ migrate_working_dir/
 /ios/Runner/AppDelegate.swift
 /ios
 /android/app
+/android/build
 /lib/utils/app_constants.dart
 /lib/firebase_options.dart
 

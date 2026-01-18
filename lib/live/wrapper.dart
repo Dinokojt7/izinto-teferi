@@ -19,6 +19,7 @@ import 'package:izinto/live/view/address_view/controller/address_dropdown_contro
 import 'package:izinto/live/view/auth_view/phone_auth_view.dart';
 import 'package:izinto/live/view/home_view/guest_access.dart';
 import 'package:izinto/live/view/home_view/home_view.dart';
+import 'package:izinto/live/view/laundry_services/laundry_home_view.dart';
 import 'package:izinto/live/view/profile_view/controller/profile_view_controller.dart';
 import 'package:izinto/live/view/profile_view/profile_view.dart';
 import 'package:provider/provider.dart';
@@ -356,7 +357,7 @@ class _WrapperState extends State<Wrapper> {
     } else if (!_hasAddresses) {
       return const GuestAccess(isFromWrapper: true);
     } else {
-      return const HomeView();
+      return const LaundryHomeView();
     }
   }
 }

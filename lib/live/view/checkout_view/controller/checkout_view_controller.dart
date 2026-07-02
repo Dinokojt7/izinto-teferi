@@ -72,6 +72,7 @@ class CheckoutViewController extends ChangeNotifier {
     // Clear promo code state
     _enteredPromoCode = '';
     _isPromoCodeValid = false;
+    _promoCodeType = null;
     _promoDiscount = 0;
 
     // Clear laundry validation
@@ -217,12 +218,29 @@ class CheckoutViewController extends ChangeNotifier {
       final order = await createOrderObject(address);
 
       // Add promo code info to order if applicable
+      bool driverReferralFirstOrderRecorded = false;
       if (_isPromoCodeValid && _enteredPromoCode.isNotEmpty) {
         order['promoCodeUsed'] = _enteredPromoCode;
         order['promoDiscount'] = _promoDiscount;
 
-        // Reward the promo code owner
-        await _rewardPromoCodeOwner(_enteredPromoCode);
+        if (_promoCodeType == 'driver_customer_referral') {
+          // First qualifying order for a driver-referred customer: flags the
+          // account permanently and pays the driver a flat first-order reward.
+          await _recordDriverReferralFirstOrder(
+              _enteredPromoCode, user.uid, order['orderId'] as String);
+          driverReferralFirstOrderRecorded = true;
+        } else {
+          // Legacy flat-R50 self-referral flow — unchanged
+          await _rewardPromoCodeOwner(_enteredPromoCode);
+        }
+      }
+
+      // Independent of any code entered this session: if this customer was
+      // already attributed to a driver on a previous order, every order after
+      // the first automatically earns that driver a recurring commission.
+      if (!driverReferralFirstOrderRecorded) {
+        await _recordDriverReferralRecurringCommission(
+            user.uid, order['orderId'] as String);
       }
 
       // Add wallet usage info to order if applicable
@@ -341,6 +359,7 @@ class CheckoutViewController extends ChangeNotifier {
   void clearPromoCode() {
     _enteredPromoCode = '';
     _isPromoCodeValid = false;
+    _promoCodeType = null;
     _promoDiscount = 0;
     notifyListeners();
   }
@@ -348,6 +367,31 @@ class CheckoutViewController extends ChangeNotifier {
   // Initialize wallet when controller is created
   CheckoutViewController() {
     loadWalletBalance();
+    _loadReferralConfig();
+  }
+
+  // Driver-referral program config (app_config/referral_program), with
+  // sensible defaults so checkout still works if the doc hasn't been created.
+  Map<String, dynamic> _referralConfig = {
+    'firstOrderFlatReward': 80,
+    'recurringCommissionPercent': 5,
+    'minOrderSubtotal': 500,
+    'maxDiscountAmount': 250,
+  };
+
+  Future<void> _loadReferralConfig() async {
+    try {
+      final configDoc = await _firestore
+          .collection('app_config')
+          .doc('referral_program')
+          .get();
+      final data = configDoc.data();
+      if (data != null) {
+        _referralConfig = {..._referralConfig, ...data};
+      }
+    } catch (e) {
+      // Keep defaults if the config doc doesn't exist or can't be read
+    }
   }
 
   // Load wallet balance
@@ -614,6 +658,8 @@ class CheckoutViewController extends ChangeNotifier {
   int get promoDiscount => _promoDiscount;
   bool _isCheckingPromoCode = false;
   bool get isCheckingPromoCode => _isCheckingPromoCode;
+  // 'legacy' (flat R50 self-referral, unchanged) or 'driver_customer_referral'
+  String? _promoCodeType;
 
   Future<void> validatePromoCode(String code) async {
     if (code.isEmpty) return;
@@ -622,37 +668,71 @@ class CheckoutViewController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final minOrderSubtotal =
+          ((_referralConfig['minOrderSubtotal'] ?? 500) as num).toInt();
+
       // Check if order meets minimum amount
-      if (orderSubtotal < 500) {
+      if (orderSubtotal < minOrderSubtotal) {
         _isCheckingPromoCode = false;
         notifyListeners();
         throw Exception(
-            'Minimum order amount of R500 required for promo codes');
+            'Minimum order amount of R$minOrderSubtotal required for promo codes');
       }
 
       // Check if promo code exists in Firestore
       final promoDoc =
           await _firestore.collection('promo_codes').doc(code).get();
 
-      if (promoDoc.exists) {
-        final promoData = promoDoc.data()!;
-        final ownerUserId = promoData['ownerUserId'];
+      if (!promoDoc.exists) {
+        throw Exception('Invalid promo code');
+      }
 
-        // Check if user is trying to use their own code
-        final currentUser = _auth.currentUser;
-        if (currentUser != null && ownerUserId == currentUser.uid) {
-          throw Exception('Cannot use your own promo code');
+      final promoData = promoDoc.data()!;
+      final ownerUserId = promoData['ownerUserId'];
+      final currentUser = _auth.currentUser;
+
+      // Check if user is trying to use their own code
+      if (currentUser != null && ownerUserId == currentUser.uid) {
+        throw Exception('Cannot use your own promo code');
+      }
+
+      final type = promoData['type'] as String?;
+
+      if (type == 'driver_customer_referral') {
+        if (currentUser == null) throw Exception('User not authenticated');
+
+        final userDoc =
+            await _firestore.collection('users').doc(currentUser.uid).get();
+        final userData = userDoc.data() ?? {};
+
+        if (userData['referredByDriverId'] != null) {
+          throw Exception(
+              'A driver referral code has already been applied to your account');
         }
+        if (userData['referralFirstOrderCompleted'] == true) {
+          throw Exception('This code is only valid on your first order');
+        }
+
+        final maxDiscount =
+            ((_referralConfig['maxDiscountAmount'] ?? 250) as num).toInt();
+        final computedDiscount = (orderSubtotal * 0.5).round();
 
         _enteredPromoCode = code;
         _isPromoCodeValid = true;
-        _promoDiscount = 50; // R50 discount
+        _promoCodeType = 'driver_customer_referral';
+        _promoDiscount =
+            computedDiscount > maxDiscount ? maxDiscount : computedDiscount;
       } else {
-        throw Exception('Invalid promo code');
+        // Legacy flat-R50 self-referral codes — unchanged behavior
+        _enteredPromoCode = code;
+        _isPromoCodeValid = true;
+        _promoCodeType = 'legacy';
+        _promoDiscount = 50; // R50 discount
       }
     } catch (e) {
       _enteredPromoCode = '';
       _isPromoCodeValid = false;
+      _promoCodeType = null;
       _promoDiscount = 0;
       rethrow;
     } finally {
@@ -717,7 +797,7 @@ class CheckoutViewController extends ChangeNotifier {
                   SizedBox(height: Dimensions.height10),
                   HeadingStyleText(
                     text:
-                        'Enter a friend\'s promo code to get R50 off your order',
+                        'Enter a promo or driver referral code to save on your order',
                     size: Dimensions.font20 / 1.3,
                     family: 'Poppins',
                     weight: FontWeight.w300,
@@ -769,7 +849,7 @@ class CheckoutViewController extends ChangeNotifier {
                             GenericSnackBar().showCustomSnackBar(
                               null,
                               context,
-                              'Promo code applied! R50 discount added.',
+                              'Promo code applied! R$_promoDiscount discount added.',
                               true, // isWiderSnack
                             );
                           } catch (e) {
@@ -819,6 +899,103 @@ class CheckoutViewController extends ChangeNotifier {
           'totalPromoRewards': FieldValue.increment(50),
         });
       }
+    } catch (e) {}
+  }
+
+  /// Records a driver-customer-referral code's qualifying first order: flags
+  /// the customer's account permanently (so future orders auto-earn the
+  /// driver a recurring commission, see [_recordDriverReferralRecurringCommission])
+  /// and writes a flat 'owed' entry to the driver_payouts ledger. Never
+  /// touches users/{driverId}.wallet — a driver-only account has no
+  /// users/{uid} doc, unlike the legacy self-referral flow.
+  Future<void> _recordDriverReferralFirstOrder(
+      String promoCode, String customerUserId, String orderId) async {
+    try {
+      final promoDoc =
+          await _firestore.collection('promo_codes').doc(promoCode).get();
+      if (!promoDoc.exists) return;
+
+      final driverId = promoDoc.data()!['ownerUserId'];
+      final flatReward =
+          ((_referralConfig['firstOrderFlatReward'] ?? 80) as num).toInt();
+
+      await _firestore.runTransaction((transaction) async {
+        final userRef = _firestore.collection('users').doc(customerUserId);
+        final userSnap = await transaction.get(userRef);
+        final userData = userSnap.data() ?? {};
+
+        // Guard against a concurrent duplicate submission double-paying.
+        if (userData['referralFirstOrderCompleted'] == true) return;
+
+        transaction.update(userRef, {
+          'referredByDriverId': driverId,
+          'referredByDriverCode': promoCode,
+          'referralFirstOrderCompleted': true,
+          'referralFirstOrderId': orderId,
+          'referredAt': FieldValue.serverTimestamp(),
+        });
+
+        final payoutRef = _firestore.collection('driver_payouts').doc();
+        transaction.set(payoutRef, {
+          'driverId': driverId,
+          'customerId': customerUserId,
+          'orderId': orderId,
+          'code': promoCode,
+          'type': 'first_order_flat',
+          'amount': flatReward,
+          'currency': 'ZAR',
+          'status': 'owed',
+          'paidAt': null,
+          'paidNote': null,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      });
+
+      await _firestore.collection('promo_codes').doc(promoCode).update({
+        'timesUsed': FieldValue.increment(1),
+        'lastUsedAt': FieldValue.serverTimestamp(),
+        'totalRewardsGiven': FieldValue.increment(flatReward),
+        'recentUsers': FieldValue.arrayUnion([customerUserId]),
+      });
+    } catch (e) {}
+  }
+
+  /// Automatic ongoing commission for a driver on a previously-referred
+  /// customer's later orders. No discount to the customer, no promo dialog
+  /// interaction required — driven purely by the flags set in
+  /// [_recordDriverReferralFirstOrder].
+  Future<void> _recordDriverReferralRecurringCommission(
+      String customerUserId, String orderId) async {
+    try {
+      final userDoc =
+          await _firestore.collection('users').doc(customerUserId).get();
+      if (!userDoc.exists) return;
+
+      final userData = userDoc.data()!;
+      final driverId = userData['referredByDriverId'];
+      final firstOrderCompleted =
+          userData['referralFirstOrderCompleted'] == true;
+
+      if (driverId == null || !firstOrderCompleted) return;
+
+      final commissionPercent =
+          ((_referralConfig['recurringCommissionPercent'] ?? 5) as num) / 100;
+      final commissionAmount = (orderSubtotal * commissionPercent).round();
+      if (commissionAmount <= 0) return;
+
+      await _firestore.collection('driver_payouts').add({
+        'driverId': driverId,
+        'customerId': customerUserId,
+        'orderId': orderId,
+        'code': userData['referredByDriverCode'],
+        'type': 'recurring_commission',
+        'amount': commissionAmount,
+        'currency': 'ZAR',
+        'status': 'owed',
+        'paidAt': null,
+        'paidNote': null,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {}
   }
 

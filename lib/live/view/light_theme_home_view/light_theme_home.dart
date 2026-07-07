@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:izinto/live/view/home_view/car_wash_view/car_wash_view.dart';
 import 'package:izinto/live/view/home_view/category_view/view_widgets/try_this_service_widget.dart';
+import 'package:izinto/live/view/designated_driver/dd_request_view.dart';
+import 'package:izinto/live/view/gas_delivery/gas_delivery_view.dart';
+import 'package:izinto/live/view/laundry_services/laundry_home_view.dart';
+import 'package:izinto/live/view/pet_grooming/pet_grooming_view.dart';
+import 'package:izinto/live/widgets/photo_tile.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/home_items_controller.dart';
 import '../../../utils/dimensions.dart';
-import '../../../widgets/texts/big_text.dart';
-import '../../../widgets/texts/small_text.dart';
 import '../../utilities/generic_system_navigation.dart';
-import '../../widgets/text_widgets/big_mallanna.dart';
+import '../../widgets/text_widgets/heading_style_text.dart';
 import '../../widgets/text_widgets/primary_style_text.dart';
+import '../home_view/controller/home_view_controller.dart';
 import '../home_view/main_address_view.dart';
 import '../home_view/referral_rewards_view.dart';
 import '../profile_view/controller/profile_view_controller.dart';
@@ -28,7 +33,6 @@ class _LightThemeHomeState extends State<LightThemeHome> {
   @override
   void initState() {
     super.initState();
-    // Apply system chrome settings
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemNavigation().applyCustomSystemChromeSettings(
           Colors.black, Brightness.light, Colors.black, Brightness.light);
@@ -37,227 +41,178 @@ class _LightThemeHomeState extends State<LightThemeHome> {
 
   void _onRefresh() async {
     try {
-      // Reload only the home items controller (popular services)
       await Get.find<HomeItemsController>()
           .getHomeItemsList(forceRefresh: true);
-
       _refreshController.refreshCompleted();
-
-      // Show success feedback
-      Get.snackbar(
-        'Refreshed',
-        'Services updated successfully',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: Duration(seconds: 2),
-      );
     } catch (e) {
       _refreshController.refreshFailed();
-
-      // Show error feedback
-      Get.snackbar(
-        'Refresh Failed',
-        'Please check your connection and try again',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: Duration(seconds: 3),
-      );
     }
+  }
+
+  void _push(BuildContext context, Widget page) {
+    Provider.of<HomeViewController>(context, listen: false)
+        .navigateToNestedWidget(context, page);
   }
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<HomeItemsController>(builder: (homeItems) {
       final _profileController = Provider.of<ProfileViewController>(context);
-      final List<dynamic> _addresses = _profileController.savedAddresses;
       final String _firstName = _profileController.firstName;
 
-      var selectedAddresses =
-          _addresses.where((address) => address['selected'] == true).toList();
-      var street = '';
-      var suburb = '';
-
-      for (var address in selectedAddresses) {
-        street = address['street'];
-        suburb = address['suburb'];
-      }
-
       return Scaffold(
-        backgroundColor: Colors.white.withOpacity(0.985),
+        backgroundColor: Colors.white,
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.black,
           automaticallyImplyLeading: false,
           toolbarHeight: 0,
         ),
-        body: Column(
-          children: [
-            // Top section (fixed - no pull to refresh)
-            _buildHeroSection(_firstName, street, suburb),
-            SizedBox(height: Dimensions.height15),
-
-            // Popular Services section with pull-to-refresh
-            Expanded(
-              child: SmartRefresher(
-                controller: _refreshController,
-                onRefresh: _onRefresh,
-                enablePullDown: true,
-                enablePullUp: false,
-                header: ClassicHeader(
-                  height: 60,
-                  completeIcon: Icon(Icons.check, color: Colors.green),
-                  failedIcon: Icon(Icons.error, color: Colors.red),
-                  idleIcon: Icon(Icons.arrow_downward, color: Colors.grey),
-                  releaseIcon: Icon(Icons.refresh, color: Colors.black),
-                  textStyle: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: Dimensions.font16 / 1.1,
-                    fontFamily: 'Poppins',
-                  ),
-                  refreshingText: 'Refreshing services...',
-                  completeText: 'Services updated',
-                  failedText: 'Refresh failed',
-                  idleText: 'Pull down to refresh services',
-                  releaseText: 'Release to refresh',
-                ),
-                child: SingleChildScrollView(
-                  physics:
-                      AlwaysScrollableScrollPhysics(), // Important for nested scrolling
-                  child: Column(
-                    children: [
-                      _buildHeading(),
-                      _buildServicesGrid(homeItems),
-                      _buildPromoBanner(),
-                      SizedBox(height: Dimensions.height30),
-                    ],
-                  ),
-                ),
+        body: SafeArea(
+          top: false,
+          child: SmartRefresher(
+            controller: _refreshController,
+            onRefresh: _onRefresh,
+            enablePullDown: true,
+            enablePullUp: false,
+            header: ClassicHeader(
+              height: 60,
+              completeIcon: Icon(Icons.check, color: Colors.green),
+              failedIcon: Icon(Icons.error, color: Colors.red),
+              idleIcon: Icon(Icons.arrow_downward, color: Colors.grey),
+              releaseIcon: Icon(Icons.refresh, color: Colors.black),
+              textStyle: TextStyle(
+                color: Colors.grey[600],
+                fontSize: Dimensions.font16 / 1.1,
+                fontFamily: 'Poppins',
+              ),
+              refreshingText: 'Refreshing services...',
+              completeText: 'Services updated',
+              failedText: 'Refresh failed',
+              idleText: 'Pull down to refresh services',
+              releaseText: 'Release to refresh',
+            ),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: Dimensions.height15),
+                  _buildGreeting(_firstName),
+                  SizedBox(height: Dimensions.height15),
+                  MainAddressView(),
+                  SizedBox(height: Dimensions.height20),
+                  _buildServiceMosaic(context),
+                  SizedBox(height: Dimensions.height30),
+                  _buildHeading('Popular', 'Services'),
+                  _buildServicesGrid(homeItems),
+                  TryThisServiceWidget(),
+                  SizedBox(height: Dimensions.height30),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       );
     });
   }
 
-  Widget _buildHeroSection(firstName, street, suburb) {
-    final expandedHeight = Dimensions.screenHeight / 3.8;
-    final size = Dimensions.screenHeight / 4;
+  Widget _buildGreeting(String firstName) => Padding(
+        padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
+        child: HeadingStyleText(
+          text: firstName.isNotEmpty ? 'Hey, $firstName.' : 'Hey, welcome.',
+          size: Dimensions.font26,
+          weight: FontWeight.w600,
+        ),
+      );
 
-    return Container(
-      width: double.maxFinite,
-      height: expandedHeight,
-      child: Stack(
-        fit: StackFit.expand,
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            top: -expandedHeight * 0.02,
-            bottom: -expandedHeight * 0.02,
-            left: 0,
-            right: 0,
-            child: Transform.scale(
-              scale: 1.00,
-              child: Image.asset(
-                'assets/image/wallpaper.png',
-                width: double.maxFinite,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.white.withOpacity(0.0),
-                    Colors.white.withOpacity(0.05),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.2, 1.0],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: expandedHeight - size * 1.1,
-            left: Dimensions.width10 * 1.5,
-            right: Dimensions.width10 * 1.5,
-            child: _buildHeroContent(firstName),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeroContent(String firstName) {
-    return Container(
-      width: double.maxFinite,
+  /// The 5 primary services, front and center — replaces the old plain
+  /// dynamic grid as the main entry point into the app's core flows.
+  Widget _buildServiceMosaic(BuildContext context) {
+    final tileHeight = Dimensions.screenHeight / 9;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: Dimensions.width20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          _buildWelcomeText(firstName),
-          SizedBox(height: Dimensions.height30),
-          MainAddressView(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWelcomeText(String firstName) => Padding(
-        padding: EdgeInsets.only(
-            left: Dimensions.width10,
-            right: Dimensions.width10 / 2,
-            top: Dimensions.height45 * 1.5),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+          SizedBox(
+            height: tileHeight * 1.7,
+            width: double.infinity,
+            child: PhotoTile(
+              image: 'assets/image/laundry-page.png',
+              title: 'Laundry',
+              subtitle: 'Pay by the bag — pickup & delivery',
+              badge: '50% OFF FIRST BAG',
+              titleSize: 18,
+              onTap: () => _push(context, const LaundryHomeView()),
+            ),
+          ),
+          SizedBox(height: Dimensions.height10),
+          SizedBox(
+            height: tileHeight,
+            child: Row(
               children: [
                 Expanded(
-                  child: BigMallanna(
-                    text1: 'HEY,',
-                    text2: firstName != '' ? '$firstName!' : 'Welcome',
+                  child: PhotoTile(
+                    image: 'assets/image/car-wash-background.png',
+                    title: 'Car Wash',
+                    subtitle: 'At your location',
+                    onTap: () => _push(context, const CarWashView()),
+                  ),
+                ),
+                SizedBox(width: Dimensions.width10),
+                Expanded(
+                  child: PhotoTile(
+                    image: 'assets/image/gas.jpg',
+                    title: 'Gas Delivery',
+                    subtitle: 'LPG refills',
+                    onTap: () => _push(context, const GasDeliveryView()),
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-      );
+          ),
+          SizedBox(height: Dimensions.height10),
+          SizedBox(
+            height: tileHeight,
+            child: Row(
+              children: [
+                Expanded(
+                  child: PhotoTile(
+                    image: 'assets/image/pet-care.png',
+                    title: 'Pet Grooming',
+                    subtitle: 'Mobile & at-home',
+                    onTap: () => _push(context, const PetGroomingView()),
+                  ),
+                ),
+                SizedBox(width: Dimensions.width10),
+                Expanded(
+                  child: PhotoTile(
+                    image: 'assets/image/driver.png',
+                    title: 'Get You Home',
+                    subtitle: 'You & your car, safely',
+                    badge: 'NEW',
+                    leftGradient: false,
+                    onTap: () => _push(context, const DdRequestView()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  Widget _buildHeading() => Padding(
+  Widget _buildHeading(String bold, String light) => Padding(
         padding: EdgeInsets.only(
           left: Dimensions.width20,
-          top: Dimensions.height10, // Add some top padding
+          bottom: Dimensions.height10,
         ),
         child: Row(
           children: [
-            PrimaryStyleText(
-              family: 'Poppins',
-              text: 'Popular',
-              weight: FontWeight.w600,
-            ),
+            PrimaryStyleText(family: 'Poppins', text: bold, weight: FontWeight.w600),
             SizedBox(width: Dimensions.width10),
-            Container(
-              margin: const EdgeInsets.only(bottom: 3),
-              child: BigText(
-                text: '.',
-                color: Colors.black26,
-                weight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(width: Dimensions.width10),
-            Container(
-              margin: const EdgeInsets.only(bottom: 1),
-              child: SmallText(
-                family: 'Poppins',
-                text: 'Services',
-                maxLines: 1,
-              ),
-            )
+            PrimaryStyleText(family: 'Poppins', text: light, weight: FontWeight.w400, color: Colors.black54),
           ],
         ),
       );
@@ -266,10 +221,10 @@ class _LightThemeHomeState extends State<LightThemeHome> {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: Dimensions.width20,
-        vertical: Dimensions.height10, // Add vertical padding
+        vertical: Dimensions.height10,
       ),
       child: GridView.builder(
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -287,10 +242,6 @@ class _LightThemeHomeState extends State<LightThemeHome> {
         },
       ),
     );
-  }
-
-  Widget _buildPromoBanner() {
-    return TryThisServiceWidget();
   }
 
   @override

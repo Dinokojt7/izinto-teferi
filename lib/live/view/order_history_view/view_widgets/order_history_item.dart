@@ -1,8 +1,10 @@
 // Updated OrderHistoryItem.dart
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
+import 'package:izinto/live/view/order_history_view/view_widgets/reorder_review_view.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_order_screen.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/service_type_row.dart';
+import 'package:izinto/live/widgets/buttons/primary_blue_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -80,7 +82,9 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: Dimensions.height10),
         child: Container(
-          height: Dimensions.screenHeight / 4,
+          height: status.toLowerCase() == 'completed'
+              ? Dimensions.screenHeight / 4 + Dimensions.height45
+              : Dimensions.screenHeight / 4,
           width: Dimensions.screenWidth,
           decoration: BoxDecoration(
             boxShadow: [
@@ -174,6 +178,23 @@ class _OrderHistoryItemState extends State<OrderHistoryItem> {
                   onTap: _handleViewButtonPress,
                   isLoading: _isLoading,
                 ),
+                if (status.toLowerCase() == 'completed') ...[
+                  SizedBox(height: Dimensions.height10 / 2),
+                  SizedBox(
+                    width: double.infinity,
+                    child: PrimaryBlueButton(
+                      text: 'Reorder',
+                      icon: Icons.replay_rounded,
+                      onTap: () {
+                        Provider.of<HomeViewController>(context, listen: false)
+                            .onIndependentPageNavigation(
+                          context,
+                          ReorderReviewView(order: widget.order),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

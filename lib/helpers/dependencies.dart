@@ -1,3 +1,6 @@
+// TODO(dual-di): this is the primary DI setup (called as `dep.init()` from
+// main.dart) — see services/dependency_injection.dart's NetworkInjection for
+// the second, smaller DI entry point that should probably be merged in here.
 import 'package:get/get.dart';
 import 'package:izinto/controllers/cart_controller.dart';
 import 'package:izinto/controllers/carpet_care_specialty_controller.dart';

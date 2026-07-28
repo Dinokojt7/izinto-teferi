@@ -1,4 +1,7 @@
 // lib/controllers/car_wash_controller.dart
+// TODO(god-file): ~700 lines. Split alongside car_wash_view.dart's cleanup —
+// this controller and that view are the two largest files in the car wash
+// feature.
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';

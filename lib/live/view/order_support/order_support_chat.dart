@@ -1,4 +1,6 @@
 // order_support_chat.dart
+// TODO(god-file): ~530 lines for one chat screen. Lower priority than the
+// other god files, but worth a pass once those are done.
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';

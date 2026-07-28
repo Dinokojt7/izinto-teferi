@@ -1,3 +1,6 @@
+// TODO(god-file): ~545 lines for a single legal-document viewer screen.
+// Lower priority than the other god files, but worth a pass once those are
+// done.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/legal_documents_controller.dart';

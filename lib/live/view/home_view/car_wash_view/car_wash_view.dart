@@ -1,3 +1,7 @@
+// TODO(god-file): ~1500 lines mixing screen layout, state, and business
+// logic in one widget file. Split into smaller widgets under a
+// view_widgets/ subfolder (mirroring the pattern used elsewhere in
+// live/view/) and push logic into car_wash_controller.dart.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/live/view/home_view/car_wash_view/view_widgets/car_wash_add_to_cart.dart';

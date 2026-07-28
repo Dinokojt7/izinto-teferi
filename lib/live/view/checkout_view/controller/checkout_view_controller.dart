@@ -403,6 +403,12 @@ class CheckoutViewController extends ChangeNotifier {
     }
   }
 
+  // TODO(god-file): this controller is ~1000 lines and owns delivery
+  // instructions, tipping, payment method selection, wallet logic, and order
+  // submission all in one class. Consider splitting by concern (e.g. a
+  // dedicated wallet/payment sub-controller) before adding the Yoco
+  // integration work on top of it.
+
   // Primary state
   bool _isLoadingIndicator = false;
   bool get isLoadingIndicator => _isLoadingIndicator;
@@ -439,6 +445,14 @@ class CheckoutViewController extends ChangeNotifier {
   String _selectedPaymentMethod = '';
   String get selectedPaymentMethod => _selectedPaymentMethod;
 
+  // TODO(paystack-to-yoco): the 'yoco' entry below is UI-only — selecting it
+  // just stores the string 'yoco' as paymentMethod on the order (see
+  // createOrderObject/submitOrder further down); there is no call to a
+  // payment gateway anywhere in this flow. The only working gateway code in
+  // the repo talks to Paystack directly (lib/paystack/, user_controller.dart)
+  // and isn't even wired into checkout. Needs real end-to-end Yoco logic:
+  // initialize a charge/payment link, redirect/collect payment, verify the
+  // result, then update order + wallet/payment status accordingly.
   final List<Map<String, dynamic>> _paymentMethods = [
     {
       'type': 'yoco',

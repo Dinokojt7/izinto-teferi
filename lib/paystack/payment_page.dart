@@ -1,3 +1,12 @@
+// TODO(paystack-to-yoco): This entire screen calls the Paystack REST API
+// directly (api.paystack.co) and is not referenced anywhere else in the app
+// (no navigation to PaymentPage found) — checkout_view_controller.dart's
+// `_paymentMethods` list already advertises a "Yoco Payment Link" option
+// ('yoco' type) but has no gateway logic wired to it. Needs end-to-end
+// replacement: initialize/verify against Yoco's API instead of Paystack's,
+// and an actual call site in the checkout flow. See also
+// paystack_autoresponse.dart and user_controller.dart (dead Paystack verify
+// code) for the rest of the surface this migration touches.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';

@@ -1,4 +1,7 @@
 // Updated OrderHistoryItem.dart
+// TODO(god-file): ~865 lines for a single list-item widget. Extract the
+// per-status rendering branches (see the 'yoco'/etc. payment-label switch
+// around line 842) into smaller widgets/helpers.
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/home_view/controller/home_view_controller.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/reorder_review_view.dart';

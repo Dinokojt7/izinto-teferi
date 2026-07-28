@@ -41,6 +41,12 @@ class UserController extends ChangeNotifier {
       });
     }
 
+    // TODO(paystack-to-yoco): this nested function is defined inside
+    // _getData() and never called, so it's currently dead code — but it's
+    // the last place still hard-coded to Paystack's verify endpoint. When
+    // building the Yoco integration, either wire a working verify call here
+    // (promoted out of _getData) or delete this alongside the other unused
+    // Paystack surface in lib/paystack/.
     Future<String> _verifyOnServer(String reference) async {
       const String url = 'https://api.paystack.co/transaction/verify/';
       while (true) {

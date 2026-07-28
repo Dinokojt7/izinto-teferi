@@ -1,3 +1,8 @@
+// TODO(god-file): ~750 lines. There are now two files named
+// map_location_picker.dart (this one under services/, another under
+// live/view/address_view/view_widgets/) — confirm which is actually live,
+// delete the other, and split the survivor's map/search/geocoding concerns
+// apart.
 // import 'package:flutter/material.dart';
 // import 'package:flutter_typeahead/flutter_typeahead.dart' hide ErrorBuilder;
 // import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';

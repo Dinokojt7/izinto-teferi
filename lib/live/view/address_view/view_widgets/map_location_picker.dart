@@ -1,3 +1,7 @@
+// TODO(god-file): ~610 lines, and a second file also named
+// map_location_picker.dart exists at services/map_location_picker.dart —
+// confirm which one is actually used (top few import lines here are already
+// dead/commented-out), delete the unused one, and split the survivor.
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;

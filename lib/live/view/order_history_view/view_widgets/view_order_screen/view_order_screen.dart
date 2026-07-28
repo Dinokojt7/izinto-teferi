@@ -1,4 +1,8 @@
 // view_order_screen.dart
+// TODO(god-file): ~1020 lines. Already has a view_widgets/ subfolder
+// (order_timeline_widget.dart, service_type_dropdown.dart) — continue
+// extracting sections out of this file into that pattern instead of
+// growing it further.
 import 'package:flutter/material.dart';
 import 'package:izinto/live/view/home_view/view_widgets/main_scaffold.dart';
 import 'package:izinto/live/view/order_history_view/view_widgets/view_order_screen/view_widgets/order_timeline_widget.dart';

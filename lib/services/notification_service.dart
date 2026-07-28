@@ -1,4 +1,7 @@
 // services/notification_service.dart
+// TODO(god-file): ~530 lines mixing FCM setup, local-notification handling,
+// and chat-message listener wiring (see setupChatMessageListener, called
+// from main.dart). Consider splitting the chat-listener piece out.
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';

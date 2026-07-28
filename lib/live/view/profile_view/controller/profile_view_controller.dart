@@ -1,3 +1,6 @@
+// TODO(god-file): ~930 lines for one controller. Look at splitting profile
+// editing, image upload, and settings-adjacent logic into separate
+// controllers/services.
 import 'dart:async';
 import 'dart:io';
 

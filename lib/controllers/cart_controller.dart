@@ -1,3 +1,6 @@
+// TODO(legacy-cart): see the matching note in models/cart_model.dart — this
+// controller and new_cart_controller.dart are both live at once. Deliberately
+// not consolidating yet; needs a careful migration pass, not a quick delete.
 import 'package:get/get.dart';
 import 'package:izinto/models/popular_specialty_model.dart';
 import '../helpers/data/repository/cart_repo.dart';

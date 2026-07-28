@@ -1,3 +1,9 @@
+// TODO(legacy-cart): CartModel/CartController coexist with
+// NewCartModel/NewCartController and both are live simultaneously (see
+// main.dart, which calls Get.find<CartController>().getCartData() while also
+// registering NewCartController). Retiring the old pair is intentionally
+// deferred — do not remove without confirming nothing still depends on the
+// old path (FeatureFlags.useNewModels() suggests this is still mid-migration).
 import 'package:izinto/models/popular_specialty_model.dart';
 
 class CartModel {

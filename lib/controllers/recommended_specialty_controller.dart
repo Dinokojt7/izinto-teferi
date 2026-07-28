@@ -1,3 +1,6 @@
+// TODO(legacy-cart): same old/new duplication as CartController — this
+// coexists with NewRecommendedSpecialtyController. See models/cart_model.dart
+// for the broader note; leave both in place until the migration is planned.
 import 'package:get/get.dart';
 import 'package:izinto/controllers/cart_controller.dart';
 import 'package:izinto/helpers/data/repository/recommended_specialty_repo.dart';

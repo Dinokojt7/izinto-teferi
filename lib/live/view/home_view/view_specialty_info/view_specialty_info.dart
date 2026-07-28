@@ -1,3 +1,6 @@
+// TODO(god-file): ~1180 lines for a single specialty-info screen. Extract
+// sub-sections (e.g. size selection, price display, add-to-cart section)
+// into their own widgets to make this reviewable/testable in pieces.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:izinto/controllers/favorite_controller.dart';

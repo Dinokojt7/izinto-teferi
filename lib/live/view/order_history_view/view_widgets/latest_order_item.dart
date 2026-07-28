@@ -1,3 +1,6 @@
+// TODO(god-file): ~640 lines for a list-item widget; likely overlaps
+// order_history_item.dart in this same folder — worth checking whether they
+// can share sub-widgets before further growth.
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';

@@ -129,6 +129,9 @@ Future<void> main() async {
     // Handle the message, e.g., navigate to specific screen
   });
 
+  // TODO(dual-di): two separate DI init calls — dep.init() (the bulk of
+  // controllers/repos) and NetworkInjection.init() (just NetworkController).
+  // See services/dependency_injection.dart and helpers/dependencies.dart.
   await dep.init();
   NetworkInjection.init();
 
@@ -152,6 +155,14 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+// TODO(pyramid): build() below nests 14+ GetBuilder<...> widgets before it
+// even reaches MultiProvider/GetMaterialApp — every new global controller
+// adds another indentation level. Since all these controllers are already
+// registered permanently via dep.init()/Get.lazyPut, this doesn't need
+// GetBuilder wrapping at the root at all: replace with a single
+// MultiProvider (for the Provider-based controllers) and let GetX widgets
+// (GetBuilder/Obx) live locally in the screens that actually read that
+// state, instead of wrapping the whole app tree.
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 

@@ -1,3 +1,5 @@
+// TODO(god-file): ~610 lines. Consider separating geocoding/places-API
+// concerns from address-form/dropdown UI state.
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
